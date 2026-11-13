@@ -17,10 +17,10 @@ test("mobile artist creates, customizes, uploads, verifies, publishes and visits
   await page.getByLabel("Title", { exact: true }).fill("Paper Garden");
   await page.getByRole("button", { name: /Continue/ }).click();
   await page.getByRole("button", { name: "creative", exact: true }).click();
-  await page.getByRole("button", { name: "Next", exact: false }).click();
+  await page.getByRole("button", { name: /Continue/ }).click();
   await page.getByLabel("Custom gallery").fill("Ink");
   await page.getByRole("button", { name: /Add/ }).click();
-  await page.getByRole("button", { name: /Next/ }).click();
+  await page.getByRole("button", { name: /Continue/ }).click();
   await page
     .getByLabel("Upload artworks")
     .setInputFiles("apps/web/public/prints/creative.webp");
@@ -29,11 +29,11 @@ test("mobile artist creates, customizes, uploads, verifies, publishes and visits
   await page
     .getByLabel("Image description for accessibility")
     .fill("A print of flowers");
-  await page.getByRole("button", { name: /Next/ }).click();
+  await page.getByRole("button", { name: /Continue/ }).click();
   await page
     .getByLabel("Description", { exact: true })
     .fill("Original illustrated prints.");
-  await page.getByRole("button", { name: /Next/ }).click();
+  await page.getByRole("button", { name: /Continue/ }).click();
   const folder = join(process.env.LOCAL_DATA_DIR!, "mail");
   const letters = await Promise.all(
     (await readdir(folder)).map(async (f) =>
@@ -128,7 +128,9 @@ test("independent artist hosts render their own revisions and ignore forwarded t
       },
     });
     expect(result.status()).toBe(200);
-    expect(await result.text()).toContain("<h1>" + handle + "</h1>");
+    expect(await result.text()).toMatch(
+      new RegExp("<h1[^>]*>" + handle + "</h1>"),
+    );
     expect(
       (await request.get("/preview", { headers: { host } })).status(),
     ).toBe(404);

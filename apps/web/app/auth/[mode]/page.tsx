@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { language, brand } from "../../../lib/server";
 import { Auth } from "../../../components/Auth";
+import "../../../components/ui/ui.css";
 export const metadata = { robots: { index: false, follow: false } };
 export default async function AuthPage({
   params,

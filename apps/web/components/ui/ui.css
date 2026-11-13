@@ -1,0 +1,305 @@
+/* Restored Design/ surfaces outside the marketing homepage: studio, editor,
+   authentication, onboarding and the four portfolio templates. Mirrors the
+   homepage approach: reference tokens plus utilities scoped to `.ui`, so the
+   legacy element rules in app/style.css and the homepage stay untouched. */
+@import "tailwindcss/theme.css" layer(theme);
+@source "../studio";
+@source "../studio/editor";
+@source "../auth/Field.tsx";
+@source "../templates";
+@source "../auth";
+@source "./*.tsx";
+@source "./Status.tsx";
+@source "../home/bits.tsx";
+@source "../home/Logo.tsx";
+@source "../home/MButton.tsx";
+@source "../../app/not-found.tsx";
+@source "../../app/error.tsx";
+@source "../../app/report/page.tsx";
+@source "../../app/demo";
+@source "../../app/preview";
+@source "../../app/site";
+@source "../Report.tsx";
+@source "../Auth.tsx";
+@source "../Studio.tsx";
+@source "../Portfolio.tsx";
+
+@font-face {
+  font-family: "UI Bricolage";
+  src: url("../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-standard-normal.woff2")
+    format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI DM Sans";
+  src: url("../../node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-standard-normal.woff2")
+    format("woff2");
+  font-weight: 100 1000;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI DM Sans";
+  src: url("../../node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-standard-italic.woff2")
+    format("woff2");
+  font-weight: 100 1000;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI Fraunces";
+  src: url("/home/fonts/fraunces-latin-full-normal.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI Fraunces";
+  src: url("/home/fonts/fraunces-latin-full-italic.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI Instrument";
+  src: url("../../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI Instrument";
+  src: url("../../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI Archivo";
+  src: url("../../node_modules/@fontsource-variable/archivo/files/archivo-latin-wght-normal.woff2")
+    format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI Cormorant";
+  src: url("../../node_modules/@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-normal.woff2")
+    format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "UI Cormorant";
+  src: url("../../node_modules/@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-italic.woff2")
+    format("woff2");
+  font-weight: 300 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@theme inline {
+  --color-ink: hsl(var(--ink));
+  --color-paper: hsl(var(--paper));
+  --color-ivory: hsl(var(--ivory));
+  --color-coral: hsl(var(--coral));
+  --color-lilac: hsl(var(--lilac));
+  --color-mint: hsl(var(--mint));
+  --color-butter: hsl(var(--butter));
+  --color-sky: hsl(var(--sky));
+  --color-clay: hsl(var(--clay));
+  --color-pf-bg: var(--pf-bg);
+  --color-pf-ink: var(--pf-ink);
+  --color-pf-surface: var(--pf-surface);
+  --color-pf-accent: var(--accent);
+  --font-display: "UI Bricolage", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "UI DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "UI Fraunces", Georgia, serif;
+  --font-editorial: "UI Instrument", Georgia, serif;
+  --font-showcase: "UI Archivo", ui-sans-serif, sans-serif;
+  --font-story: "UI Cormorant", Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-pf-display: var(--pf-display);
+  --font-pf-body: var(--pf-body);
+  --radius-lg: 1.1rem;
+  --radius-md: calc(1.1rem - 2px);
+  --radius-sm: calc(1.1rem - 4px);
+  --radius-xl: calc(1.1rem + 6px);
+  --radius-2xl: calc(1.1rem + 14px);
+  --radius-3xl: calc(1.1rem + 26px);
+  --animate-float: ui-float 6s ease-in-out infinite;
+  --animate-float-slow: ui-float-slow 9s ease-in-out infinite;
+  --animate-marquee: ui-marquee 32s linear infinite;
+  --animate-fade-up: ui-fade 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-spin-slow: spin 26s linear infinite;
+}
+/* Portfolio templates answer to their own frame width (editor device
+   previews and public pages alike) instead of the browser viewport. */
+@custom-variant csm (@container portfolio (width >= 40rem));
+@custom-variant cmd (@container portfolio (width >= 48rem));
+@custom-variant clg (@container portfolio (width >= 64rem));
+@keyframes ui-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+@keyframes ui-float-slow {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--tw-rotate, 0deg));
+  }
+  50% {
+    transform: translateY(-18px) rotate(var(--tw-rotate, 0deg));
+  }
+}
+@keyframes ui-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes ui-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ui-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ui {
+  --ink: 249 19% 18%;
+  --paper: 36 100% 97%;
+  --ivory: 40 100% 99%;
+  --coral: 7 100% 70%;
+  --lilac: 253 81% 80%;
+  --mint: 159 53% 77%;
+  --butter: 44 100% 81%;
+  --sky: 200 81% 80%;
+  --clay: 18 45% 62%;
+  --border: 28 24% 86%;
+  color: hsl(var(--ink));
+  text-rendering: optimizeLegibility;
+  font:
+    400 16px/1.5 "UI DM Sans",
+    system-ui,
+    sans-serif;
+}
+.ui-page {
+  min-height: 100vh;
+  background: hsl(var(--paper));
+}
+.portfolio {
+  container: portfolio / inline-size;
+  font-family: var(--pf-body);
+}
+@scope (.ui) {
+  :where(*, ::before, ::after) {
+    border-color: hsl(var(--border));
+  }
+  /* Base-layer defaults in the reference: any utility overrides them. */
+  :where(h1, h2, h3, h4) {
+    font-family: "UI Bricolage", system-ui, sans-serif;
+    letter-spacing: -0.025em;
+  }
+  :where(button, [role="button"], label[for], summary):not(:disabled) {
+    cursor: pointer;
+  }
+  :where(input, textarea, select)::placeholder {
+    color: hsl(var(--ink) / 0.35);
+  }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ink) / 0.55);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: hsl(var(--butter));
+    color: hsl(var(--ink));
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .u-grain {
+    position: relative;
+    isolation: isolate;
+  }
+  .u-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+  }
+  .u-underline {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 14' preserveAspectRatio='none'%3E%3Cpath d='M3 9.5c46-7 104-8 214-4' stroke='%23FF7868' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 0.34em;
+    padding-bottom: 0.1em;
+  }
+  .u-paper {
+    background: hsl(var(--ivory));
+    border: 1px solid hsl(var(--ink) / 0.1);
+    box-shadow:
+      0 1px 0 hsl(var(--ink) / 0.03),
+      0 24px 48px -32px hsl(var(--ink) / 0.4);
+  }
+  .u-sticker {
+    box-shadow:
+      0 2px 0 hsl(var(--ink) / 0.1),
+      0 6px 18px -12px hsl(var(--ink) / 0.5);
+  }
+  .u-rule {
+    height: 1px;
+    background-image: linear-gradient(
+      to right,
+      hsl(var(--ink) / 0.18) 50%,
+      transparent 0
+    );
+    background-size: 8px 1px;
+    background-repeat: repeat-x;
+  }
+  .u-lift {
+    transition:
+      transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.45s ease;
+  }
+  .u-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 28px 52px -34px hsl(var(--ink) / 0.5);
+  }
+  .u-pop {
+    animation: ui-pop 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @tailwind utilities source(none);
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::after,
+    *::before {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

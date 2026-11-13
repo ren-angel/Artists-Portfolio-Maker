@@ -1,22 +1,14 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { sql, first, type Database, type Tx } from "@studio/db";
+import { sql, first, type Database } from "@studio/db";
 import type { Config } from "./config.ts";
 import { account } from "./auth.ts";
-import { owned, prune } from "./drafts.ts";
+import { owned, prune, usage } from "./drafts.ts";
 import { siteId } from "./sites.ts";
 import { assert } from "./errors.ts";
 import { optimize } from "./images.ts";
 import type { Storage } from "./storage.ts";
 
-async function usage(tx: Tx, site: string) {
-  return (await first<{ art: number; bytes: number }>(
-    tx,
-    sql`select
-  (select count(*) from artworks where site_id=${site})+(select count(*) from uploads where site_id=${site} and replacement is null and expires_at>now()) as art,
-  (select coalesce(sum(bytes),0) from assets where site_id=${site})+(select coalesce(sum(source_bytes),0) from uploads where site_id=${site} and expires_at>now()) as bytes`,
-  ))!;
-}
 export function mediaRoutes(
   app: FastifyInstance,
   db: Database,

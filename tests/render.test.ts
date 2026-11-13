@@ -35,7 +35,8 @@ test("all four public portfolios server-render a semantic page, gallery links an
     const props = { draft: d, site: crypto.randomUUID(), base: "/site/mika" };
     const html = renderToStaticMarkup(createElement(Portfolio, props));
     assert.match(html, new RegExp("pf-" + template));
-    assert.match(html, /<h1>My studio<\/h1>/);
+    const text = (markup: string) => markup.replace(/<[^>]+>/g, " ");
+    assert.match(text(html.match(/<h1[\s\S]*?<\/h1>/)![0]), /My\s+studio/);
     assert.match(html, /alt="A pencil portrait"/);
     assert.match(html, /href="\/site\/mika\/galleries\/drawings"/);
     assert(!html.includes("<script"));
@@ -45,6 +46,11 @@ test("all four public portfolios server-render a semantic page, gallery links an
     const gallery = renderToStaticMarkup(
       createElement(Portfolio, { ...props, path: ["galleries", "drawings"] }),
     );
-    assert.match(gallery, /<h1>Drawings<\/h1>/);
+    assert.match(text(gallery.match(/<h1[\s\S]*?<\/h1>/)![0]), /Drawings/);
+    const work = renderToStaticMarkup(
+      createElement(Portfolio, { ...props, path: ["works", a.id] }),
+    );
+    assert.match(work, /alt="A pencil portrait"/);
+    assert.equal(matchPage(d, ["works", crypto.randomUUID()]), undefined);
   }
 });

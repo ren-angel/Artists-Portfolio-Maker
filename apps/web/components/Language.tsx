@@ -1,10 +1,16 @@
 "use client";
 import type { Lang } from "../lib/copy";
-export function Language({ lang }: { lang: Lang }) {
+export function Language({
+  lang,
+  className = "language",
+}: {
+  lang: Lang;
+  className?: string;
+}) {
   const next = lang === "en" ? "pt-BR" : "en";
   return (
     <button
-      className="language"
+      className={className}
       lang={next}
       aria-label={next === "en" ? "Switch to English" : "Mudar para português"}
       onClick={() => {

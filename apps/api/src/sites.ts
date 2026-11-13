@@ -5,7 +5,7 @@ import { initialDraft, draftSchema, handle, publishable } from "@studio/shared";
 import { account } from "./auth.ts";
 import type { Config } from "./config.ts";
 import { assert } from "./errors.ts";
-import { owned, readDraft, writeDraft, prune } from "./drafts.ts";
+import { owned, readDraft, writeDraft, prune, usage } from "./drafts.ts";
 
 export const siteId = (req: FastifyRequest) =>
   z.object({ site: z.uuid() }).parse(req.params).site;
@@ -65,6 +65,7 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
         version: s.version,
         published: s.published_id,
         publishedAt: rev?.publishedAt ?? null,
+        storageUsed: Number((await usage(tx, s.id)).bytes),
         draft: await readDraft(tx, s),
       };
     });

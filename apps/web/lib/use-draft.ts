@@ -8,6 +8,7 @@ export type SiteData = {
   version: number;
   published: string | null;
   publishedAt: string | null;
+  storageUsed?: number;
   draft: Draft;
 };
 export type Artist = {

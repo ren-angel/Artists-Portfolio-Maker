@@ -1,163 +1,40 @@
 "use client";
-import { useState, useEffect, type FormEvent } from "react";
-import {
-  LayoutDashboard,
-  PanelsTopLeft,
-  Images,
-  Palette,
-  Settings,
-  Layers,
-  PanelTop,
-  Eye,
-  ArrowUpRight,
-} from "lucide-react";
-import type { Draft } from "@studio/shared";
-import { t, message, type Lang, type Key } from "../lib/copy";
+import { useEffect, useState, type FormEvent } from "react";
+import { RotateCcw } from "lucide-react";
+import { t, message, type Lang } from "../lib/copy";
 import { api } from "../lib/client";
-import {
-  useDraft,
-  type Artist,
-  type Limits,
-  type SiteData,
-  type Update,
-} from "../lib/use-draft";
-import { Language } from "./Language";
-import { Brand } from "./Brand";
-import { Portfolio } from "./Portfolio";
-import { Editor, Theme, Templates } from "./Editor";
-import { Library, Pages, Galleries, upload } from "./Collections";
-import { Choice, Field } from "./Fields";
-const sections = {
-  overview: LayoutDashboard,
-  editor: PanelsTopLeft,
-  pages: PanelTop,
-  galleries: Layers,
-  library: Images,
-  theme: Palette,
-  settings: Settings,
+import { upload } from "../lib/upload";
+import { useDraft, type Artist, type Limits, type SiteData } from "../lib/use-draft";
+import { Editor, type EditorProps } from "./studio/editor/Editor";
+import { PublishDialog } from "./studio/editor/PublishDialog";
+import { DashLayout, type Tab } from "./studio/DashLayout";
+import { Overview } from "./studio/Overview";
+import { Library } from "./studio/Library";
+import { Galleries } from "./studio/Galleries";
+import { Pages } from "./studio/Pages";
+import { ThemePage } from "./studio/ThemePage";
+import { Settings } from "./studio/Settings";
+import { CreateSite, Setup } from "./studio/Onboarding";
+import { Sparkle } from "./home/bits";
+
+const TITLES: Record<Tab, Parameters<typeof t>[1]> = {
+  overview: "overview",
+  editor: "editor",
+  pages: "pages",
+  galleries: "galleries",
+  library: "library",
+  theme: "theme",
+  settings: "settingsNav",
 };
-type Tab = keyof typeof sections;
-function Account({
-  user,
-  d,
-  l,
-  site,
-  update,
-  refresh,
-  act,
-}: {
-  user: Artist;
-  d: Draft;
-  l: Lang;
-  site: string;
-  update: Update;
-  refresh: () => Promise<void>;
-  act: (fn: () => Promise<void>) => void;
-}) {
-  const [name, setName] = useState(user.displayName),
-    [avatar, setAvatar] = useState(user.avatar || ""),
-    [secret, setSecret] = useState("");
-  return (
-    <section className="panel stack">
-      <p>
-        {user.email} {user.verified ? "✓" : ""}
-      </p>
-      {!user.verified && (
-        <button
-          onClick={() =>
-            act(async () => {
-              await api("/auth/resend", "POST");
-              alert(t(l, "sent"));
-            })
-          }
-        >
-          {t(l, "resend")}
-        </button>
-      )}
-      <Field label={t(l, "name")} value={name} max={80} onChange={setName} />
-      <Choice
-        label={t(l, "avatar")}
-        value={avatar}
-        options={[
-          ["", t(l, "none")],
-          ...d.artworks.map((a) => [a.assetId, a.title] as const),
-        ]}
-        onChange={setAvatar}
-      />
-      {avatar && (
-        <img
-          className="avatar"
-          src={"/api/media/" + site + "/" + avatar + "/thumb"}
-          alt=""
-        />
-      )}
-      <button
-        onClick={() =>
-          act(async () => {
-            await api("/me", "PATCH", {
-              displayName: name,
-              avatar: avatar || null,
-            });
-            await refresh();
-          })
-        }
-      >
-        {t(l, "save")}
-      </button>
-      <Field
-        area
-        label={t(l, "social")}
-        max={5000}
-        value={d.social.join("\n")}
-        onChange={(v) =>
-          update((x) => {
-            x.social = v ? v.split("\n") : [];
-          })
-        }
-      />
-      <hr />
-      <button
-        onClick={() =>
-          act(async () => {
-            await api("/auth/logout", "POST");
-            location.assign("/");
-          })
-        }
-      >
-        {t(l, "logout")}
-      </button>
-      <form
-        className="stack"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (confirm(t(l, "deleteAsk")))
-            act(async () => {
-              await api("/me", "DELETE", { password: secret });
-              location.assign("/");
-            });
-        }}
-      >
-        <label>
-          {t(l, "password")}
-          <input
-            type="password"
-            autoComplete="current-password"
-            required
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-          />
-        </label>
-        <button className="danger">{t(l, "deleteAccount")}</button>
-      </form>
-    </section>
-  );
-}
+
 function Workspace({
   initial,
   user,
   limits,
   l,
   name,
+  domain,
+  origin,
   refresh,
 }: {
   initial: SiteData;
@@ -165,23 +42,19 @@ function Workspace({
   limits: Limits;
   l: Lang;
   name: string;
+  domain: string;
+  origin: string;
   refresh: () => Promise<void>;
 }) {
-  const {
-    data,
-    update,
-    status,
-    flush,
-    reload,
-    current,
-    error: saveError,
-  } = useDraft(initial);
+  const { data, update, status, flush, reload, current, error: saveError } = useDraft(initial);
   const d = data.draft;
   const [tab, setTab] = useState<Tab>("overview"),
+    [startPage, setStartPage] = useState<string>(),
     [setup, setSetup] = useState(d.step < 7),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [progress, setProgress] = useState<number | null>(null);
+    [progress, setProgress] = useState<number | null>(null),
+    [publishOpen, setPublishOpen] = useState(false);
   const act = async (fn: () => Promise<void>) => {
     if (busy) return;
     setBusy(true);
@@ -194,14 +67,12 @@ function Workspace({
       setBusy(false);
     }
   };
-  const publish = (action: "publish" | "unpublish") =>
-    act(async () => {
-      await flush();
-      await api("/sites/" + data.id + "/" + action, "POST", {
-        version: current.current.version,
-      });
-      await reload();
-    });
+  // Dialogs report their own failures, so these paths rethrow.
+  const transition = async (action: "publish" | "unpublish") => {
+    await flush();
+    await api("/sites/" + data.id + "/" + action, "POST", { version: current.current.version });
+    await reload();
+  };
   const uploadFiles = (files: File[], id?: string) =>
     act(async () => {
       await flush();
@@ -216,275 +87,166 @@ function Workspace({
         await reload();
       }
     });
-  const pageProps = { d, l, update };
-  const library = (
-    <Library
-      {...pageProps}
-      site={data.id}
-      onFiles={uploadFiles}
-      progress={progress}
-    />
-  );
-  const publicLink = "/site/" + data.handle;
-  const preview = (
-    <div className="studio-preview">
-      <Portfolio draft={d} site={data.id} base="/preview" />
-    </div>
-  );
-  const publishBar = (
-    <div className="actions">
-      <button className="btn ink" onClick={() => publish("publish")}>
-        {t(l, "publish")} ↗
-      </button>
-      {data.published && (
-        <>
-          <a
-            className="btn ghost"
-            href={publicLink}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t(l, "visit")}
-          </a>
-          <button
-            onClick={() => {
-              if (confirm(t(l, "unpublish") + "?")) publish("unpublish");
-            }}
-          >
-            {t(l, "unpublish")}
-          </button>
-        </>
-      )}
-      {!user.verified && (
-        <button
-          onClick={() =>
-            void act(async () => {
-              await api("/auth/resend", "POST");
-              alert(t(l, "sent"));
-            })
-          }
-        >
-          {t(l, "resend")}
-        </button>
-      )}
-    </div>
-  );
-  const stepTitle: Key[] = [
-    "setup",
-    "setup",
-    "templates",
-    "galleries",
-    "upload",
-    "theme",
-    "publish",
-  ];
-  const step = Math.min(6, d.step);
+  const save = () => void act(flush);
+  const publicHref = domain === "localhost" ? "/site/" + data.handle : "https://" + data.handle + "." + domain;
+  const address = domain === "localhost" ? origin.replace(/^https?:\/\//, "") + "/site/" + data.handle : data.handle + "." + domain;
+  const editorProps: EditorProps = {
+    d,
+    update,
+    l,
+    site: data.id,
+    brand: name,
+    address,
+    publicHref,
+    status,
+    saveError: saveError || error,
+    published: Boolean(data.published),
+    publishedAt: data.publishedAt,
+    verified: user.verified,
+    limits,
+    progress,
+    onPublish: () => transition("publish"),
+    onResend: () => api("/auth/resend", "POST").then(() => undefined),
+    onUpload: uploadFiles,
+    onPreview: () =>
+      void act(async () => {
+        await flush();
+        window.open("/preview", "_blank", "noopener");
+      }),
+    onExit: (next) => {
+      setStartPage(undefined);
+      setTab(next ?? "overview");
+    },
+    startPage,
+  };
+  const go = (next: Tab) => {
+    setStartPage(undefined);
+    setTab(next);
+    scrollTo(0, 0);
+  };
+
+  if (tab === "editor" && !setup) return <Editor {...editorProps} />;
+  if (setup)
+    return (
+      <Setup
+        d={d}
+        update={update}
+        l={l}
+        brand={name}
+        data={data}
+        user={user}
+        limits={limits}
+        address={address}
+        publicHref={publicHref}
+        progress={progress}
+        onFiles={uploadFiles}
+        onSave={save}
+        onPublish={() => transition("publish")}
+        onResend={editorProps.onResend}
+        onExit={() => {
+          void flush().catch(() => {});
+          setSetup(false);
+        }}
+      />
+    );
+
+  const problem = error || saveError;
   return (
-    <div
-      className={"studio " + (tab === "editor" && !setup ? "full-editor" : "")}
+    <DashLayout
+      l={l}
+      brand={name}
+      tab={tab}
+      setTab={go}
+      title={t(l, TITLES[tab])}
+      user={user}
+      site={data.id}
+      address={address}
+      publicHref={publicHref}
+      published={Boolean(data.published)}
+      status={status}
+      saveError={problem}
+      artworks={d.artworks.length}
+      storageUsed={data.storageUsed}
+      limits={limits}
+      onPublish={() => setPublishOpen(true)}
+      onLogout={() =>
+        void act(async () => {
+          await api("/auth/logout", "POST");
+          location.assign("/");
+        })
+      }
     >
-      <aside className="sidebar">
-        <Brand name={name} />
-        <div className="identity">
-          {user.avatar ? (
-            <img
-              className="avatar"
-              src={"/api/media/" + data.id + "/" + user.avatar + "/thumb"}
-              alt=""
-            />
-          ) : (
-            <b>{user.displayName.slice(0, 2)}</b>
-          )}
-          <div>
-            {user.displayName}
-            <small>/{data.handle}</small>
-          </div>
+      {problem && (
+        <div role="alert" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-coral/40 bg-coral/10 px-4 py-3 text-[12.5px] text-[#8a2f25]">
+          <span>{message(l, problem)}</span>
+          <button
+            type="button"
+            onClick={() =>
+              void act(async () => {
+                if (problem === "conflict") {
+                  if (confirm(t(l, "leave"))) await reload();
+                } else await flush();
+              })
+            }
+            className="inline-flex items-center gap-1.5 rounded-full border border-coral/50 bg-ivory px-3 py-1.5 text-[11.5px] font-medium text-ink hover:border-coral"
+          >
+            <RotateCcw className="h-3 w-3" /> {t(l, "retry")}
+          </button>
         </div>
-        <small>{t(l, "workspace")}</small>
-        <nav>
-          {(Object.keys(sections) as Tab[]).map((k) => {
-            const Icon = sections[k];
-            return (
-              <button
-                key={k}
-                aria-current={!setup && tab === k ? "page" : undefined}
-                onClick={() => {
-                  setSetup(false);
-                  setTab(k);
-                }}
-              >
-                <Icon size={16} />
-                {t(l, k)}
-              </button>
-            );
-          })}
-        </nav>
-        <Language lang={l} />
-      </aside>
-      <main className="studio-main">
-        <header className="studio-top">
-          <span>
-            {t(l, "studio")}　/　{t(l, setup ? "setup" : tab)}
-          </span>
-          <div className="actions">
-            <span className="status" role="status">
-              {t(l, status as Key)}
-            </span>
-            <button
-              disabled={busy}
-              onClick={() =>
-                void act(async () => {
-                  await flush();
-                  location.assign("/preview");
-                })
-              }
-            >
-              <Eye size={15} />
-              {t(l, "preview")}
-            </button>
-          </div>
-        </header>
-        {(error || saveError) && (
-          <div className="error" role="alert">
-            {message(l, error || saveError)}{" "}
-            <button
-              onClick={() =>
-                void act(async () => {
-                  if ((error || saveError) === "conflict") {
-                    if (confirm(t(l, "leave"))) await reload();
-                  } else await flush();
-                })
-              }
-            >
-              {t(l, "retry")}
-            </button>
-          </div>
-        )}
-        <fieldset className="work-area" disabled={busy}>
-          <div className="section-title">
-            <div>
-              <small>
-                {setup ? t(l, "step") + " " + step + " / 6" : data.handle}
-              </small>
-              <h1>{t(l, setup ? stepTitle[step] : tab)}</h1>
-            </div>
-            {!setup && tab === "overview" && publishBar}
-          </div>
-          {setup ? (
-            <div className="setup-grid">
-              <div className="panel stack">
-                <progress max={6} value={step} />
-                {step === 2 && <Templates {...pageProps} />}{" "}
-                {step === 3 && <Galleries {...pageProps} />}{" "}
-                {step === 4 && (
-                  <>
-                    {library}
-                    <small>{t(l, "skipUpload")}</small>
-                  </>
-                )}
-                {step === 5 && <Theme {...pageProps} />}{" "}
-                {step === 6 && (
-                  <>
-                    <p>{t(l, "start")}</p>
-                    {publishBar}
-                  </>
-                )}
-                <div className="actions">
-                  {step > 2 && (
-                    <button
-                      onClick={() =>
-                        update((x) => {
-                          x.step = step - 1;
-                        })
-                      }
-                    >
-                      {t(l, "back")}
-                    </button>
-                  )}
-                  <button
-                    className="btn ink"
-                    onClick={() => {
-                      update((x) => {
-                        x.step = step + 1;
-                      });
-                      if (step === 6) setSetup(false);
-                    }}
-                  >
-                    {t(l, step === 6 ? "finish" : "next")} →
-                  </button>
-                </div>
-                <button onClick={() => setSetup(false)}>{t(l, "skip")}</button>
-              </div>
-              {preview}
-            </div>
-          ) : tab === "editor" ? (
-            <Editor {...pageProps} site={data.id} />
-          ) : tab === "theme" ? (
-            <div className="setup-grid">
-              <section className="panel">
-                <Theme {...pageProps} />
-              </section>
-              {preview}
-            </div>
-          ) : tab === "pages" ? (
-            <Pages {...pageProps} limits={limits} />
-          ) : tab === "galleries" ? (
-            <Galleries {...pageProps} />
-          ) : tab === "library" ? (
-            library
-          ) : tab === "settings" ? (
-            <Account
-              {...pageProps}
-              user={user}
-              site={data.id}
-              refresh={refresh}
-              act={(fn) => void act(fn)}
-            />
-          ) : (
-            <div className="stack">
-              <div className="summary-cards">
-                {(["pages", "galleries", "library"] as const).map((k, i) => (
-                  <button onClick={() => setTab(k)} key={k}>
-                    <strong>
-                      {
-                        [d.pages.length, d.galleries.length, d.artworks.length][
-                          i
-                        ]
-                      }
-                    </strong>
-                    {t(l, k)} <ArrowUpRight size={15} />
-                  </button>
-                ))}
-              </div>
-              <div className="panel">
-                <div className="section-title">
-                  <div>
-                    <small>{t(l, data.published ? "live" : "draft")}</small>
-                    <h2>{d.title}</h2>
-                  </div>
-                  <button className="btn ink" onClick={() => setTab("editor")}>
-                    {t(l, "editor")} →
-                  </button>
-                </div>
-                {data.publishedAt && (
-                  <p>
-                    {t(l, "publishedAt")} ·{" "}
-                    {new Date(data.publishedAt).toLocaleString(l)}
-                  </p>
-                )}
-                {preview}
-              </div>
-              {d.step < 7 && (
-                <button onClick={() => setSetup(true)}>{t(l, "resume")}</button>
-              )}
-            </div>
-          )}
-        </fieldset>
-      </main>
-    </div>
+      )}
+      {tab === "overview" && (
+        <Overview
+          d={d}
+          l={l}
+          data={data}
+          user={user}
+          limits={limits}
+          brand={name}
+          address={address}
+          publicHref={publicHref}
+          setTab={go}
+          onResume={() => setSetup(true)}
+        />
+      )}
+      {tab === "library" && (
+        <Library d={d} update={update} l={l} site={data.id} limits={limits} storageUsed={data.storageUsed} progress={progress} onFiles={uploadFiles} onSave={save} />
+      )}
+      {tab === "galleries" && (
+        <Galleries d={d} update={update} l={l} site={data.id} publicBase={data.published ? publicHref : null} onSave={save} />
+      )}
+      {tab === "pages" && (
+        <Pages
+          d={d}
+          update={update}
+          l={l}
+          limits={limits}
+          onEdit={(id) => {
+            setStartPage(id);
+            setTab("editor");
+          }}
+        />
+      )}
+      {tab === "theme" && <ThemePage d={d} update={update} l={l} site={data.id} brand={name} onSave={save} />}
+      {tab === "settings" && (
+        <Settings
+          d={d}
+          update={update}
+          l={l}
+          site={data.id}
+          user={user}
+          handle={data.handle}
+          address={address}
+          published={Boolean(data.published)}
+          refresh={refresh}
+          onUnpublish={() => transition("unpublish")}
+        />
+      )}
+      <PublishDialog {...editorProps} open={publishOpen} onClose={() => setPublishOpen(false)} />
+    </DashLayout>
   );
 }
-export function Studio({ l, name }: { l: Lang; name: string }) {
+
+export function Studio({ l, name, domain, origin }: { l: Lang; name: string; domain: string; origin: string }) {
   const [user, setUser] = useState<Artist | null>(null),
     [limits, setLimits] = useState<Limits | null>(null),
     [site, setSite] = useState<SiteData | null>(null),
@@ -494,14 +256,11 @@ export function Studio({ l, name }: { l: Lang; name: string }) {
     try {
       const u = await api<Artist>("/me");
       setUser(u);
-      const r = await api<{ sites: { id: string }[]; limits: Limits }>(
-        "/sites",
-      );
+      const r = await api<{ sites: { id: string }[]; limits: Limits }>("/sites");
       if (r.sites[0]) setSite(await api<SiteData>("/sites/" + r.sites[0].id));
       setLimits(r.limits);
     } catch (err) {
-      if ((err as Error).message === "unauthorized")
-        location.replace("/auth/login");
+      if ((err as Error).message === "unauthorized") location.replace("/auth/login");
       else setError((err as Error).message);
     }
   }
@@ -530,50 +289,21 @@ export function Studio({ l, name }: { l: Lang; name: string }) {
         limits={limits}
         l={l}
         name={name}
+        domain={domain}
+        origin={origin}
         refresh={async () => setUser(await api<Artist>("/me"))}
       />
     );
-  return (
-    <>
-      <header className="marketing-head">
-        <Brand name={name} />
-        <Language lang={l} />
-      </header>
-      <main className="narrow panel">
-        <h1>{t(l, "setup")}</h1>
-        {error && (
-          <p role="alert" className="error">
-            {message(l, error)}
-          </p>
-        )}
-        {!limits ? (
-          <p role="status">{t(l, "loading")}</p>
-        ) : (
-          <form className="stack" onSubmit={create}>
-            <small>{t(l, "step")} 1 / 6</small>
-            <p>{t(l, "noSite")}</p>
-            <label>
-              {t(l, "username")}
-              <input
-                name="handle"
-                autoComplete="username"
-                minLength={3}
-                maxLength={50}
-                required
-                pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                placeholder="luna-mori"
-              />
-            </label>
-            <label>
-              {t(l, "title")}
-              <input name="title" required maxLength={120} />
-            </label>
-            <button className="btn ink" disabled={saving}>
-              {t(l, "continue")} →
-            </button>
-          </form>
-        )}
-      </main>
-    </>
-  );
+  if (!limits)
+    return (
+      <div className="ui ui-page grid place-items-center px-6" role="status">
+        <div className="text-center">
+          <span className="mx-auto grid h-10 w-10 animate-pulse place-items-center rounded-xl bg-ink text-paper">
+            <Sparkle size={14} />
+          </span>
+          <p className="mt-4 text-[12.5px] text-ink/50">{error ? message(l, error) : t(l, "loading")}</p>
+        </div>
+      </div>
+    );
+  return <CreateSite l={l} brand={name} domain={domain} user={user} error={error} saving={saving} onCreate={create} />;
 }

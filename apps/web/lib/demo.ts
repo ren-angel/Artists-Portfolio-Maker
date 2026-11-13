@@ -1,33 +1,195 @@
-import { initialDraft, type Draft, type Template } from "@studio/shared";
+import { newBlock, type Block, type Draft, type Template } from "@studio/shared";
+import { templateAccent } from "../components/templates/kit";
 import type { Lang } from "./copy";
-const names = {
-  gallery: "Nina Flores",
-  creative: "Luna Mori",
-  showcase: "Theo Vale",
-  story: "Mika Sora",
+
+/* Fictional demonstration portfolios mirroring the Design/ template routes.
+   They use the original illustrations bundled under public/home and stable
+   identifiers so gallery and artwork links resolve between requests. */
+
+type Text = [en: string, pt: string];
+type Work = { file: string; title: Text; description?: Text; featured?: boolean };
+type Spec = {
+  title: string;
+  description: Text;
+  home: Text;
+  works: Work[];
+  galleries: { title: Text; description: Text; works: number[]; cover?: number }[];
+  blocks: (art: (i: number) => string, gallery: (i: number) => string) => Partial<Block>[];
+  about: Partial<Block>[];
+  social: string[];
 };
-const titles = {
-  gallery: ["Studies in stillness", "Estudos de quietude"],
-  creative: ["A little paper garden", "Um jardim de papel"],
-  showcase: ["The last observatory", "O último observatório"],
-  story: ["Letters from the ferry", "Cartas da travessia"],
+
+const id = (n: number) => "00000000-0000-4000-8000-" + n.toString(16).padStart(12, "0");
+const L = (en: string, pt = en): Text => [en, pt];
+
+const specs: Record<Template, Spec> = {
+  gallery: {
+    title: "Nina Flores",
+    description: L("Photographer & visual artist · São Paulo", "Fotógrafa e artista visual · São Paulo"),
+    home: L("Work", "Obras"),
+    works: [
+      { file: "ninaStem", title: L("Dried Grass, 4pm", "Capim seco, 16h"), featured: true, description: L("Photographed in the studio at the end of the day, on the one day the light stayed long enough to arrange itself. Printed by the artist on cotton rag, in an edition of twelve.", "Fotografada no estúdio no fim do dia, no único dia em que a luz ficou tempo suficiente para se organizar. Impressa pela artista em papel algodão, em edição de doze.") },
+      { file: "ninaArch", title: L("Concrete Curve"), featured: true },
+      { file: "ninaStill", title: L("Linen & Stone", "Linho e pedra"), featured: true },
+      { file: "ceramics", title: L("Little Kiln", "Pequeno forno"), featured: true },
+    ],
+    galleries: [
+      { title: L("Still life", "Natureza-morta"), description: L("Objects arranged until they feel inevitable.", "Objetos arranjados até parecerem inevitáveis."), works: [0, 2, 3] },
+      { title: L("Architecture", "Arquitetura"), description: L("Buildings at the hour they stop looking like buildings.", "Prédios na hora em que deixam de parecer prédios."), works: [1] },
+    ],
+    blocks: (art) => [
+      { type: "hero", heading: "Nina Flores", text: "“I photograph the space between objects — the light that stays after everyone has left the room.”", artId: art(0) },
+      { type: "image", artId: art(1), text: "Archival pigment print · 80 × 100 cm" },
+      { type: "featured", heading: "Selected work" },
+      { type: "richText", layout: "center", heading: "Studio note, spring 2026", text: "“A photograph is not a record of what was there. It is a record of what I noticed.”" },
+      { type: "about", heading: "Nina Flores works slowly, in natural light, mostly at home in São Paulo.", text: "Her practice moves between still life and architecture: objects arranged until they feel inevitable, buildings photographed at the hour when they stop looking like buildings. She prints everything herself, in small editions.", artId: art(2) },
+    ],
+    about: [
+      { type: "about", heading: "Nina Flores works slowly, in natural light.", text: "Her practice moves between still life and architecture. She prints everything herself, in small editions." },
+      { type: "galleryPreview", heading: "Series" },
+    ],
+    social: ["https://instagram.com", "https://substack.com"],
+  },
+  creative: {
+    title: "Luna Mori",
+    description: L("commissions open", "encomendas abertas"),
+    home: L("work", "obras"),
+    works: [
+      { file: "lunaFanart", title: L("Starlight Girl", "Garota estelar") },
+      { file: "poster", title: L("Paper Sun", "Sol de papel"), featured: true },
+      { file: "lunaSheet", title: L("Moss Spirit Sheet", "Ficha do espírito Musgo"), featured: true },
+      { file: "lunaHero", title: L("Self portrait, 2am", "Autorretrato, 2h"), featured: true },
+      { file: "mikaWatercolor", title: L("Lantern Study", "Estudo de lanterna"), featured: true },
+    ],
+    galleries: [
+      { title: L("Fanart"), description: L("Characters from stories I love.", "Personagens de histórias que eu amo."), works: [0, 3] },
+      { title: L("Original Art", "Arte original"), description: L("Posters and experiments in colour.", "Pôsteres e experimentos com cor."), works: [1, 4] },
+      { title: L("Character Designs", "Design de personagens"), description: L("Reference sheets for my OCs.", "Fichas dos meus personagens."), works: [2] },
+    ],
+    blocks: (art) => [
+      { type: "hero", heading: "hi, i'm\nluna ✦", text: "I draw cheerful characters, elaborate fanart and the occasional small universe. Everything here is made with too much colour and one very tired graphics tablet.", artId: art(0) },
+      { type: "featured", heading: "some favourites" },
+      { type: "galleryPreview" },
+      { type: "cta", heading: "want me to draw *your character?*", text: "From R$180 · 3 slots open this round · 1–3 week turnaround", url: "https://ko-fi.com" },
+      { type: "about", heading: "about luna", text: "Illustrator and full-time fan of characters with too many accessories. I've been drawing since I was seven, posting since I was fourteen, and painting tiny universes ever since. Currently based in São Paulo with one very judgemental cat.", artId: art(3) },
+    ],
+    about: [
+      { type: "about", heading: "about luna", text: "Illustrator and full-time fan of characters with too many accessories." },
+      { type: "social", heading: "find me" },
+    ],
+    social: ["https://instagram.com", "https://ko-fi.com"],
+  },
+  showcase: {
+    title: "Theo Vale",
+    description: L("Selected work 2019 — 2026", "Trabalhos selecionados 2019 — 2026"),
+    home: L("Work", "Trabalhos"),
+    works: [
+      { file: "theoGate", title: L("The Gate at Dawn", "O portão ao amanhecer"), featured: true, description: L("A pilgrimage site at the edge of a valley that floods with fog every morning.", "Um santuário na borda de um vale que se enche de neblina toda manhã.") },
+      { file: "theoIslands", title: L("Islands Above the Cloud Sea", "Ilhas sobre o mar de nuvens"), featured: true, description: L("Six floating settlements, one failing engine, and the rope bridges between them.", "Seis vilarejos flutuantes, um motor falhando e as pontes de corda entre eles.") },
+      { file: "theoDragon", title: L("Snowfall Tower", "Torre da nevasca"), featured: true, description: L("The opening shot for a game that never shipped — and the piece that started everything.", "A cena de abertura de um jogo que nunca saiu — e a peça que começou tudo.") },
+      { file: "theoChar", title: L("The Wanderer", "O andarilho") },
+    ],
+    galleries: [
+      { title: L("Environment design · Personal", "Ambientes · Pessoal"), description: L("A place that looks like it has stood for centuries.", "Um lugar que parece estar de pé há séculos."), works: [0, 3] },
+      { title: L("Worldbuilding · Studio project", "Construção de mundo · Estúdio"), description: L("Floating settlements and the bridges between them.", "Vilarejos flutuantes e as pontes entre eles."), works: [1] },
+      { title: L("Client work · Key art", "Cliente · Key art"), description: L("Key art for a game that never shipped.", "Key art de um jogo que nunca saiu."), works: [2] },
+    ],
+    blocks: (art) => [
+      { type: "hero", heading: "Worlds that feel\n*older than the story*", text: "Concept artist and worldbuilder for games and film. Environments, key art and the uncomfortable amount of lore behind them.", artId: art(0) },
+      { type: "featured", heading: "Selected projects" },
+      { type: "about", heading: "Ten years of painting places\nnobody has been to.", text: "I work with production teams from first thumbnail to final key art — building the visual logic of a world so the rest of the team can move inside it. Trained as an architect, which explains the stairs.", artId: art(3), url: "https://artstation.com" },
+    ],
+    about: [
+      { type: "about", heading: "Ten years of painting places nobody has been to.", text: "Concept artist and worldbuilder for games and film." },
+      { type: "cta", heading: "Have a world *in mind?*", url: "https://artstation.com" },
+    ],
+    social: ["https://artstation.com", "https://instagram.com"],
+  },
+  story: {
+    title: "Mika Sora",
+    description: L("An ongoing comic · 4 chapters", "Uma HQ em andamento · 4 capítulos"),
+    home: L("The comic", "A HQ"),
+    works: [
+      { file: "mikaComic", title: L("Night Ferry, chapter one", "Balsa noturna, capítulo um"), featured: true },
+      { file: "mikaWatercolor", title: L("The visitor", "O visitante"), featured: true },
+      { file: "mikaChar", title: L("Ren, the lantern keeper", "Ren, o guardião da lanterna"), featured: true },
+      { file: "lunaSheet", title: L("Moss, something in the woods", "Musgo, algo na floresta") },
+    ],
+    galleries: [
+      { title: L("The town that keeps the lights on", "A cidade que mantém as luzes acesas"), description: L("Mar 2026"), works: [0, 1, 2] },
+      { title: L("A visitor with no shadow", "Um visitante sem sombra"), description: L("May 2026", "Mai 2026"), works: [1, 2, 0] },
+      { title: L("Lanterns for the lost", "Lanternas para os perdidos"), description: L("Aug 2026", "Ago 2026"), works: [2, 0] },
+      { title: L("Where the river remembers", "Onde o rio se lembra"), description: L("Oct 2026", "Out 2026"), works: [0, 3] },
+    ],
+    blocks: (art) => [
+      { type: "hero", heading: "Night Ferry", text: "A quiet story about a town that keeps its lights on for the people who never arrive.\n\nDrawn in pencil and warm grey wash, updated slowly. Best read with tea, in one sitting, slightly too late at night.", artId: art(0) },
+      { type: "galleryPreview", heading: "Chapters" },
+      { type: "featured", text: "the town keeps the lights on, whether or not anyone comes back" },
+      { type: "about", heading: "Mika draws comics about quiet places and the people who leave them.", text: "Based between São Paulo and somewhere much smaller. Night Ferry is a long-form comic drawn entirely on paper with a mechanical pencil and an unreasonable amount of patience.", artId: art(2) },
+    ],
+    about: [
+      { type: "about", heading: "Mika draws comics about quiet places.", text: "Night Ferry is drawn entirely on paper." },
+      { type: "social", heading: "Elsewhere" },
+    ],
+    social: ["https://instagram.com", "https://ko-fi.com"],
+  },
 };
-export const print = (template: Template) => "/prints/" + template + ".webp";
-export function demo(template: Template, lang: Lang): Draft {
-  const draft = initialDraft(names[template], lang);
-  draft.theme.template = template;
-  const art = {
-    id: crypto.randomUUID(),
-    assetId: crypto.randomUUID(),
-    title: titles[template][lang === "en" ? 0 : 1],
-    description: "",
-    alt: titles[template][lang === "en" ? 0 : 1],
-    featured: true,
-  };
-  draft.artworks = [art];
-  const hero = draft.pages[0].blocks[0];
-  hero.heading = draft.title;
-  hero.text = art.title;
-  hero.artId = art.id;
-  return draft;
+
+/** Bundled image for each demonstration asset identifier. */
+export function demoImages(template: Template) {
+  return Object.fromEntries(
+    specs[template].works.map((w, i) => [id(1000 + i), "/home/" + w.file + ".webp"]),
+  );
 }
+
+export function demo(template: Template, lang: Lang): Draft {
+  const s = specs[template];
+  const pick = ([en, pt]: Text) => (lang === "en" ? en : pt);
+  const art = (i: number) => id(100 + i);
+  const gallery = (i: number) => id(200 + i);
+  const block = (b: Partial<Block>, n: number): Block => ({ ...newBlock(b.type ?? "richText"), ...b, id: id(n) });
+  const slug = (t: string) =>
+    t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+  return {
+    version: 1,
+    title: s.title,
+    description: pick(s.description),
+    language: lang,
+    home: id(1),
+    step: 7,
+    theme: { template, accent: templateAccent[template], palette: "original", font: "template", nav: "split" },
+    social: s.social,
+    pages: [
+      { id: id(1), title: pick(s.home), slug: "home", inNav: true, blocks: s.blocks(art, gallery).map((b, i) => block(b, 300 + i)) },
+      { id: id(2), title: lang === "en" ? "About" : "Sobre", slug: "about", inNav: true, blocks: s.about.map((b, i) => block(b, 400 + i)) },
+    ],
+    galleries: s.galleries.map((g, i) => ({
+      id: gallery(i),
+      title: pick(g.title),
+      slug: slug(pick(g.title)),
+      description: pick(g.description),
+      visible: true,
+      cover: art(g.cover ?? g.works[0]),
+      artIds: g.works.map(art),
+    })),
+    artworks: s.works.map((w, i) => ({
+      id: art(i),
+      assetId: id(1000 + i),
+      title: pick(w.title),
+      description: w.description ? pick(w.description) : "",
+      alt: pick(w.title),
+      featured: Boolean(w.featured),
+    })),
+  };
+}
+
+/** Cover artwork for each template, as used on the marketing pages. */
+export const templatePreview: Record<Template, string> = {
+  gallery: "/home/ninaStem.webp",
+  creative: "/home/lunaFanart.webp",
+  showcase: "/home/theoGate.webp",
+  story: "/home/mikaComic.webp",
+};
+
+/** Kept for the seed script. */
+export const print = (template: Template) => "/prints/" + template + ".webp";
