@@ -1,0 +1,219 @@
+@import "tailwindcss/theme.css" layer(theme);
+@source "./*.tsx";
+@font-face {
+  font-family: "Home Bricolage";
+  src: url("../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-standard-normal.woff2")
+    format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Home DM Sans";
+  src: url("../../node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-standard-normal.woff2")
+    format("woff2");
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Home DM Sans";
+  src: url("../../node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-standard-italic.woff2")
+    format("woff2");
+  font-weight: 100 1000;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cormorant Garamond Variable";
+  src: url("../../node_modules/@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-italic.woff2")
+    format("woff2");
+  font-weight: 300 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Serif";
+  src: url("../../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Home Fraunces";
+  src: url("/home/fonts/fraunces-latin-full-normal.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Home Fraunces";
+  src: url("/home/fonts/fraunces-latin-full-italic.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: italic;
+  font-display: swap;
+}
+@theme inline {
+  --color-ink: hsl(var(--ink));
+  --color-paper: hsl(var(--paper));
+  --color-ivory: hsl(var(--ivory));
+  --color-coral: hsl(var(--coral));
+  --color-lilac: hsl(var(--lilac));
+  --color-mint: hsl(var(--mint));
+  --color-butter: hsl(var(--butter));
+  --font-display: "Home Bricolage", system-ui, sans-serif;
+  --font-serif: "Home Fraunces", Georgia, serif;
+  --font-editorial: "Instrument Serif", Georgia, serif;
+  --font-showcase: "Archivo Variable", Arial, sans-serif;
+  --font-story: "Cormorant Garamond Variable", Georgia, serif;
+  --radius-lg: 1.1rem;
+  --radius-md: calc(1.1rem - 2px);
+  --radius-sm: calc(1.1rem - 4px);
+  --radius-xl: calc(1.1rem + 6px);
+  --radius-2xl: calc(1.1rem + 14px);
+  --radius-3xl: calc(1.1rem + 26px);
+  --animate-float: home-float 6s ease-in-out infinite;
+  --animate-float-slow: home-float-slow 9s ease-in-out infinite;
+  --animate-marquee: home-marquee 32s linear infinite;
+  --animate-fade-up: home-fade 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes home-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+@keyframes home-float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-18px);
+  }
+}
+@keyframes home-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes home-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.artist-home {
+  --ink: 249 19% 18%;
+  --paper: 36 100% 97%;
+  --ivory: 40 100% 99%;
+  --coral: 7 100% 70%;
+  --lilac: 253 81% 80%;
+  --mint: 159 53% 77%;
+  --butter: 44 100% 81%;
+  color: hsl(var(--ink));
+  background: hsl(var(--paper));
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+  font:
+    400 16px/1.5 "Home DM Sans",
+    system-ui,
+    sans-serif;
+}
+/* Restore the reference's base typography and button reset only inside marketing. */
+@scope (.artist-home) {
+  :is(h1, h2, h3, h4) {
+    font: inherit;
+    font-family: "Home Bricolage", system-ui, sans-serif;
+    letter-spacing: -0.025em;
+  }
+  a:hover {
+    text-decoration: none;
+  }
+  button {
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 0 solid;
+    border-radius: 0;
+    padding: 0;
+    transform: none;
+  }
+  button[aria-pressed="true"]:not(:focus-visible) {
+    outline: 0;
+  }
+  :where([id]) {
+    scroll-margin-top: 86px;
+  }
+  button:hover {
+    background-color: transparent;
+    transform: none;
+  }
+  button[aria-pressed="true"]:hover {
+    background-color: hsl(var(--ink));
+  }
+  ::selection {
+    background: hsl(var(--butter));
+    color: hsl(var(--ink));
+  }
+  .home-language button {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    border: 1px solid hsl(var(--ink) / 0.15);
+    padding: 4px 8px;
+    border-radius: 99px;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .u-grain {
+    position: relative;
+    isolation: isolate;
+  }
+  .u-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+  }
+  .u-paper {
+    background: hsl(var(--ivory));
+    border: 1px solid hsl(var(--ink) / 0.1);
+    box-shadow:
+      0 1px 0 hsl(var(--ink) / 0.03),
+      0 24px 48px -32px hsl(var(--ink) / 0.4);
+  }
+  .u-sticker {
+    box-shadow:
+      0 2px 0 hsl(var(--ink) / 0.1),
+      0 6px 18px -12px hsl(var(--ink) / 0.5);
+  }
+  @tailwind utilities source(none);
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::after,
+    *::before {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Visual implementation guide
 
-Reference folder on Linux: `Design/`. This export contains JSX and design tokens. Its artwork catalogue points to external Base44 media. Production ships independent original print studies for template demonstrations only.
+Reference folder on Linux: `Design/`. This export contains JSX and design tokens. Its artwork catalogue points to external Base44 media. The marketing homepage serves the referenced artwork locally from `apps/web/public/home`. The standalone template demonstrations use their own print studies.
 
 | Surface | Reference | Implementation direction |
 | --- | --- | --- |
@@ -15,3 +15,12 @@ Reference folder on Linux: `Design/`. This export contains JSX and design tokens
 | Story | routes/portfolio.story.index | Parchment #F8F0E3, sepia #6B5442, Cormorant Garamond. Book-cover composition, italic introduction and chapter-like illustrated rows. |
 
 Platform tokens from src/index.css and tailwind.config.js: paper hsl(36 100% 97%), ivory hsl(40 100% 99%), deep ink hsl(249 19% 18%), coral #FF7868, lilac #B6A0F6, mint #A6E5CB, butter #FFE5A0. Bricolage Grotesque headings and DM Sans body. Use 1.1rem card corners, fine ink borders, pill buttons and small tracked labels. Honor reduced motion for lift/float effects. Leave billing, commerce, commissions management, comics management and analytics out of the studio navigation.
+
+
+## Marketing homepage verification
+
+The homepage presents the original twelve content sections in order, between the sticky header and footer. The port uses the display fonts’ optical-size axes, the original artwork crops, and separate desktop and mobile hero compositions. The desktop comparison used a 1440 × 900 viewport override and the mobile comparison used 390 × 844. Both sides used the same browser and local fonts. The reference was rendered from the original route and its compiled stylesheet, with local image and link adapters.
+
+[Desktop comparison](homepage-review/desktop.jpg) · [Mobile comparison](homepage-review/mobile.jpg)
+
+The production header includes the language switcher. The feature previews and plan cards identify upcoming features and use the configured free limits. These copy changes affect line breaks on narrow screens. The artwork is encoded as WebP and the animated cards and marquee can appear at different positions between captures.
