@@ -1,0 +1,29 @@
+{
+  "name": "@studio/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "dotenv -e ../../.env -- next dev -p 3000",
+    "build": "dotenv -e ../../.env -- next build",
+    "start": "dotenv -e ../../.env -- next start -p 3000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^16.2.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "@studio/shared": "workspace:*",
+    "tailwindcss": "^4.1.17",
+    "@tailwindcss/postcss": "^4.1.17",
+    "@fontsource-variable/bricolage-grotesque": "^5.2.0",
+    "@fontsource-variable/dm-sans": "^5.2.0",
+    "@fontsource/instrument-serif": "^5.2.0",
+    "@fontsource-variable/cormorant-garamond": "^5.2.0",
+    "@fontsource-variable/archivo": "^5.2.0",
+    "lucide-react": "^0.545.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2"
+  }
+}

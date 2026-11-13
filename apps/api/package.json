@@ -1,0 +1,27 @@
+{
+  "name": "@studio/api",
+  "private": true,
+  "type": "module",
+  "exports": "./src/app.ts",
+  "scripts": {
+    "dev": "node --env-file-if-exists=../../.env --import tsx --watch src/main.ts",
+    "start": "node --env-file-if-exists=../../.env dist/main.mjs",
+    "build": "tsc --noEmit -p ../../tsconfig.json && esbuild src/main.ts --bundle --platform=node --format=esm --packages=external --alias:@studio/shared=../../packages/shared/src/index.ts --alias:@studio/db=../../packages/db/src/index.ts --outfile=dist/main.mjs"
+  },
+  "dependencies": {
+    "@studio/shared": "workspace:*",
+    "@studio/db": "workspace:*",
+    "drizzle-orm": "^0.45.1",
+    "fastify": "^5.6.2",
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/rate-limit": "^10.3.0",
+    "sharp": "^0.34.5",
+    "@aws-sdk/client-s3": "^3.930.0",
+    "zod": "^4.1.12",
+    "pg": "^8.16.3",
+    "@aws-sdk/s3-request-presigner": "^3.930.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
+  }
+}

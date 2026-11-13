@@ -1,0 +1,14 @@
+{
+  "name": "@studio/db",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "drizzle-orm": "^0.45.1",
+    "pg": "^8.16.3",
+    "@studio/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.5"
+  }
+}
