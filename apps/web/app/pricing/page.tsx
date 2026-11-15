@@ -2,9 +2,8 @@ import SiteHeader from "../../components/home/SiteHeader";
 import SiteFooter from "../../components/home/SiteFooter";
 import { PricingPage } from "../../components/billing/PricingPage";
 import "../../components/home/home.css";
-import "../../components/ui/ui.css";
 import { brand, language } from "../../lib/server";
-import type { Catalog } from "../../components/studio/plan-text";
+import { catalog } from "../../lib/catalog";
 
 export async function generateMetadata() {
   const l = await language();
@@ -17,24 +16,17 @@ export async function generateMetadata() {
   };
 }
 export default async function Pricing() {
-  const lang = await language();
-  const r = await fetch(
-    (process.env.API_INTERNAL_ORIGIN || "http://127.0.0.1:4000") + "/billing/plans",
-    { cache: "no-store" },
-  );
-  if (!r.ok) throw Error("Plans unavailable");
-  const catalog = (await r.json()) as Catalog;
+  const [lang, plans] = await Promise.all([language(), catalog()]);
   const props = {
     lang,
     name: brand(),
     domain: process.env.PLATFORM_DOMAIN || "localhost",
-    limits: [],
   };
   return (
     <div className="artist-home">
-      <SiteHeader {...props} />
-      <main className="ui">
-        <PricingPage l={lang} catalog={catalog} brand={brand()} />
+      <SiteHeader {...props} active="/pricing" />
+      <main>
+        {plans ? <PricingPage l={lang} catalog={plans} brand={brand()} /> : <p role="status" className="p-8 text-center">{lang === "en" ? "Plan details are temporarily unavailable." : "Os detalhes dos planos estão temporariamente indisponíveis."}</p>}
       </main>
       <SiteFooter {...props} />
     </div>

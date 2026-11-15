@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rename, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
@@ -67,6 +67,7 @@ test("real API stores an isolated draft, verifies an upload, atomically publishe
     throw Error("Missing development email");
   };
   try {
+    assert.equal((await request("GET", "/health")).statusCode, 200);
     const a = await register(email),
       b = await register(otherEmail);
     assert.equal((await request("GET", "/me")).statusCode, 401);
@@ -213,7 +214,23 @@ test("real API stores an isolated draft, verifies an upload, atomically publishe
     const publicData = (await request("GET", "/public/" + handle)).json().draft;
     assert.equal(publicData.artworks[0].id, art.id);
     assert.equal((await request("GET", media)).statusCode, 200);
+    const thumbnail = join(folder, "objects", site, art.assetId, "thumb.webp");
+    await rename(thumbnail, thumbnail + ".backup");
+    const unavailable = await request("GET", media);
+    assert.equal(unavailable.statusCode, 503);
+    assert.equal(unavailable.json().error, "media_unavailable");
+    assert.match(String(unavailable.headers["cache-control"]), /no-store/);
+    await rename(thumbnail + ".backup", thumbnail);
+    assert.equal((await request("GET", media)).statusCode, 200);
+    const visibility = path + "/visibility";
+    const discovery = async () => (await request("GET", "/discover?q=" + handle)).json().works;
+    assert.deepEqual(await discovery(), []);
+    assert.equal((await request("PUT", visibility, { discoverable: true, indexable: false }, b)).statusCode, 404);
+    assert.equal((await request("PUT", visibility, { discoverable: true, indexable: false }, a)).statusCode, 200);
+    assert.equal((await discovery())[0].artId, art.id);
+    assert.equal((await request("GET", "/public/" + handle)).json().indexable, false);
     const next = await get();
+    next.draft.artworks[0].title = "Draft only";
     next.draft.title = "Unpublished edit";
     next.draft.pages.pop();
     next.draft.galleries = [];
@@ -222,6 +239,7 @@ test("real API stores an isolated draft, verifies an upload, atomically publishe
       (await request("GET", "/public/" + handle)).json().draft.title,
       "First title",
     );
+    assert.equal((await discovery())[0].title, art.title);
     await request(
       "POST",
       path + "/unpublish",
@@ -230,6 +248,7 @@ test("real API stores an isolated draft, verifies an upload, atomically publishe
     );
     assert.equal((await request("GET", "/public/" + handle)).statusCode, 404);
     assert.equal((await request("GET", media)).statusCode, 401);
+    assert.deepEqual(await discovery(), []);
     await request("POST", "/auth/forgot", { email });
     const reset = await mailToken("reset");
     assert.equal(
@@ -276,5 +295,21 @@ test("real API stores an isolated draft, verifies an upload, atomically publishe
   } finally {
     await app.close();
     await rm(folder, { recursive: true, force: true });
+  }
+});
+
+test("readiness rejects a connected PostgreSQL database without the application schema", async () => {
+  assert(process.env.TEST_DATABASE_URL);
+  const url = new URL(process.env.TEST_DATABASE_URL);
+  url.searchParams.set("options", "-c search_path=pg_catalog");
+  const app = await createApp(config({
+    NODE_ENV: "test", DATABASE_URL: url.href, PLATFORM_DOMAIN: "localhost", APP_ORIGIN: "http://localhost:3000",
+  }));
+  try {
+    const result = await app.inject({url: "/health"});
+    assert.equal(result.statusCode, 503);
+    assert.deepEqual(result.json(), {ok: false});
+  } finally {
+    await app.close();
   }
 });

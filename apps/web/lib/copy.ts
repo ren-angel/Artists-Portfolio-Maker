@@ -224,6 +224,7 @@ const phrases = {
   about: ["About the artist", "Sobre o artista"],
   contact: ["Contact information", "Contato"],
   cta: ["Call to action", "Botão de ação"],
+  spacer: ["Spacer", "Espaçador"],
   divider: ["Divider", "Divisor"],
   desktop: ["Desktop", "Computador"],
   tablet: ["Tablet", "Tablet"],
@@ -341,6 +342,7 @@ const phrases = {
     "Use um domínio seu, como artista.com ou portfolio.artista.com.",
   ],
   domain_limit: ["Domain limit reached.", "Limite de domínios atingido."],
+  billing_sync_failed: ["Payment status could not be refreshed. Try again shortly.", "Não foi possível atualizar o pagamento. Tente novamente em instantes."],
   domain_unverified: ["Verify the domain first.", "Verifique o domínio primeiro."],
   account_restricted: [
     "This account is restricted. Contact support.",

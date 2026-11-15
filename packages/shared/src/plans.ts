@@ -124,6 +124,7 @@ export function derive(s: SubscriptionFacts, payments: PaymentRecord[], now: Dat
   const periodEnd = paid.length ? new Date(Math.max(...paid.map((p) => p.periodEnd!.getTime()))) : null;
   const covered = periodEnd !== null && periodEnd > now;
   if (s.status === "canceled" || s.status === "expired") return { status: s.status, periodEnd, graceUntil: null };
+  if (s.createdAt > now) return {status: s.cancelRequested || s.providerEnded ? "canceled" : "pending", periodEnd, graceUntil: null};
   if (s.cancelRequested || s.providerEnded)
     return { status: covered ? "canceling" : "canceled", periodEnd, graceUntil: null };
   if (covered) return { status: "active", periodEnd, graceUntil: null };
@@ -143,8 +144,10 @@ export const grantingStatuses: SubscriptionStatus[] = ["active", "past_due", "ca
 
 export function addCycle(date: Date, cycle: Cycle) {
   const d = new Date(date);
-  if (cycle === "yearly") d.setUTCFullYear(d.getUTCFullYear() + 1);
-  else d.setUTCMonth(d.getUTCMonth() + 1);
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + (cycle === "yearly" ? 12 : 1));
+  const last = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0));
+  d.setUTCDate(Math.min(date.getUTCDate(), last.getUTCDate()));
   return d;
 }
 

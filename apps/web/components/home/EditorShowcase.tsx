@@ -94,7 +94,7 @@ export default function EditorShowcase(props: Common) {
               ))}
             </ul>
 
-            <MButton href="/studio" variant="ink" className="mt-9">
+            <MButton href="/studio?tab=editor" variant="ink" className="mt-9">
               {tr("Try the editor")}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </MButton>

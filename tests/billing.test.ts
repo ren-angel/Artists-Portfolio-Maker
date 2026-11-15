@@ -246,3 +246,28 @@ test("concurrent upload reservations never exceed the artwork quota", async () =
     await h.close();
   }
 });
+
+test("retry after a lost provider response recovers the same invoice without duplicate subscriptions", async () => {
+  const h = await harness();
+  try {
+    const a = await h.artist();
+    const create = h.provider.createSubscription;
+    let created = 0;
+    h.provider.createSubscription = async details => {
+      const remote = await create(details);
+      if (++created === 1) throw Error("connection interrupted after remote creation");
+      return remote;
+    };
+    const buy = () => h.request("POST", "/billing/checkout", {plan:"artist",cycle:"monthly",method:"card"}, a.cookie);
+    assert.equal((await buy()).statusCode, 500);
+    const [retry, concurrent] = await Promise.all([buy(), buy()]);
+    assert.equal(retry.statusCode, 200);
+    assert.equal(concurrent.statusCode, 200);
+    assert.ok(retry.json().invoiceUrl);
+    assert.deepEqual(retry.json(), concurrent.json());
+    assert.equal(created, 1);
+    assert.equal((await h.billing(a.cookie)).plan, "free");
+  } finally {
+    await h.close();
+  }
+});

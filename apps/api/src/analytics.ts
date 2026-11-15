@@ -78,14 +78,24 @@ export function analyticsRoutes(app: FastifyInstance, db: Database, env: Config)
         db,
         sql`select path,sum(count)::int as views from analytics_daily where ${where} and kind='view' and ${filter} group by path order by views desc limit 10`,
       );
+    const counts = await first<{ artworkViews: number; galleryViews: number }>(db, sql`
+      select coalesce(sum(count) filter (where path like '/works/%'),0)::int as "artworkViews",
+        coalesce(sum(count) filter (where path like '/galleries/%'),0)::int as "galleryViews"
+      from analytics_daily where ${where} and kind='view'`);
     const total = series.reduce((n, d) => n + d.views, 0);
     const result: Record<string, unknown> = {
       days,
       maxDays: max,
       advanced,
       total,
+      ...counts,
       series,
       pages: await top(sql`path not like '/galleries/%' and path not like '/works/%'`),
+      works: await rows<{ title: string; path: string; assetId: string | null; views: number }>(db, sql`
+        select a.path,w.asset_id as "assetId",coalesce(w.title,a.path) as title,sum(a.count)::int as views from analytics_daily a
+        left join artworks w on w.site_id=a.site_id and a.path='/works/'||w.id::text
+        where a.site_id=${s.id} and a.day >= ${since} and a.kind='view' and a.path like '/works/%'
+        group by a.path,w.title,w.asset_id order by views desc,a.path limit 10`),
       galleries: await top(sql`path like '/galleries/%'`),
     };
     if (advanced) {

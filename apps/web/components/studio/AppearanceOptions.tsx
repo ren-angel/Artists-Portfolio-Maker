@@ -91,6 +91,24 @@ export function AppearanceOptions({
   return (
     <div className={compact ? "space-y-4" : "space-y-4"}>
       <Seg {...common} k="radius" need="more" label={tr("Corners", "Cantos")} options={[["template", tpl], ["square", tr("Square", "Retos")], ["soft", tr("Soft", "Suaves")], ["round", tr("Round", "Redondos")]]} />
+      <label className="block text-[11.5px]">
+        <span className="flex justify-between gap-2">
+          <span>{tr("Section spacing", "Espaçamento das seções")}<PlanBadge l={l} need="more" features={features} /></span>
+          <span>{Math.round(d.theme.sectionScale * 100)}%</span>
+        </span>
+        <input type="range" min={65} max={150} step={5} value={Math.round(d.theme.sectionScale * 100)}
+          aria-label={tr("Section spacing", "Espaçamento das seções")}
+          onChange={e => set("sectionScale", Number(e.target.value)/100)} className="mt-2 w-full accent-coral" />
+      </label>
+      <label className="flex items-center gap-2 text-[11.5px]">
+        <input type="checkbox" checked={d.theme.paperTexture} onChange={e => set("paperTexture", e.target.checked)} />
+        {tr("Paper texture", "Textura de papel")}<PlanBadge l={l} need="more" features={features} />
+      </label>
+      <label className="flex items-center gap-2 text-[11.5px]">
+        <input type="checkbox" checked={!features.removeBranding || d.theme.showBranding}
+          disabled={!features.removeBranding} onChange={e => set("showBranding",e.target.checked)} />
+        {tr("Show platform credit", "Exibir crédito da plataforma")}<PlanBadge l={l} need="more" features={features} />
+      </label>
       <Seg {...common} k="shadow" need="more" label={tr("Shadows", "Sombras")} options={[["template", tpl], ["none", tr("None", "Nenhuma")], ["soft", tr("Soft", "Suave")], ["lifted", tr("Lifted", "Elevada")]]} />
       <Seg {...common} k="hover" need="more" label={tr("Hover effect", "Efeito ao passar")} options={[["template", tpl], ["none", tr("None", "Nenhum")], ["zoom", "Zoom"], ["lift", tr("Lift", "Elevar")]]} />
       <Seg

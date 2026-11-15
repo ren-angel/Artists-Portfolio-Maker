@@ -19,6 +19,7 @@ export const library: { type: Block["type"]; hint: [string, string] }[] = [
   { type: "contact", hint: ["How to reach you", "Como falar com você"] },
   { type: "cta", hint: ["One clear button", "Um botão claro"] },
   { type: "divider", hint: ["A drawn line", "Uma linha desenhada"] },
+  { type: "spacer", hint: ["Room to breathe", "Espaço entre seções"] },
   { type: "contactLinks", hint: ["Email, WhatsApp, links", "E-mail, WhatsApp, links"] },
   { type: "commissionStatus", hint: ["Open, closed or waitlist", "Abertas, fechadas ou espera"] },
   { type: "commissionPrices", hint: ["Types and prices", "Tipos e valores"] },

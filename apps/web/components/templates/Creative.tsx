@@ -47,7 +47,20 @@ function Headline({ text }: { text: string }) {
 
 function Header({ ctx }: { ctx: Ctx }) {
   const nav = ctx.d.theme.nav;
-  const say = ctx.social[0];
+  if (ctx.route.kind === "page" && ctx.route.page.id !== ctx.d.home &&
+    ctx.route.page.blocks.find(block => block.visible)?.type === "commissionStatus") {
+    const c = ctx.d.commissions;
+    const status = {open: ctx.tr("Open", "Abertas"), waitlist: ctx.tr("Waitlist", "Lista de espera"), closed: ctx.tr("Closed", "Fechadas")};
+    return <header className="relative z-30 border-b border-pf-ink/10">
+      <div className="mx-auto flex max-w-[1040px] items-center justify-between gap-3 px-5 py-4">
+        <a href={ctx.homeHref} className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em]"><ArrowLeft className="h-3 w-3"/>{ctx.d.title}</a>
+        <span className={cn("rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em]", c.status === "open" ? "bg-mint text-ink" : "bg-pf-surface")}>{status[c.status]}</span>
+        {c.status !== "closed" && c.contacts.length > 0 && <a href={ctx.contactUrl(0)} className="hidden rounded-full bg-pf-ink px-4 py-2 text-[11px] font-semibold uppercase text-pf-bg csm:block">{ctx.tr("Say hi", "Diga oi")}</a>}
+      </div>
+    </header>;
+  }
+  const commissions = ctx.commissionPage;
+  const say = commissions?.href ?? ctx.social[0];
   const links = ctx.nav.map((p) => (
     <a
       key={p.id}
@@ -83,7 +96,7 @@ function Header({ ctx }: { ctx: Ctx }) {
             rel="me noreferrer"
             className="rounded-full bg-pf-ink px-4 py-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-pf-bg transition-transform hover:-translate-y-0.5"
           >
-            {ctx.tr("say hi", "diga oi")}
+            {commissions?.title ?? ctx.tr("say hi", "diga oi")}
           </a>
         )}
       </div>
@@ -205,7 +218,7 @@ function block(b: Block, ctx: Ctx): ReactNode {
     case "hero": {
       const page = ctx.route.kind === "page" ? ctx.route.page : null;
       const hasWork = page?.blocks.some((v) => v.visible && (v.type === "featured" || v.type === "galleryGrid"));
-      const second = ctx.nav.find((p) => !p.current);
+      const second = ctx.commissionPage ?? ctx.nav.find((p) => !p.current);
       const badge = ctx.d.description.length <= 48 ? ctx.d.description : "";
       const words = [...ctx.galleries.map((v) => v.title), ...ctx.featured.map((v) => v.title)].slice(0, 6);
       return (
@@ -341,6 +354,7 @@ function block(b: Block, ctx: Ctx): ReactNode {
     }
     case "cta":
     case "contact": {
+      const toCommission = b.url === "portfolio:commissions";
       if (b.type === "cta" && !link) return null;
       return (
         <W>
@@ -350,7 +364,7 @@ function block(b: Block, ctx: Ctx): ReactNode {
               <div className={cn("flex flex-col gap-6", b.layout === "center" ? "items-center text-center" : "csm:flex-row csm:items-center csm:justify-between")}>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-ink/45">
-                    {b.type === "contact" ? ctx.tr("contact", "contato") : link ? short(link) : ""}
+                    {b.type === "contact" ? ctx.tr("contact", "contato") : toCommission ? ctx.tr("commissions", "encomendas") : link ? short(link) : ""}
                   </p>
                   <h2 className="mt-2 max-w-[420px] font-pf-display text-[26px] font-bold leading-[1.05] tracking-[-0.03em] csm:text-[34px]">
                     <Inline text={b.heading || ctx.tr("say hello", "diga oi")} em="font-serif font-normal italic" />
@@ -363,7 +377,7 @@ function block(b: Block, ctx: Ctx): ReactNode {
                     rel="noreferrer"
                     className="inline-flex shrink-0 items-center gap-2 rounded-full bg-ink px-5 py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-paper transition-transform hover:-translate-y-0.5"
                   >
-                    {b.type === "contact" ? host(link) : ctx.tr("let's go", "vamos lá")} <ArrowRight className="h-3.5 w-3.5" />
+                    {toCommission ? ctx.tr("See prices", "Ver preços") : b.type === "contact" ? ctx.linkLabel(b.url) : ctx.tr("let's go", "vamos lá")} <ArrowRight className="h-3.5 w-3.5" />
                   </a>
                 )}
               </div>
@@ -409,7 +423,7 @@ function block(b: Block, ctx: Ctx): ReactNode {
               {link && (
                 <div className="mt-6">
                   <a href={link} rel="noreferrer" className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-pf-ink/55 underline decoration-pf-accent decoration-2 underline-offset-4 hover:text-pf-ink">
-                    {host(link)}
+                    {ctx.linkLabel(b.url)}
                   </a>
                 </div>
               )}
@@ -450,6 +464,15 @@ function block(b: Block, ctx: Ctx): ReactNode {
         </W>
       );
     case "richText":
+      if (b.text && b.text.split(/\n\s*\n/).every(line => /^\d+\.\s+/.test(line))) {
+        return <W><section className="rounded-[1.6rem] border border-pf-ink/10 bg-pf-surface/70 px-6" style={sy(2)}>
+          {b.heading && <h2 className="font-pf-display text-[22px] font-bold"><Headline text={b.heading} /></h2>}
+          <ol className="mt-5 grid gap-5 csm:grid-cols-3">{b.text.split(/\n\s*\n/).map((line,i) => <li key={i}>
+            <span aria-hidden className="grid h-7 w-7 place-items-center rounded-full bg-pf-accent text-[11px] font-bold text-white">{line.split(".")[0]}</span>
+            <p className="mt-2.5 text-[13px] leading-relaxed"><Inline text={line.replace(/^\d+\.\s+/, "")} /></p>
+          </li>)}</ol>
+        </section></W>;
+      }
       return (
         <W>
           <section style={sy(2.5)} className={cn(b.layout === "center" && "mx-auto max-w-[620px]", b.layout === "right" && "flex justify-end")}>

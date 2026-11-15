@@ -52,7 +52,7 @@ export default function FinalCta(props: Common) {
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </MButton>
           <MButton
-            href="#templates"
+            href="/templates"
             variant="paper"
             size="lg"
             className="w-full sm:w-auto"

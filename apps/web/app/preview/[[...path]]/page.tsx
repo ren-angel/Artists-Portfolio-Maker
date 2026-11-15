@@ -1,3 +1,4 @@
+import { readerPageNumber } from "../../../components/templates/kit";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { draftSchema } from "@studio/shared";
@@ -8,9 +9,10 @@ import { brand } from "../../../lib/server";
 import "../../../components/ui/ui.css";
 export const metadata = { robots: { index: false, follow: false } };
 export default async function Preview({
-  params,
+  params, searchParams,
 }: {
   params: Promise<{ path?: string[] }>;
+  searchParams: Promise<{page?: string | string[]}>;
 }) {
   const cookie = await cookies();
   const base = process.env.API_INTERNAL_ORIGIN || "http://127.0.0.1:4000";
@@ -21,7 +23,8 @@ export default async function Preview({
   const list = await fetch(base + "/sites", options);
   if (list.status === 401) redirect("/auth/login");
   if (!list.ok) throw Error("Could not load preview");
-  const site = (await list.json()).sites[0];
+  const {sites, features} = await list.json();
+  const site = sites[0];
   if (!site) redirect("/studio");
   const r = await fetch(base + "/sites/" + site.id, options);
   if (!r.ok) notFound();
@@ -47,8 +50,10 @@ export default async function Preview({
       <main>
         <Portfolio
           draft={draft}
+          branding={!features.removeBranding}
           site={site.id}
           path={path}
+          readerPage={readerPageNumber((await searchParams).page)}
           base="/preview"
           brand={brand()}
         />

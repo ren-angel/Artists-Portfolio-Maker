@@ -16,7 +16,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import type { Draft } from "@studio/shared";
+import { removeGallery, type Draft } from "@studio/shared";
 import { t, type Lang } from "../../lib/copy";
 import type { Update } from "../../lib/use-draft";
 import { reorder } from "../../lib/reorder";
@@ -442,10 +442,7 @@ function Detail({
           type="button"
           onClick={() => {
             if (!confirm(t(l, "deleteAsk"))) return;
-            update((x) => {
-              x.galleries = x.galleries.filter((v) => v.id !== g.id);
-              for (const p of x.pages) for (const b of p.blocks) if (b.galleryId === g.id) b.galleryId = null;
-            });
+            update((x) => removeGallery(x, g.id));
             back();
           }}
           className="inline-flex items-center gap-1.5 rounded-full border border-ink/15 px-3.5 py-2 text-[11.5px] text-ink/55 hover:border-coral hover:text-coral"

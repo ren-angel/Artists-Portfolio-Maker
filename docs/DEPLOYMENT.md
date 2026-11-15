@@ -1,6 +1,6 @@
 # Deployment and operations
 
-1. Install on a network-enabled build host. Generate the pnpm lockfile, review it, and commit it before switching CI to frozen installs. Run the migration, integration, browser and build commands in the README against disposable services.
+1. Install on a network-enabled build host. Install the committed dependency set with `pnpm install --frozen-lockfile`. Run the migration, integration, browser and build commands in the README against disposable services.
 2. Provision PostgreSQL, a private object bucket and a verified transactional mail sender. Keep runtime and migration connections separate. Set production variables from .env.example in your secret manager. Restrict database and bucket access to the API and migration/maintenance jobs as appropriate.
 3. Set PLATFORM_DOMAIN to the bare domain, APP_ORIGIN to the HTTPS application origin, and API_INTERNAL_ORIGIN to the private Fastify listener. Build with the same upstream and upload limit as runtime. Run pnpm migrate once with direct database credentials. Execute pnpm build, then supervise pnpm --filter @studio/api start and pnpm --filter @studio/web start.
 4. Point apex, app and wildcard DNS at the web ingress. Install TLS covering the apex and wildcard. Validate accepted hostnames at ingress, forward the original validated Host and discard incoming forwarding headers. The API should be reachable only from the web service or controlled ingress. Enforce per-client IP limits at the trusted edge. Behind the web proxy Fastify can see a shared peer address. Its built-in limits are process-local and can affect multiple artists together.
@@ -42,13 +42,13 @@ https:// {
 }
 ```
 
-  `/domains/tls-ask?domain=` answers 200 only for verified domains whose owner's plan includes custom domains. Managed platforms (Vercel, Cloudflare for SaaS, Fly) can be used instead. Their domain APIs would be added behind the same verification flow.
+  `/domains/tls-ask?domain=` answers 200 only for domains with confirmed ownership, correct routing records and an unrestricted owner on an eligible plan. Canonical selection and public routing also require a successful TLS probe. Managed platforms (Vercel, Cloudflare for SaaS, Fly) can be used instead. Their domain APIs would be added behind the same verification flow.
 - The studio reports HTTPS as active only after a real TLS handshake to the domain succeeds (`DOMAIN_TLS_CHECK=probe`).
 - Domains are re-verified daily. If the TXT proof disappears, the domain stops routing. Unverified claims are released after 14 days.
 
 ### Scheduled work and monitoring
 - Run `pnpm cleanup` hourly. It does upload/session cleanup, object garbage collection, billing event retries, time-based subscription transitions, bounded provider re-reads for pending and past-due purchases, retried provider cancellations, domain re-verification and analytics retention. It logs one JSON line per failing step.
-- `GET /health` checks the database and reports the billing driver. Alert on non-200 responses, API 5xx, unprocessed provider events older than one hour, and subscriptions with `sync_error` (`/admin/billing`).
+- `GET /health` checks database connectivity and the required portfolio, artwork and billing columns, and reports the billing driver. Alert on non-200 responses, API 5xx, unprocessed provider events older than one hour, and subscriptions with `sync_error` (`/admin/billing`).
 - Grant operators with `pnpm admin grant person@example.com`. Admin actions are recorded in `admin_audit`.
 
 ### Backups and recovery

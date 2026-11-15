@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { RefreshCw, Search, ShieldAlert } from "lucide-react";
 import { api } from "../../lib/client";
 import { message, type Lang } from "../../lib/copy";
@@ -52,12 +52,16 @@ export function Admin({ l, name }: { l: Lang; name: string }) {
     [q, setQ] = useState(""),
     [error, setError] = useState(""),
     [denied, setDenied] = useState(false);
+  const latest = useRef(0);
   const load = useCallback(async () => {
+    const request = ++latest.current;
     setError("");
     try {
       const path = { overview: "/admin/overview", users: "/admin/users?q=" + encodeURIComponent(q), billing: "/admin/billing", domains: "/admin/domains", reports: "/admin/reports", support: "/admin/support", audit: "/admin/audit" }[tab];
-      setData(await api(path));
+      const result = await api(path);
+      if (latest.current === request) setData(result);
     } catch (e) {
+      if (latest.current !== request) return;
       const m = (e as Error).message;
       if (m === "not_found" || m === "unauthorized") setDenied(true);
       else setError(m);
@@ -65,6 +69,7 @@ export function Admin({ l, name }: { l: Lang; name: string }) {
   }, [tab, q]);
   useEffect(() => {
     void load();
+    return () => { latest.current++; };
   }, [load]);
   const act = async (path: string, body: object) => {
     try {
@@ -83,7 +88,7 @@ export function Admin({ l, name }: { l: Lang; name: string }) {
         </div>
       </main>
     );
-  const rows = (data ?? []) as Row[];
+  const rows = Array.isArray(data) ? data as Row[] : [];
   const status = (url: string, current: string, options: string[]) => (
     <select defaultValue={current} onChange={(e) => void act(url, { status: e.target.value })} className="rounded-md border border-ink/15 bg-paper px-1.5 py-1 text-[11.5px]">
       {options.map((o) => <option key={o}>{o}</option>)}
@@ -99,13 +104,14 @@ export function Admin({ l, name }: { l: Lang; name: string }) {
         <PageHeader eyebrow={tr("Operators only", "Somente operadores")} title={LABEL[tab][l === "en" ? 0 : 1]} actions={<button type="button" onClick={() => void load()} className="inline-flex items-center gap-1.5 rounded-full border border-ink/15 bg-ivory px-3.5 py-2 text-[12px]"><RefreshCw className="h-3.5 w-3.5" /> {tr("Refresh", "Atualizar")}</button>} />
         <nav className="mt-5 flex flex-wrap gap-1.5">
           {TABS.map((t) => (
-            <button key={t} type="button" onClick={() => { setData(null); setTab(t); }} aria-current={tab === t ? "page" : undefined} className={cn("rounded-full border px-3 py-1.5 text-[12px]", tab === t ? "border-ink bg-ink text-paper" : "border-ink/12 bg-ivory text-ink/60 hover:text-ink")}>
+            <button key={t} type="button" onClick={() => { if (t !== tab) { setData(null); setTab(t); } }} aria-current={tab === t ? "page" : undefined} className={cn("rounded-full border px-3 py-1.5 text-[12px]", tab === t ? "border-ink bg-ink text-paper" : "border-ink/12 bg-ivory text-ink/60 hover:text-ink")}>
               {LABEL[t][l === "en" ? 0 : 1]}
             </button>
           ))}
         </nav>
         {error && <p role="alert" className="mt-4 rounded-xl bg-coral/15 px-4 py-3 text-[12.5px] text-[#8a2f25]">{message(l, error)}</p>}
         <section className={cn(card, "mt-5 overflow-hidden")}>
+          {data === null && !error && <p role="status" className="px-5 py-4 text-[12.5px] text-ink/60">{tr("Loading…", "Carregando…")}</p>}
           {tab === "overview" && data !== null && (
             <dl className="grid gap-px bg-ink/10 sm:grid-cols-3 lg:grid-cols-5">
               {Object.entries(data as Row).map(([k, v]) => (
@@ -124,7 +130,7 @@ export function Admin({ l, name }: { l: Lang; name: string }) {
                   <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Email, name or handle", "E-mail, nome ou endereço")} aria-label={tr("Search users", "Buscar usuários")} className="h-9 w-full rounded-full border border-ink/15 bg-paper pl-8 pr-3 text-[12.5px]" />
                 </label>
               </form>
-              <Table l={l} rows={rows} cols={[
+              {data !== null && <Table l={l} rows={rows} cols={[
                 ["email", tr("Email", "E-mail")],
                 ["handle", tr("Handle", "Endereço")],
                 ["plan", tr("Plan", "Plano")],
@@ -141,7 +147,7 @@ export function Admin({ l, name }: { l: Lang; name: string }) {
                     {r.restrictedAt ? tr("Restricted · lift", "Restrito · liberar") : tr("Restrict", "Restringir")}
                   </button>
                 )],
-              ]} />
+              ]} />}
             </>
           )}
           {tab === "billing" && data !== null && (
@@ -156,10 +162,10 @@ export function Admin({ l, name }: { l: Lang; name: string }) {
               <Table l={l} rows={((data as Row).events as Row[]) ?? []} cols={[["type", tr("Event", "Evento")], ["objectId", tr("Object", "Objeto")], ["attempts", tr("Attempts", "Tentativas")], ["lastError", tr("Error", "Erro")], ["receivedAt", tr("Received", "Recebido"), (r) => when(r.receivedAt, l)]]} />
             </>
           )}
-          {tab === "domains" && <Table l={l} rows={rows} cols={[["hostname", tr("Domain", "Domínio")], ["handle", tr("Portfolio", "Portfólio")], ["status", "Status"], ["dnsOk", "DNS", (r) => (r.dnsOk ? "✓" : "✗")], ["tlsOk", "HTTPS", (r) => (r.tlsOk ? "✓" : "✗")], ["error", tr("Problem", "Problema")], ["checkedAt", tr("Checked", "Verificado"), (r) => when(r.checkedAt, l)]]} />}
-          {tab === "reports" && <Table l={l} rows={rows} cols={[["handle", tr("Portfolio", "Portfólio"), (r) => r.handle ? <a className="underline" href={"/site/" + r.handle} target="_blank" rel="noreferrer">{String(r.handle)}</a> : "—"], ["reason", tr("Reason", "Motivo")], ["createdAt", tr("Received", "Recebida"), (r) => when(r.createdAt, l)], ["status", "Status", (r) => status(`/admin/reports/${r.id}`, String(r.status), ["open", "reviewed", "actioned", "dismissed"])]]} />}
-          {tab === "support" && <Table l={l} rows={rows} cols={[["email", tr("From", "De")], ["topic", tr("Topic", "Assunto")], ["message", tr("Message", "Mensagem"), (r) => <span className="whitespace-pre-wrap">{String(r.message)}</span>], ["createdAt", tr("Received", "Recebido"), (r) => when(r.createdAt, l)], ["status", "Status", (r) => status(`/admin/support/${r.id}`, String(r.status), ["open", "answered", "closed"])]]} />}
-          {tab === "audit" && <Table l={l} rows={rows} cols={[["createdAt", tr("When", "Quando"), (r) => when(r.createdAt, l)], ["admin", tr("Admin", "Admin")], ["action", tr("Action", "Ação")], ["target", tr("Target", "Alvo")], ["detail", tr("Detail", "Detalhe"), (r) => JSON.stringify(r.detail)]]} />}
+          {tab === "domains" && data !== null && <Table l={l} rows={rows} cols={[["hostname", tr("Domain", "Domínio")], ["handle", tr("Portfolio", "Portfólio")], ["status", "Status"], ["dnsOk", "DNS", (r) => (r.dnsOk ? "✓" : "✗")], ["tlsOk", "HTTPS", (r) => (r.tlsOk ? "✓" : "✗")], ["error", tr("Problem", "Problema")], ["checkedAt", tr("Checked", "Verificado"), (r) => when(r.checkedAt, l)]]} />}
+          {tab === "reports" && data !== null && <Table l={l} rows={rows} cols={[["handle", tr("Portfolio", "Portfólio"), (r) => r.handle ? <a className="underline" href={"/site/" + r.handle} target="_blank" rel="noreferrer">{String(r.handle)}</a> : "—"], ["reason", tr("Reason", "Motivo")], ["createdAt", tr("Received", "Recebida"), (r) => when(r.createdAt, l)], ["status", "Status", (r) => status(`/admin/reports/${r.id}`, String(r.status), ["open", "reviewed", "actioned", "dismissed"])]]} />}
+          {tab === "support" && data !== null && <Table l={l} rows={rows} cols={[["email", tr("From", "De")], ["topic", tr("Topic", "Assunto")], ["message", tr("Message", "Mensagem"), (r) => <span className="whitespace-pre-wrap">{String(r.message)}</span>], ["createdAt", tr("Received", "Recebido"), (r) => when(r.createdAt, l)], ["status", "Status", (r) => status(`/admin/support/${r.id}`, String(r.status), ["open", "answered", "closed"])]]} />}
+          {tab === "audit" && data !== null && <Table l={l} rows={rows} cols={[["createdAt", tr("When", "Quando"), (r) => when(r.createdAt, l)], ["admin", tr("Admin", "Admin")], ["action", tr("Action", "Ação")], ["target", tr("Target", "Alvo")], ["detail", tr("Detail", "Detalhe"), (r) => JSON.stringify(r.detail)]]} />}
         </section>
       </div>
     </div>

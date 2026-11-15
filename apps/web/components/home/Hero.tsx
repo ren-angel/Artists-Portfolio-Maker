@@ -56,7 +56,7 @@ export default function Hero(props: Common) {
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </MButton>
               <MButton
-                href="#templates"
+                href="/templates"
                 variant="ghost"
                 size="lg"
                 className="w-full sm:w-auto"

@@ -28,6 +28,7 @@ export const published = cache(async (handle: string) => {
   return {
     id: String(data.id),
     revision: String(data.revision),
+    indexable: data.indexable !== false,
     draft: draftSchema.parse(data.draft),
     branding: data.branding !== false,
     domain: (data.domain as string | null) ?? null,

@@ -1,4 +1,5 @@
 "use client";
+import { studioIntent } from "../lib/studio-intent";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { ArrowRight, Check, MailCheck } from "lucide-react";
 import { api } from "../lib/client";
@@ -134,7 +135,7 @@ function Done({ icon, title, body, children }: { icon: ReactNode; title: string;
 
 const link = "font-medium text-ink underline decoration-coral decoration-2 underline-offset-4";
 
-export function Auth({ mode, lang: l, name }: { mode: Mode; lang: Lang; name: string }) {
+export function Auth({ mode, lang: l, name, query = "" }: { mode: Mode; lang: Lang; name: string; query?: string }) {
   const tr = (en: string, pt: string) => (l === "en" ? en : pt);
   const [error, setError] = useState(""),
     [done, setDone] = useState(false),
@@ -145,11 +146,18 @@ export function Auth({ mode, lang: l, name }: { mode: Mode; lang: Lang; name: st
     setBusy(true);
     setError("");
     const values: Record<string, unknown> = Object.fromEntries(new FormData(e.currentTarget));
+    if (mode === "login") values.remember = values.remember === "on";
+    if (mode === "reset" && values.confirm !== values.password) {
+      setError(tr("The passwords do not match.", "As senhas não coincidem."));
+      setBusy(false);
+      return;
+    }
+    delete values.confirm;
     if (mode === "register") values.accept = values.accept === "on";
     try {
       if (mode === "verify" || mode === "reset") values.token = location.hash.slice(1);
       await api("/auth/" + mode, "POST", values);
-      if (mode === "login" || mode === "register") location.assign("/studio");
+      if (mode === "login" || mode === "register") location.assign("/studio" + studioIntent(location.search).query);
       else {
         setDone(true);
         history.replaceState(null, "", location.pathname);
@@ -164,21 +172,21 @@ export function Auth({ mode, lang: l, name }: { mode: Mode; lang: Lang; name: st
     mode === "login" ? (
       <>
         {tr("New here?", "Primeira vez por aqui?")}{" "}
-        <a href="/auth/register" className={link}>
+        <a href={"/auth/register" + query} className={link}>
           {t(l, "register")}
         </a>
       </>
     ) : mode === "register" ? (
       <>
         {tr("Already have an account?", "Já tem uma conta?")}{" "}
-        <a href="/auth/login" className={link}>
+        <a href={"/auth/login" + query} className={link}>
           {t(l, "login")}
         </a>
       </>
     ) : (
       <>
         {tr("Remembered it?", "Lembrou?")}{" "}
-        <a href="/auth/login" className={link}>
+        <a href={"/auth/login" + query} className={link}>
           {tr("Back to sign in", "Voltar para entrar")}
         </a>
       </>
@@ -239,6 +247,9 @@ export function Auth({ mode, lang: l, name }: { mode: Mode; lang: Lang; name: st
             />
           </Field>
         )}
+        {mode === "reset" && <Field label={tr("Confirm password", "Confirmar senha")}>
+          <input required type="password" name="confirm" autoComplete="new-password" maxLength={256} className={inputClasses()} />
+        </Field>}
         {mode !== "login" && mode !== "forgot" && mode !== "verify" && (
           <div className="flex gap-1.5" aria-hidden="true">
             {[0, 1, 2].map((i) => (
@@ -263,7 +274,11 @@ export function Auth({ mode, lang: l, name }: { mode: Mode; lang: Lang; name: st
           </label>
         )}
         {mode === "login" && (
-          <div className="flex justify-end pt-1">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <label className="flex items-center gap-2 text-[12.5px] text-ink/65">
+              <input type="checkbox" defaultChecked name="remember" className="accent-coral" />
+              {tr("Keep me signed in", "Manter sessão iniciada")}
+            </label>
             <a href="/auth/forgot" className="text-[12.5px] text-ink/55 underline decoration-ink/25 underline-offset-4 hover:text-ink">
               {t(l, "forgot")}
             </a>

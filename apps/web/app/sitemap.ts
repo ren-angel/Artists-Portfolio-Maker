@@ -4,8 +4,9 @@ export const dynamic = "force-dynamic";
 export default async function sitemap() {
   const handle = (await headers()).get("x-portfolio-host");
   if (!handle)
-    return [{ url: process.env.APP_ORIGIN || "http://localhost:3000" }];
-  const { draft } = await published(handle);
+    return ["", "/explore", "/templates", "/features", "/pricing"].map(path => ({ url: (process.env.APP_ORIGIN || "http://localhost:3000") + path }));
+  const { draft, indexable } = await published(handle);
+  if (!indexable) return [];
   const base = publicOrigin(handle);
   return [
     ...draft.pages.map((p) => ({

@@ -17,6 +17,7 @@ import { t, type Lang } from "../../lib/copy";
 import { useEffect, useState } from "react";
 import type { Artist, Entitlement, Limits, SiteData } from "../../lib/use-draft";
 import { api } from "../../lib/client";
+import { ActivityFeed } from "./ActivityFeed";
 import { Chart, type Report } from "./Analytics";
 import { Usage, usageWarnings, type BillingState } from "./Billing";
 import { planName } from "./PlanCards";
@@ -25,11 +26,6 @@ import { cn } from "../home/types";
 import { card, EmptyStudio, inkPill, PageHeader } from "./parts";
 import { ScaledPortfolio } from "./ScaledPortfolio";
 import type { Tab } from "./DashLayout";
-
-/* Port of Design/src/routes/dashboard.index.jsx with PortfolioPreviewCard,
-   StatRow and StudioChecklist driven by the real draft. Visitor analytics and
-   the activity log are not collected, so a live preview and recent artwork
-   take their places instead of placeholder numbers. */
 
 type Props = {
   d: Draft;
@@ -282,7 +278,7 @@ export function Overview({ d, l, data, user, limits, ent, brand, address, public
           <p className="mt-2 truncate font-mono text-[13px]">{domain?.hostname ?? address}</p>
           <p className="mt-1 text-[11.5px] text-ink/50">
             {domain
-              ? domain.live && ent.features.customDomain
+              ? domain.live && published && ent.features.customDomain
                 ? tr("Custom domain live with HTTPS.", "Domínio próprio no ar com HTTPS.")
                 : !ent.features.customDomain
                   ? tr("Custom domain paused on the free plan.", "Domínio próprio pausado no plano grátis.")
@@ -387,6 +383,7 @@ export function Overview({ d, l, data, user, limits, ent, brand, address, public
             )}
           </div>
 
+          <ActivityFeed l={l} />
           <div className={cn(card, "p-5")}>
             <div className="flex items-center justify-between">
               <h3 className="font-display text-[15px] font-semibold tracking-tight">{tr("From your library", "Da sua biblioteca")}</h3>

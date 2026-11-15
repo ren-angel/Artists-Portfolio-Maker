@@ -6,8 +6,8 @@ A bilingual portfolio builder with a Next.js studio, a Fastify API, PostgreSQL a
 
 Use Node 24 LTS, pnpm 10.32.1 and PostgreSQL 16 or newer. Install pnpm with Corepack or your preferred package manager. Run commands from the repository root.
 
-1. Copy `.env.example` to `.env`. Generate a local database password and replace `CHANGE_ME` in all three database settings. URL-encode the password in connection URLs. Set `LOCAL_DATA_DIR` to a private absolute directory you control.
-2. Start PostgreSQL with `docker compose up -d postgres`, use an existing local database, or set the two connection URLs for a Neon development branch. For Neon, use its pooled URL at runtime and direct URL for migrations, with its TLS parameters.
+1. Copy `.env.example` to `.env`. Generate a local database password and replace `CHANGE_ME` in all three database settings. URL-encode the password in connection URLs. Set `LOCAL_DATA_DIR` to a persistent, private absolute directory you control, such as the ignored `.local/data` folder in this checkout. Back up this folder together with PostgreSQL. Operating-system temporary folders can be emptied at reboot.
+2. Start PostgreSQL with `docker compose up -d postgres`, use an existing local database, or set the two connection URLs for a Neon development branch. If another PostgreSQL service owns port 5432, set `POSTGRES_PORT` to a free loopback port (for example 5433) and use that port in both database URLs and the test URL. Preserve the existing Compose volume. For Neon, use its pooled URL at runtime and direct URL for migrations, with its TLS parameters.
 3. Install packages, apply migrations and start both services.
 
 ```sh
@@ -77,3 +77,5 @@ Free, Artist and Studio plans are defined in `packages/shared/src/plans.ts`. Loc
 - [Deployment and maintenance](docs/DEPLOYMENT.md)
 - [Billing, plans and entitlements](docs/BILLING.md)
 - [Implementation checkpoint and Phase 2 handoff](docs/CHECKPOINT.md)
+- [Recovery and verified commands](docs/RECOVERY-STATUS.md)
+- [Phase 2 audit](docs/PHASE2-AUDIT.md) and [full-page design comparisons](docs/DESIGN-COMPLETENESS-AUDIT.md)

@@ -6,16 +6,16 @@ const COLUMNS = [
   {
     title: "Product",
     links: [
-      { label: "Templates", to: "#templates" },
-      { label: "Features", to: "#editor" },
-      { label: "Pricing", to: "#plans" },
-      { label: "Website editor", to: "/studio" },
+      { label: "Templates", to: "/templates" },
+      { label: "Features", to: "/features" },
+      { label: "Pricing", to: "/pricing" },
+      { label: "Website editor", to: "/studio?tab=editor" },
     ],
   },
   {
     title: "Explore",
     links: [
-      { label: "Discover artists", to: "#artists" },
+      { label: "Discover artists", to: "/explore" },
       { label: "Nina Flores", to: "/demo/gallery" },
       { label: "Luna Mori", to: "/demo/creative" },
       { label: "Theo Vale", to: "/demo/showcase" },
@@ -27,7 +27,7 @@ const COLUMNS = [
     links: [
       { label: "Sign in", to: "/auth/login" },
       { label: "Create account", to: "/auth/register" },
-      { label: "Onboarding", to: "/auth/register" },
+      { label: "Onboarding", to: "/studio?setup=1" },
       { label: "Dashboard", to: "/studio" },
     ],
   },

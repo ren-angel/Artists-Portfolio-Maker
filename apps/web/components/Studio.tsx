@@ -1,4 +1,5 @@
 "use client";
+import { studioIntent } from "../lib/studio-intent";
 import { useEffect, useState, type FormEvent } from "react";
 import { RotateCcw } from "lucide-react";
 import { t, message, type Lang } from "../lib/copy";
@@ -62,12 +63,17 @@ function Workspace({
   const d = data.draft;
   const limits = ent.limits;
   const [tab, setTab] = useState<Tab>(() =>
-    typeof location !== "undefined" && new URLSearchParams(location.search).has("billing") ? "billing" : "overview",
+    {
+      const params = new URLSearchParams(location.search);
+      if (params.has("billing") || studioIntent(location.search).plan) return "billing";
+      const tab = params.get("tab");
+      return tab && Object.hasOwn(TITLES, tab) ? tab as Tab : "overview";
+    },
   ),
     [startPage, setStartPage] = useState<string>(),
     // Returning from a payment page goes straight to billing, not setup.
     [setup, setSetup] = useState(
-      () => d.step < 7 && !(typeof location !== "undefined" && new URLSearchParams(location.search).has("billing")),
+      () => tab === "overview" && (d.step < 7 || new URLSearchParams(location.search).get("setup") === "1"),
     ),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -108,6 +114,24 @@ function Workspace({
   const save = () => void act(flush);
   const publicHref = domain === "localhost" ? "/site/" + data.handle : "https://" + data.handle + "." + domain;
   const address = domain === "localhost" ? origin.replace(/^https?:\/\//, "") + "/site/" + data.handle : data.handle + "." + domain;
+  const preview = (pageId: string) => {
+    if (busy) return;
+    const page = d.pages.find(p => p.id === pageId);
+    if (!page) return;
+    const href = "/preview" + (page.id === d.home ? "" : "/" + page.slug);
+    const tab = window.open("about:blank", "_blank");
+    if (tab) tab.opener = null;
+    void act(async () => {
+      try {
+        await flush();
+        if (tab) tab.location.replace(href);
+        else location.assign(href);
+      } catch (e) {
+        tab?.close();
+        throw e;
+      }
+    });
+  };
   const editorProps: EditorProps = {
     d,
     update,
@@ -126,23 +150,30 @@ function Workspace({
     onPublish: () => transition("publish"),
     onResend: () => api("/auth/resend", "POST").then(() => undefined),
     onUpload: uploadFiles,
-    onPreview: () =>
-      void act(async () => {
-        await flush();
-        window.open("/preview", "_blank", "noopener");
-      }),
+    onPreview: preview,
     features: ent.features,
     onExit: (next) => {
-      setStartPage(undefined);
-      setTab(next ?? "overview");
+      go(next ?? "overview");
     },
     startPage,
   };
   const go = (next: Tab) => {
     setStartPage(undefined);
+    if (tab !== next) history.pushState(null, "", "?tab=" + next);
     setTab(next);
     scrollTo(0, 0);
   };
+
+  useEffect(() => {
+    const navigate = () => {
+      const next = new URLSearchParams(location.search).get("tab");
+      setTab(next && Object.hasOwn(TITLES, next) ? next as Tab : "overview");
+      setSetup(false);
+      setStartPage(undefined);
+    };
+    window.addEventListener("popstate", navigate);
+    return () => window.removeEventListener("popstate", navigate);
+  }, []);
 
   if (tab === "editor" && !setup) return <Editor {...editorProps} />;
   if (setup)
@@ -164,6 +195,7 @@ function Workspace({
         onResend={editorProps.onResend}
         onExit={() => {
           void flush().catch(() => {});
+          if (new URLSearchParams(location.search).has("setup")) history.replaceState(null, "", "?tab=overview");
           setSetup(false);
         }}
       />
@@ -242,8 +274,8 @@ function Workspace({
           l={l}
           limits={limits}
           onEdit={(id) => {
+            go("editor");
             setStartPage(id);
-            setTab("editor");
           }}
         />
       )}
@@ -257,14 +289,15 @@ function Workspace({
           entitled={ent.features.commissions}
           limits={limits}
           onUpgrade={() => go("billing")}
+          onPreview={preview}
           onEditPage={(id) => {
+            go("editor");
             setStartPage(id);
-            setTab("editor");
           }}
         />
       )}
       {tab === "analytics" && <Analytics l={l} site={data.id} onUpgrade={() => go("billing")} />}
-      {tab === "domains" && <Domains l={l} site={data.id} handle={data.handle} address={address} onUpgrade={() => go("billing")} />}
+      {tab === "domains" && <Domains l={l} site={data.id} handle={data.handle} address={address} publicHref={publicHref} published={Boolean(data.published)} onUpgrade={() => go("billing")} />}
       {tab === "billing" && <Billing l={l} onChange={refreshEnt} />}
       {tab === "settings" && (
         <Settings
@@ -299,7 +332,7 @@ export function Studio({ l, name, domain, origin }: { l: Lang; name: string; dom
       if (r.sites[0]) setSite(await api<SiteData>("/sites/" + r.sites[0].id));
       setEnt({ plan: r.plan, limits: r.limits, features: r.features });
     } catch (err) {
-      if ((err as Error).message === "unauthorized") location.replace("/auth/login");
+      if ((err as Error).message === "unauthorized") location.replace("/auth/login" + studioIntent(location.search).query);
       else setError((err as Error).message);
     }
   }
@@ -312,7 +345,7 @@ export function Studio({ l, name, domain, origin }: { l: Lang; name: string; dom
     setError("");
     try {
       const b = Object.fromEntries(new FormData(e.currentTarget));
-      await api("/sites", "POST", { ...b, language: l });
+      await api("/sites", "POST", { ...b, language: l, template: studioIntent(location.search).template });
       await load();
     } catch (err) {
       setError((err as Error).message);
@@ -349,5 +382,5 @@ export function Studio({ l, name, domain, origin }: { l: Lang; name: string; dom
         </div>
       </div>
     );
-  return <CreateSite l={l} brand={name} domain={domain} user={user} error={error} saving={saving} onCreate={create} />;
+  return <CreateSite template={studioIntent(location.search).template} l={l} brand={name} domain={domain} user={user} error={error} saving={saving} onCreate={create} />;
 }

@@ -35,7 +35,7 @@ export async function readDraft(tx: Tx, s: Site): Promise<Draft> {
   );
   const artworks = await rows<Draft["artworks"][number]>(
     tx,
-    sql`select id,asset_id as "assetId",title,description,alt,featured from artworks where site_id=${s.id} order by position`,
+    sql`select id,asset_id as "assetId",title,description,alt,featured,details from artworks where site_id=${s.id} order by position`,
   );
   const theme = await first<{ config: Draft["theme"] }>(
     tx,
@@ -70,8 +70,8 @@ export async function writeDraft(tx: Tx, site: string, d: Draft) {
   await tx.execute(sql`insert into pages(site_id,id,title,slug,position,in_nav,blocks)
     select ${site},(p->>'id')::uuid,p->>'title',p->>'slug',ord,(p->>'inNav')::boolean,p->'blocks'
     from jsonb_array_elements(${JSON.stringify(d.pages)}::jsonb) with ordinality as t(p,ord)`);
-  await tx.execute(sql`insert into artworks(site_id,id,asset_id,title,description,alt,featured,position)
-    select ${site},(a->>'id')::uuid,(a->>'assetId')::uuid,a->>'title',a->>'description',a->>'alt',(a->>'featured')::boolean,ord
+  await tx.execute(sql`insert into artworks(site_id,id,asset_id,title,description,alt,featured,position,details)
+    select ${site},(a->>'id')::uuid,(a->>'assetId')::uuid,a->>'title',a->>'description',a->>'alt',(a->>'featured')::boolean,ord,coalesce(a->'details','{}'::jsonb)
     from jsonb_array_elements(${JSON.stringify(d.artworks)}::jsonb) with ordinality as t(a,ord)`);
   await tx.execute(sql`insert into galleries(site_id,id,title,slug,description,visible,cover,position)
     select ${site},(g->>'id')::uuid,g->>'title',g->>'slug',g->>'description',(g->>'visible')::boolean,(g->>'cover')::uuid,ord

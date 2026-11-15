@@ -80,6 +80,8 @@ export async function createApp(
             requestId: req.id,
             route: req.routeOptions.url,
             errorClass: err.name,
+            // SQLSTATE and network codes are useful without logging SQL or values.
+            causeCode: (err.cause as { code?: string })?.code ?? err.code,
           },
           "Request failed",
         );
@@ -96,7 +98,10 @@ export async function createApp(
   accountRoutes(app, db, env);
   app.get("/health", async (_req, reply) => {
     try {
-      await db.execute(sql`select 1`);
+      // Parse the columns required by the current draft and commercial routes.
+      // LIMIT 0 checks compatibility even on an empty portfolio database.
+      await db.execute(sql`select s.discoverable,a.details,b.period_end
+        from sites s, artworks a, subscriptions b limit 0`);
       return { ok: true, billing: billing.name, live: billing.live };
     } catch {
       return reply.code(503).send({ ok: false });

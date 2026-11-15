@@ -1,7 +1,7 @@
 "use client";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { ArrowLeft, ArrowRight, Check, ExternalLink, Plus, Rocket, Sparkles } from "lucide-react";
-import { templateNames, type Draft } from "@studio/shared";
+import { removeGallery, templateNames, type Draft } from "@studio/shared";
 import { t, message, type Lang } from "../../lib/copy";
 import type { Artist, Limits, SiteData, Update } from "../../lib/use-draft";
 import { templatePreview } from "../../lib/demo";
@@ -140,6 +140,7 @@ function Browser({ address, live, children }: { address: string; live?: boolean;
 
 /** Step one: the site's name and permanent address. */
 export function CreateSite({
+  template = "gallery",
   l,
   brand,
   domain,
@@ -154,6 +155,7 @@ export function CreateSite({
   user: Artist | null;
   error: string;
   saving: boolean;
+  template?: Draft["theme"]["template"];
   onCreate: (e: FormEvent<HTMLFormElement>) => void;
 }) {
   const tr = (en: string, pt: string) => (l === "en" ? en : pt);
@@ -175,7 +177,7 @@ export function CreateSite({
               <span className="text-[6.5px] uppercase tracking-[0.18em] opacity-50">{tr("work · about", "obras · sobre")}</span>
             </div>
             <div className="mt-3 overflow-hidden rounded-lg">
-              <img src={templatePreview.gallery} alt="" className="h-[132px] w-full object-cover" />
+              <img src={templatePreview[template]} alt="" className="h-[132px] w-full object-cover" />
             </div>
             <p className="mt-3 font-editorial text-[18px] leading-tight">
               {first || tr("Your", "Seu")} <span className="italic opacity-80">{tr("portfolio", "portfólio")}</span>
@@ -355,7 +357,7 @@ export function Setup({
                   type="button"
                   aria-pressed={Boolean(g)}
                   disabled={Boolean(g?.artIds.length)}
-                  onClick={() => (g ? update((x) => void (x.galleries = x.galleries.filter((v) => v.id !== g.id))) : addGallery(name))}
+                  onClick={() => (g ? update((x) => removeGallery(x, g.id)) : addGallery(name))}
                   className={cn(
                     "rounded-full border px-4 py-2.5 text-[13px] transition-all duration-300",
                     g ? "border-ink bg-ink text-paper" : "border-ink/20 text-ink/60 hover:border-ink/50 hover:text-ink",

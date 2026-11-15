@@ -80,7 +80,7 @@ export default function GalleryShowcase(props: Common) {
           </div>
 
           <a
-            href="#artists"
+            href="/explore"
             className="group mt-8 inline-flex items-center gap-2 text-[13.5px] font-medium text-ink underline decoration-coral decoration-2 underline-offset-4"
           >
             {tr("See it in real portfolios")}

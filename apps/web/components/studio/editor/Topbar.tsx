@@ -157,7 +157,7 @@ export function Topbar({
 
         <button
           type="button"
-          onClick={onPreview}
+          onClick={() => onPreview(page.id)}
           className="hidden items-center gap-1.5 rounded-full border border-ink/15 px-3.5 py-2 text-[12px] font-medium text-ink/65 hover:border-ink/40 hover:text-ink sm:flex"
         >
           <Eye className="h-3.5 w-3.5" /> {t(l, "preview")}

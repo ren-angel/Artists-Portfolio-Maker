@@ -148,6 +148,7 @@ export async function processEvent(db: Database, provider: BillingProvider, even
           sql`select id from subscriptions where provider=${provider.name} and provider_subscription_id=${e.object_id}`,
         )
       : undefined;
+    if (e.object_id && !s) throw Error("no_matching_subscription");
     if (s) await sync(db, provider, s.id);
     await db.execute(
       sql`update provider_events set processed_at=now(),attempts=attempts+1,last_error=${s ? null : "no_matching_subscription"} where id=${eventId}`,
@@ -172,7 +173,7 @@ export async function checkout(
   assert(!user.restricted, 403, "account_restricted");
   const price = env.prices[req.plan][req.cycle];
   // Serialize purchases per account.
-  type Planned = { reuse: string } | { id: string; startsOn: string; abandoned: string[]; downgradeOf: string | null };
+  type Planned = { id: string; abandoned: string[] };
   const plan = await db.transaction(async (tx): Promise<Planned> => {
     await tx.execute(sql`select id from users where id=${user.id} for update`);
     const open = await rows<SubscriptionRow>(
@@ -181,7 +182,7 @@ export async function checkout(
     );
     const pending = open.find((s) => s.status === "pending");
     if (pending && pending.plan === req.plan && pending.cycle === req.cycle && pending.method === req.method)
-      return { reuse: pending.id };
+      return { id: pending.id, abandoned: [] };
     const current = open.find((s) => s.status !== "pending");
     // Starting a different purchase abandons the unpaid one.
     for (const p of open.filter((s) => s.status === "pending"))
@@ -189,7 +190,7 @@ export async function checkout(
     const abandoned = open.filter((s) => s.status === "pending").map((s) => s.id);
     let startsOn = new Date().toISOString().slice(0, 10);
     let replaces: string | null = null;
-    let downgrade = false;
+
     if (current) {
       const rank = plans[req.plan].rank - plans[current.plan].rank;
       const same = rank === 0 && req.cycle === current.cycle;
@@ -199,7 +200,7 @@ export async function checkout(
       // start when the paid period ends; upgrades start now (no proration).
       if ((rank < 0 || current.status === "canceling" || rank === 0) && current.period_end) {
         startsOn = new Date(current.period_end).toISOString().slice(0, 10);
-        downgrade = current.status !== "canceling";
+
       }
     }
     const row = await first<{ id: string }>(
@@ -207,38 +208,41 @@ export async function checkout(
       sql`insert into subscriptions(user_id,provider,plan,cycle,method,amount,currency,starts_at,replaces)
         values(${user.id},${provider.name},${req.plan},${req.cycle},${req.method},${price.amount},${price.currency},${startsOn},${replaces}) returning id`,
     );
-    if (downgrade && replaces)
-      await tx.execute(sql`update subscriptions set cancel_requested_at=now() where id=${replaces}`);
-    return { id: row!.id, startsOn, abandoned, downgradeOf: downgrade ? replaces : null };
+    return { id: row!.id, abandoned };
   });
-  if ("reuse" in plan) return invoiceFor(db, provider, plan.reuse);
-
-  await stopCharges(db, provider, [...plan.abandoned, ...(plan.downgradeOf ? [plan.downgradeOf] : [])]);
-  if (plan.downgradeOf) await sync(db, provider, plan.downgradeOf).catch(() => {});
-  const known = await first<{ provider_customer_id: string }>(
-    db,
-    sql`select provider_customer_id from billing_customers where user_id=${user.id} and provider=${provider.name}`,
-  );
-  const customer =
-    known?.provider_customer_id ??
-    (await provider.ensureCustomer({ userId: user.id, name: req.name || user.displayName, email: user.email, taxId: req.taxId }));
-  await db.execute(
-    sql`insert into billing_customers(user_id,provider,provider_customer_id) values(${user.id},${provider.name},${customer}) on conflict(user_id) do update set provider=excluded.provider,provider_customer_id=excluded.provider_customer_id`,
-  );
-  // No idempotency header exists: look up our reference before creating.
-  const remote =
-    (await provider.findSubscription(plan.id)) ??
-    (await provider.createSubscription({
-      customer,
-      reference: plan.id,
-      cycle: req.cycle,
-      method: req.method,
-      amount: env.prices[req.plan][req.cycle].amount,
-      currency: env.prices[req.plan][req.cycle].currency,
-      startsOn: plan.startsOn,
-      description: "Plano " + req.plan + " (" + req.cycle + ")",
-    }));
-  await db.execute(sql`update subscriptions set provider_subscription_id=${remote} where id=${plan.id}`);
+  await stopCharges(db, provider, plan.abandoned);
+  // The durable local ID survives an interrupted creation. Lock the row on
+  // retry and look up the provider reference before issuing another charge.
+  const replaces = await db.transaction(async tx => {
+    const row = await first<SubscriptionRow>(tx, sql`select * from subscriptions
+      where id=${plan.id} and user_id=${user.id} for update`);
+    assert(row && !row.cancel_requested_at && ["pending", "active"].includes(row.status), 409, "conflict");
+    if (!row.provider_subscription_id) {
+      const known = await first<{provider_customer_id: string}>(tx, sql`select provider_customer_id
+        from billing_customers where user_id=${user.id} and provider=${provider.name}`);
+      const customer = known?.provider_customer_id ?? await provider.ensureCustomer({
+        userId: user.id, name: req.name || user.displayName, email: user.email, taxId: req.taxId,
+      });
+      await tx.execute(sql`insert into billing_customers(user_id,provider,provider_customer_id)
+        values(${user.id},${provider.name},${customer}) on conflict(user_id) do update
+        set provider=excluded.provider,provider_customer_id=excluded.provider_customer_id`);
+      const remote = await provider.findSubscription(row.id) ?? await provider.createSubscription({
+        customer, reference: row.id, cycle: row.cycle, method: row.method, amount: row.amount,
+        currency: row.currency, startsOn: day(row.starts_at), description: "Plano " + row.plan + " (" + row.cycle + ")",
+      });
+      await tx.execute(sql`update subscriptions set provider_subscription_id=${remote} where id=${row.id}`);
+    }
+    if (!row.replaces) return null;
+    // Schedule non-renewal only after the replacement exists at the provider.
+    const previous = await first<{id: string}>(tx, sql`update subscriptions set cancel_requested_at=coalesce(cancel_requested_at,now())
+      where id=${row.replaces} and status in ${OPEN} and
+      (plan=${row.plan} or plan='studio' or cancel_requested_at is not null) returning id`);
+    return previous?.id;
+  });
+  if (replaces) {
+    await stopCharges(db, provider, [replaces]);
+    await sync(db, provider, replaces);
+  }
   return invoiceFor(db, provider, plan.id);
 }
 

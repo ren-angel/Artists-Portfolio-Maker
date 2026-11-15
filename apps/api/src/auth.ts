@@ -56,8 +56,8 @@ export function authRoutes(
     );
     return raw;
   }
-  function set(reply: FastifyReply, raw: string) {
-    reply.setCookie(cookieName(env), raw, { ...options, maxAge: 14 * 86400 });
+  function set(reply: FastifyReply, raw: string, remember = true) {
+    reply.setCookie(cookieName(env), raw, { ...options, ...(remember ? {maxAge: 14 * 86400} : {}) });
   }
   async function issue(tx: Tx, id: string, purpose: "verify" | "reset") {
     const secret = token();
@@ -108,7 +108,7 @@ export function authRoutes(
     return reply.code(201).send({ ok: true, verificationSent });
   });
   app.post("/auth/login", limit, async (req, reply) => {
-    const { email, password } = credentials.parse(req.body);
+    const { email, password, remember } = credentials.extend({remember: z.boolean().default(true)}).parse(req.body);
     const u = await first<{ id: string; password_hash: string }>(
       db,
       sql`select id,password_hash from users where email=${email}`,
@@ -129,7 +129,7 @@ export function authRoutes(
       );
       return session(tx, u.id);
     });
-    set(reply, raw);
+    set(reply, raw, remember);
     return { ok: true };
   });
   app.post("/auth/logout", async (req, reply) => {

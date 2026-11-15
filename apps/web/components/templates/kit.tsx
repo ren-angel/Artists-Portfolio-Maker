@@ -21,6 +21,7 @@ export type PortfolioProps = {
   site: string;
   base: string;
   path?: string[];
+  readerPage?: number;
   /** Demonstration pages map asset IDs to bundled images. */
   demoImages?: Record<string, string>;
   brand?: string;
@@ -38,6 +39,7 @@ export type Ctx = {
   l: Lang;
   route: Route;
   editing: boolean;
+  readerPage?: number;
   brand: string;
   branding: boolean;
   year: number;
@@ -55,10 +57,18 @@ export type Ctx = {
   workHref: (a: Art) => string;
   homeHref: string;
   link: (url: string) => string | null;
+  linkLabel: (url: string) => string;
+  commissionPage?: { title: string; href: string };
   cover: (g: Gallery) => Art | undefined;
   works: (g: Gallery) => Art[];
   tr: (en: string, pt: string) => string;
 };
+
+/** Story galleries can be read as a continuous scroll or one artwork at a time. */
+export function readerPageNumber(raw: string | string[] | undefined) {
+  if (typeof raw !== "string" || !/^[1-9]\d{0,5}$/.test(raw)) return undefined;
+  return Number(raw);
+}
 
 export function matchRoute(d: Draft, path: string[]): Route | undefined {
   if (path.length === 2 && path[0] === "galleries") {
@@ -82,6 +92,7 @@ export function context(
     site,
     base,
     demoImages,
+    readerPage,
     brand = "Muralia",
     branding = true,
     track = false,
@@ -96,13 +107,19 @@ export function context(
   const current = route.kind === "page" ? route.page.id : "";
   const galleries = d.galleries.filter((g) => g.visible);
   const social = d.social.filter((url) => safeLink.safeParse(url).success);
+  const commission = d.pages.find(p => p.inNav && p.blocks.some(b => b.visible && (b.type === "commissionStatus" || b.type === "commissionPrices")));
+  const commissionPage = commission && commission.id !== current
+    ? { title: commission.title, href: href(commission.id === d.home ? "" : "/" + commission.slug) }
+    : undefined;
   return {
+    commissionPage,
     d,
     l,
     route,
     editing: Boolean(selectBlock),
+    readerPage,
     brand,
-    branding,
+    branding: branding || d.theme.showBranding,
     year: new Date().getFullYear(),
     arts,
     galleries,
@@ -128,7 +145,8 @@ export function context(
     homeHref,
     galleryHref: (g) => href("/galleries/" + g.slug),
     workHref: (a) => href("/works/" + a.id),
-    link: (url) => (safeLink.safeParse(url).success ? url : null),
+    linkLabel: (url) => url === "portfolio:commissions" ? commissionPage?.title ?? "" : host(url),
+    link: (url) => url === "portfolio:commissions" ? commissionPage?.href ?? null : safeLink.safeParse(url).success ? url : null,
     cover: (g) => arts.get(g.cover ?? g.artIds[0] ?? ""),
     works: (g) => g.artIds.flatMap((id) => arts.get(id) ?? []),
     tr: (en, pt) => (l === "en" ? en : pt),

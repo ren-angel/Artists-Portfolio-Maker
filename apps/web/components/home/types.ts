@@ -5,7 +5,6 @@ export type Common = {
   lang: Lang;
   name: string;
   domain: string;
-  limits: string[];
 };
 export const cn = (...classes: (string | false | undefined)[]) =>
   classes.filter(Boolean).join(" ");

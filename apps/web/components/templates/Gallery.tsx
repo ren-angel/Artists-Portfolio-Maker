@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import type { Art, Block } from "@studio/shared";
+import { detailLabel } from "../../lib/artwork-details";
+import { artworkDetailKeys, type Art, type Block } from "@studio/shared";
 import {
   Img,
   Inline,
@@ -425,7 +426,7 @@ function block(b: Block, ctx: Ctx): ReactNode {
             </p>
             {b.type === "cta" && (
               <h2 className="mt-3 max-w-[760px] font-pf-display text-[30px] leading-[1.1] csm:text-[42px]">
-                <Inline text={b.heading || host(link!)} em="italic" />
+                <Inline text={b.heading || ctx.linkLabel(b.url)} em="italic" />
               </h2>
             )}
             {b.text && (
@@ -439,7 +440,7 @@ function block(b: Block, ctx: Ctx): ReactNode {
                 rel="noreferrer"
                 className="mt-5 inline-block font-pf-display text-[24px] leading-none tracking-tight underline decoration-pf-ink/25 decoration-1 underline-offset-[6px] transition-colors hover:decoration-pf-ink [overflow-wrap:anywhere] csm:text-[32px]"
               >
-                {host(link)} ↗
+                {ctx.linkLabel(b.url)} ↗
               </a>
             )}
           </section>
@@ -505,6 +506,7 @@ function WorkPage({ ctx, art }: { ctx: Ctx; art: Art }) {
   const { next } = neighbours(list, art);
   const where = galleriesOf(ctx, art);
   const rows: [string, ReactNode][] = [
+    ...artworkDetailKeys.flatMap(key => art.details?.[key] ? [[detailLabel(key, ctx.l), art.details[key]] as [string, string]] : []),
     [ctx.tr("Title", "Título"), art.title],
     ...(where.length
       ? [[ctx.tr("Collection", "Coleção"), where.map((g, i) => (

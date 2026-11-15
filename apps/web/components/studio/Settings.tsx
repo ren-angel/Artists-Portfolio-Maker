@@ -1,21 +1,18 @@
 "use client";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AlertTriangle, Check, Download, Globe, LifeBuoy, Lock, Shield, User } from "lucide-react";
-import type { Draft } from "@studio/shared";
+import type { Draft, Visibility } from "@studio/shared";
 import { t, message, type Lang } from "../../lib/copy";
 import { api } from "../../lib/client";
 import type { Artist, Update } from "../../lib/use-draft";
 import { cn } from "../home/types";
 import { PageHeader } from "./parts";
 
-/* Port of Design/src/routes/dashboard.settings.jsx. Only sections backed by
-   the account API appear; privacy, notification and two-step options are not
-   implemented and are therefore not shown. */
-
 const SECTIONS = [
   { id: "profile", icon: User, label: ["Profile", "Perfil"] },
   { id: "account", icon: Lock, label: ["Account details", "Dados da conta"] },
   { id: "language", icon: Globe, label: ["Language", "Idioma"] },
+  { id: "privacy", icon: Shield, label: ["Privacy & discovery", "Privacidade e descoberta"] },
   { id: "data", icon: Shield, label: ["Your data", "Seus dados"] },
   { id: "support", icon: LifeBuoy, label: ["Help & support", "Ajuda e suporte"] },
   { id: "danger", icon: AlertTriangle, label: ["Account management", "Gerenciar conta"] },
@@ -66,6 +63,14 @@ export function Settings({
     [busy, setBusy] = useState(false),
     [note, setNote] = useState(""),
     [error, setError] = useState("");
+  const [visibility, setVisibility] = useState<Visibility | null>(null);
+  useEffect(() => {
+    if (section !== "privacy") return;
+    let active = true;
+    api<Visibility>("/sites/" + site + "/visibility").then(v => { if (active) setVisibility(v); },
+      e => { if (active) setError(e.message); });
+    return () => { active = false; };
+  }, [section, site]);
   const run = async (fn: () => Promise<void>, done = "") => {
     setBusy(true);
     setError("");
@@ -124,6 +129,20 @@ export function Settings({
             </p>
           )}
 
+          {section === "privacy" && <section>
+            <h2 className="font-display text-[16px] font-semibold">{tr("Privacy & discovery", "Privacidade e descoberta")}</h2>
+            {!visibility && !error && <p role="status">{t(l, "loading")}</p>}
+            {visibility && ([
+              ["discoverable", tr("Show my work in Discover", "Exibir minhas obras na descoberta"), tr("Include artwork from your published portfolio in the public exhibition.", "Inclui obras do portfólio publicado na exposição pública.")],
+              ["indexable", tr("Search engine indexing", "Indexação em buscadores"), tr("Allow search engines to list your published pages.", "Permite que buscadores listem suas páginas publicadas.")],
+            ] as const).map(([key, title, body]) => <Row key={key} title={title} body={body}>
+              <input aria-label={title} type="checkbox" role="switch" checked={visibility[key]} disabled={busy}
+                onChange={e => {
+                  const next = { ...visibility, [key]: e.target.checked };
+                  void run(async () => setVisibility(await api<Visibility>("/sites/" + site + "/visibility", "PUT", next)), tr("Saved.", "Salvo."));
+                }} />
+            </Row>)}
+          </section>}
           {section === "profile" && (
             <div>
               <h2 className="font-display text-[16px] font-semibold tracking-tight">{tr("Public profile", "Perfil público")}</h2>
@@ -155,6 +174,11 @@ export function Settings({
                   <span className={small}>{t(l, "username")}</span>
                   <p className={cn(inputCls, "truncate font-mono text-ink/50")}>{handle}</p>
                 </div>
+                <label className="block sm:col-span-2">
+                  <span className={small}>{tr("Portfolio bio", "Biografia do portfólio")}</span>
+                  <textarea rows={3} maxLength={320} value={d.description} onChange={e => update(x => { x.description = e.target.value; })}
+                    className={inputCls} />
+                </label>
                 <label className="block sm:col-span-2">
                   <span className={small}>{t(l, "social")}</span>
                   <textarea

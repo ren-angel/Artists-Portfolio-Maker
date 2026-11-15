@@ -6,7 +6,7 @@ import { account } from "./auth.ts";
 import { owned, prune, usage } from "./drafts.ts";
 import { entitlement } from "./plan.ts";
 import { siteId } from "./sites.ts";
-import { assert } from "./errors.ts";
+import { assert, Fault } from "./errors.ts";
 import { optimize } from "./images.ts";
 import type { Storage } from "./storage.ts";
 
@@ -192,7 +192,7 @@ export function mediaRoutes(
       .parse(req.params);
     const live = await first(
       db,
-      sql`select 1 from sites s join revision_assets r on r.site_id=s.id and r.revision_id=s.published_id where s.id=${site} and r.asset_id=${id}`,
+      sql`select 1 from sites s join users u on u.id=s.owner_id and u.restricted_at is null join revision_assets r on r.site_id=s.id and r.revision_id=s.published_id where s.id=${site} and r.asset_id=${id}`,
     );
     if (!live) {
       const u = await account(db, req, env);
@@ -206,16 +206,19 @@ export function mediaRoutes(
       );
     }
     const etag = '"' + id + "-" + size + '"';
-    reply
-      .header(
-        "Cache-Control",
-        live ? "public, max-age=0, must-revalidate" : "private, no-store",
-      )
-      .header("ETag", etag);
+    const cache = live ? "public, max-age=0, must-revalidate" : "private, no-store";
     if (live && req.headers["if-none-match"] === etag)
-      return reply.code(304).send();
-    return reply
-      .type("image/webp")
-      .send(await store.get(site + "/" + id + "/" + size + ".webp"));
+      return reply.header("Cache-Control", cache).header("ETag", etag).code(304).send();
+
+    let bytes: Buffer;
+    try {
+      bytes = await store.get(site + "/" + id + "/" + size + ".webp");
+    } catch (error) {
+      // Metadata still exists. A missing object can be restored independently.
+      if (error instanceof Error && (("code" in error && error.code === "ENOENT") || error.name === "NoSuchKey"))
+        throw new Fault(503, "media_unavailable");
+      throw error;
+    }
+    return reply.header("Cache-Control", cache).header("ETag", etag).type("image/webp").send(bytes);
   });
 }

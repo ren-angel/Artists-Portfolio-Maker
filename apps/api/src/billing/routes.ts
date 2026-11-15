@@ -5,7 +5,7 @@ import { cycles, formatMoney, methods, plans, validTaxId } from "@studio/shared"
 import type { Config } from "../config.ts";
 import { account } from "../auth.ts";
 import { assert } from "../errors.ts";
-import { entitlement } from "../plan.ts";
+import { entitlement, limits } from "../plan.ts";
 import { usage } from "../drafts.ts";
 import type { BillingProvider } from "./provider.ts";
 import { isMock } from "./index.ts";
@@ -19,7 +19,7 @@ export function billingRoutes(app: FastifyInstance, db: Database, env: Config, p
     live: provider.live,
     plans: Object.values(plans).map((p) => ({
       id: p.id,
-      limits: p.id === "free" ? { ...p.limits, pages: env.MAX_PAGES, artworks: env.MAX_ARTWORKS, storage: env.MAX_STORAGE_BYTES } : p.limits,
+      limits: limits(env, p.id),
       features: p.features,
       prices: p.id === "free" ? null : env.prices[p.id],
     })),
@@ -82,11 +82,16 @@ export function billingRoutes(app: FastifyInstance, db: Database, env: Config, p
   // proves nothing; this re-reads the provider before reporting status.
   app.post("/billing/sync", limited, async (req) => {
     const u = await account(db, req, env);
+    let failed = false;
     for (const s of await rows<{ id: string }>(
       db,
       sql`select id from subscriptions where user_id=${u.id} and status in ('pending','active','past_due','canceling')`,
     ))
-      await sync(db, provider, s.id).catch((err) => req.log.warn({ subscription: s.id, err: (err as Error).message }, "Billing sync failed"));
+      await sync(db, provider, s.id).catch(() => {
+        failed = true;
+        req.log.warn({ subscription: s.id }, "Billing sync failed");
+      });
+    assert(!failed, 503, "billing_sync_failed");
     return { ok: true };
   });
 

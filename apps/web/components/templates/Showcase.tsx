@@ -287,7 +287,7 @@ function block(b: Block, ctx: Ctx): ReactNode {
         <section className="border-y border-pf-ink/10 bg-pf-surface/40">
           <W className={cn("flex flex-col gap-6 clg:flex-row clg:items-end clg:justify-between", b.layout === "center" && "items-center text-center clg:flex-col clg:items-center")} >
             <div style={sy(4)} className="!pb-0 clg:!pb-[calc(4rem*var(--sy,1))]">
-              <p className={cn(label, amber)}>{b.type === "contact" ? ctx.tr("Contact", "Contato") : link ? host(link) : ""}</p>
+              <p className={cn(label, amber)}>{b.type === "contact" ? ctx.tr("Contact", "Contato") : link ? ctx.linkLabel(b.url) : ""}</p>
               <h2 className="mt-3 max-w-[760px] whitespace-pre-line font-pf-display text-[32px] font-extrabold uppercase leading-[0.92] tracking-[-0.01em] csm:text-[54px]">
                 <Inline text={b.heading || ctx.tr("Let's build a world", "Vamos construir um mundo")} em={cn("not-italic", amber)} />
               </h2>
@@ -303,7 +303,7 @@ function block(b: Block, ctx: Ctx): ReactNode {
                 rel="noreferrer"
                 className="mb-[calc(4rem*var(--sy,1))] inline-flex shrink-0 items-center gap-2 bg-pf-accent px-5 py-3 font-pf-display text-[10px] font-bold uppercase tracking-[0.2em] text-pf-bg transition-transform hover:-translate-y-0.5"
               >
-                {b.type === "contact" ? host(link) : ctx.tr("Start a project", "Iniciar um projeto")} <ArrowUpRight className="h-3.5 w-3.5" />
+                {b.type === "contact" ? ctx.linkLabel(b.url) : ctx.tr("Start a project", "Iniciar um projeto")} <ArrowUpRight className="h-3.5 w-3.5" />
               </a>
             )}
           </W>

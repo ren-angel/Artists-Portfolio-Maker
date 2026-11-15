@@ -22,6 +22,7 @@ export const blockTypes = [
   "contact",
   "cta",
   "divider",
+  "spacer",
   "commissionStatus",
   "commissionPrices",
   "commissionTerms",
@@ -89,6 +90,9 @@ export const themeSchema = z.object({
   hover: z.enum(["template", "none", "zoom", "lift"]).default("template"),
   aspect: z.enum(["template", "square", "portrait", "landscape", "original"]).default("template"),
   grid: z.enum(["template", "uniform", "masonry"]).default("template"),
+  sectionScale: z.number().min(0.65).max(1.5).default(1),
+  paperTexture: z.boolean().default(false),
+  showBranding: z.boolean().default(false),
   footerText: z.string().max(200).default(""),
   footerSocial: z.boolean().default(true),
 });
@@ -105,7 +109,7 @@ export const blockSchema = z.object({
   spacing: z.enum(["compact", "normal", "roomy"]),
   artId: id.nullable(),
   galleryId: id.nullable(),
-  url: z.union([safeLink, z.literal("")]),
+  url: z.union([safeLink, z.literal(""), z.literal("portfolio:commissions")]),
   /** Studio plan: an artwork shown behind the section. */
   bgArtId: id.nullable().default(null),
 });
@@ -123,8 +127,9 @@ export const gallerySchema = z.object({
   description: z.string().max(2000),
   visible: z.boolean(),
   cover: id.nullable(),
-  artIds: z.array(id).max(1000),
+  artIds: z.array(id).max(plans.studio.limits.artworks),
 });
+export const artworkDetailKeys = ["year", "medium", "dimensions", "edition", "availability"] as const;
 export const artSchema = z.object({
   id,
   assetId: id,
@@ -132,6 +137,7 @@ export const artSchema = z.object({
   description: z.string().max(2000),
   alt: z.string().max(500),
   featured: z.boolean(),
+  details: z.partialRecord(z.enum(artworkDetailKeys), z.string().trim().max(160)).optional(),
 });
 const contactSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("email"), label: z.string().max(40), value: z.email().max(254) }),
@@ -154,6 +160,7 @@ export const commissionSchema = z.object({
         priceTo: z.number().nonnegative().max(1_000_000).nullable(),
         turnaround: z.string().max(80),
         artId: id.nullable(),
+        galleryId: id.nullable().optional(),
         visible: z.boolean(),
       }),
     )
@@ -183,7 +190,7 @@ export const draftSchema = z
     social: z.array(safeLink).max(10),
     pages: z.array(pageSchema).min(1).max(100),
     galleries: z.array(gallerySchema).max(100),
-    artworks: z.array(artSchema).max(1000),
+    artworks: z.array(artSchema).max(plans.studio.limits.artworks),
     commissions: commissionSchema.default(commissionSchema.parse({})),
   })
   .superRefine((d, ctx) => {
@@ -219,7 +226,7 @@ export const draftSchema = z
           issue("invalid_block_reference");
     }
     for (const c of d.commissions.types)
-      if (c.artId && !art.has(c.artId)) issue("invalid_commission_reference");
+      if ((c.artId && !art.has(c.artId)) || (c.galleryId && !galleries.has(c.galleryId))) issue("invalid_commission_reference");
   });
 export type Draft = z.infer<typeof draftSchema>;
 export type Block = z.infer<typeof blockSchema>;
@@ -265,6 +272,9 @@ export function initialDraft(
       hover: "template",
       aspect: "template",
       grid: "template",
+      sectionScale: 1,
+      paperTexture: false,
+      showBranding: false,
       footerText: "",
       footerSocial: true,
     },
@@ -293,7 +303,7 @@ export function entitle(draft: Draft, features: Features): Draft {
   const d = structuredClone(draft);
   const t = d.theme;
   if (features.appearance === "basic") {
-    Object.assign(t, { radius: "template", shadow: "template", hover: "template", aspect: "template", footerText: "" });
+    Object.assign(t, { radius: "template", shadow: "template", hover: "template", aspect: "template", sectionScale: 1, paperTexture: false, footerText: "" });
     if (!["original", "warm", "cool", "noir"].includes(t.palette)) t.palette = "original";
     if (!["template", "serif", "sans", "mono"].includes(t.font)) t.font = "template";
   }
@@ -333,13 +343,25 @@ export function publishable(draft: Draft, plan: PlanId = "free"): Draft {
     artworks: draft.artworks.filter((a) => used.has(a.id)),
     commissions: {
       ...draft.commissions,
-      types: draft.commissions.types.map((c) => ({ ...c, artId: c.artId && used.has(c.artId) ? c.artId : null })),
+      types: draft.commissions.types.filter(c => c.visible).map((c) => ({ ...c, galleryId: c.galleryId && allowed.has(c.galleryId) ? c.galleryId : null, artId: c.artId && used.has(c.artId) ? c.artId : null })),
     },
   });
 }
+export function removeGallery(draft: Draft, id: string) {
+  draft.galleries = draft.galleries.filter(g => g.id !== id);
+  for (const page of draft.pages)
+    for (const block of page.blocks) if (block.galleryId === id) block.galleryId = null;
+  for (const type of draft.commissions.types) if (type.galleryId === id) type.galleryId = null;
+}
+
 export function tenantFromHost(host: string, domain: string): string | null {
   const value = host.toLowerCase().replace(/:\d+$/, "");
   if (!value.endsWith("." + domain)) return null;
   const name = value.slice(0, -domain.length - 1);
   return handle.safeParse(name).success ? name : null;
 }
+
+/** Account-level visibility controls take effect immediately, independently of draft publication. */
+export const visibilitySchema = z.object({ discoverable: z.boolean(), indexable: z.boolean() });
+export type Visibility = z.infer<typeof visibilitySchema>;
+export type DiscoveryWork = { handle: string; artist: string; title: string; artId: string; alt: string; thumbnail: string };

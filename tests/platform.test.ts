@@ -119,10 +119,17 @@ test("custom domains require the plan, DNS proof and stay unique; only verified,
     h.network.txt.set("_studio-verify." + host, [d.instructions.txt.value]);
     v = (await h.request("POST", `/sites/${a.site}/domains/${d.id}/verify`, {}, a.cookie)).json();
     assert.equal(v.status, "verified");
-    assert.equal(v.primary, true);
+    assert.equal(v.primary, false);
+    assert.equal((await resolve(host)).statusCode, 404);
+    assert.equal((await h.request("GET", "/domains/tls-ask?domain=" + host)).statusCode, 404);
     assert.equal(v.error, "dns_not_pointing");
     assert.equal(v.tlsOk, false);
     h.network.cname.set(host, ["sites.studio.test."]);
+    await h.request("POST", `/sites/${a.site}/domains/${d.id}/verify`, {}, a.cookie);
+    assert.equal((await h.request("GET", "/domains/tls-ask?domain=" + host)).statusCode, 200);
+    assert.equal((await resolve(host)).statusCode, 404);
+    assert.equal((await h.request("GET", "/public/" + a.handle)).json().domain, null);
+    assert.equal((await h.request("POST", `/sites/${a.site}/domains/${d.id}/primary`, {}, a.cookie)).statusCode, 409);
     h.network.tls.add(host);
     v = (await h.request("POST", `/sites/${a.site}/domains/${d.id}/verify`, {}, a.cookie)).json();
     assert.equal(v.dnsOk, true);
@@ -222,6 +229,8 @@ test("analytics count only real public views, stay isolated per artist and gate 
 
     const ra = (await h.request("GET", `/sites/${a.site}/analytics?days=365`, undefined, a.cookie)).json();
     assert.equal(ra.total, 2);
+    assert.equal(ra.galleryViews, 1);
+    assert.equal(ra.artworkViews, 0);
     assert.equal(ra.days, 30, "basic analytics cap the window");
     assert.equal(ra.galleries[0].path, "/galleries/prints");
     assert.equal(ra.referrers, undefined, "advanced breakdowns are Studio-only");

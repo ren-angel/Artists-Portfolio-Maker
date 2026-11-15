@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Portfolio, matchPage } from "../apps/web/components/Portfolio.tsx";
-import { initialDraft, newBlock, templateNames } from "@studio/shared";
+import { demo, demoImages } from "../apps/web/lib/demo.ts";
+import { initialDraft, newBlock, templateNames, draftSchema, publishable, removeGallery } from "@studio/shared";
 test("all four public portfolios server-render a semantic page, gallery links and accessible artwork without client code", () => {
   for (const template of templateNames) {
     const d = initialDraft("My studio", "en");
@@ -32,8 +33,11 @@ test("all four public portfolios server-render a semantic page, gallery links an
       ...newBlock("richText"),
       text: "**bold** and <script>alert(1)</script>",
     });
+    const spacer = newBlock("spacer");
+    d.pages[0].blocks.push(spacer);
     const props = { draft: d, site: crypto.randomUUID(), base: "/site/mika" };
     const html = renderToStaticMarkup(createElement(Portfolio, props));
+    assert.ok(html.includes('data-block="' + spacer.id + '"'));
     assert.match(html, new RegExp("pf-" + template));
     const text = (markup: string) => markup.replace(/<[^>]+>/g, " ");
     assert.match(text(html.match(/<h1[\s\S]*?<\/h1>/)![0]), /My\s+studio/);
@@ -53,4 +57,47 @@ test("all four public portfolios server-render a semantic page, gallery links an
     assert.match(work, /alt="A pencil portrait"/);
     assert.equal(matchPage(d, ["works", crypto.randomUUID()]), undefined);
   }
+});
+
+test("Story reading mode stays in the selected gallery and stops at its last page", () => {
+  const draft = demo("story", "en");
+  const gallery = draft.galleries[1];
+  const props = { draft, site: "", base: "/demo/story", path: ["galleries", gallery.slug], demoImages: demoImages("story") };
+  const middle = renderToStaticMarkup(createElement(Portfolio, { ...props, readerPage: 2 }));
+  assert.ok(middle.includes(`href="/demo/story/galleries/${gallery.slug}?page=3"`));
+  assert.match(middle, /2 \/ 3/);
+  const last = renderToStaticMarkup(createElement(Portfolio, { ...props, readerPage: 99 }));
+  assert.match(last, /3 \/ 3/);
+  assert.doesNotMatch(last, /page=4"/);
+});
+
+test("the commission CTA tracks the artist's page and keeps the current portfolio base", () => {
+  const draft = demo("creative", "en");
+  const page = draft.pages.find(p => p.slug === "commissions")!;
+  page.slug = "requests";
+  for (const template of templateNames) {
+    draft.theme.template = template;
+    const render = () => renderToStaticMarkup(createElement(Portfolio, { draft, site: "", base: "/preview" }));
+    assert.ok(render().includes('href="/preview/requests"'));
+    page.inNav = false;
+    assert.ok(!render().includes('href="/preview/requests"'));
+    page.inNav = true;
+  }
+});
+
+test("commission examples link to visible galleries and survive gallery deletion", () => {
+  const draft = demo("creative", "en");
+  const gallery = draft.galleries[0];
+  const render = (d: typeof draft) => renderToStaticMarkup(createElement(Portfolio, {
+    draft: d, site: "", base: "/preview", path: ["commissions"],
+  }));
+  assert.match(render(draft), new RegExp('href="/preview/galleries/' + gallery.slug + '"'));
+  draft.galleries[0].visible = false;
+  const snapshot = publishable(draft, "artist");
+  assert.equal(snapshot.commissions.types[0].galleryId, null);
+  assert.ok(!render(snapshot).includes('/galleries/' + gallery.slug));
+  removeGallery(draft, gallery.id);
+  assert.ok(draftSchema.safeParse(draft).success);
+  draft.commissions.types[0].galleryId = crypto.randomUUID();
+  assert.ok(!draftSchema.safeParse(draft).success);
 });

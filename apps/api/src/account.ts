@@ -10,6 +10,10 @@ import { readDraft, type Site } from "./drafts.ts";
 const topics = ["billing", "domain", "account", "bug", "copyright", "other"] as const;
 
 export function accountRoutes(app: FastifyInstance, db: Database, env: Config) {
+  app.get("/me/activity", async (req) => {
+    const u = await account(db, req, env);
+    return rows(db, sql`select id::text,event,created_at as at from events where user_id=${u.id} order by created_at desc,id desc limit 6`);
+  });
   app.get("/me/consents", async (req) => {
     const u = await account(db, req, env);
     const accepted = await rows<{ document: string; version: string; acceptedAt: string }>(

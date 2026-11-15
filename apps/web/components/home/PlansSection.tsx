@@ -1,9 +1,11 @@
 import { type Common, translator } from "./types";
 import { ArrowRight } from "lucide-react";
-import PricingCards from "./PricingCards";
+import { CompareTable } from "../billing/CompareTable";
+import { PlanCards } from "../studio/PlanCards";
+import type { Catalog } from "../studio/plan-text";
 import { Eyebrow, Sparkle } from "./bits";
 
-export default function PlansSection(props: Common) {
+export default function PlansSection(props: Common & { catalog: Catalog | null }) {
   const tr = translator(props);
   return (
     <section id="plans" className="border-t border-ink/10 bg-[#FBF6EE]">
@@ -20,21 +22,24 @@ export default function PlansSection(props: Common) {
           </h2>
           <p className="mt-4 text-[15px] leading-relaxed text-ink/55">
             {tr(
-              "Start with the free plan. Preview the Artist and Studio plans we’re exploring for growing collections, custom domains and comics.",
+              "Start free. Choose Artist for your own domain and commissions, or Studio for larger collections and advanced analytics.",
             )}
           </p>
         </div>
 
         <div id="plan-cards" className="mt-12">
-          <PricingCards {...props} />
+          {props.catalog ? <>
+            <PlanCards l={props.lang} catalog={props.catalog} href="/auth/register" />
+            <div className="mt-12"><CompareTable l={props.lang} catalog={props.catalog} /></div>
+          </> : <p role="status" className="text-center">{tr("Plan details are temporarily unavailable.")}</p>}
         </div>
 
         <div className="mt-10 flex flex-col items-center gap-3">
           <a
-            href="#plan-cards"
+            href="/pricing"
             className="group inline-flex items-center gap-2 text-[13px] font-medium text-ink/70 underline decoration-ink/25 underline-offset-4 transition-colors hover:text-ink"
           >
-            {tr("Compare every feature")}
+            {tr("Pricing and questions")}
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
           </a>
           <p className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-ink/30">

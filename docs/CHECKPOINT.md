@@ -1,5 +1,10 @@
 # Phase 1 implementation checklist
 
+## Current handoff · 14 November 2026
+
+The source and storage recovery, current command results and outstanding temporary image are recorded in the [recovery record](RECOVERY-STATUS.md). See the [Phase 2 audit](PHASE2-AUDIT.md) for local coverage and the provider release gates, and the [design audit](DESIGN-COMPLETENESS-AUDIT.md) for full-page comparisons. The original interrupted state is preserved on `codex/pre-recovery-20261114`. The verified work is on `codex/recovery-20261114`. The older entries below are historical.
+
+
 1. Establish pnpm workspace, runtime configuration, shared validators and versioned database.
 2. Implement accounts, tenant ownership and safe host routing.
 3. Connect normalized draft pages, galleries, memberships and media to a shared template renderer.

@@ -13,7 +13,12 @@ export const TAGS: Record<PlanId, [string, string]> = {
   studio: ["For big archives and serious analytics.", "Para grandes acervos e estatísticas completas."],
 };
 export const planName = (l: Lang, p: PlanId) => NAMES[p][l === "en" ? 0 : 1];
-export const size = (bytes: number) => (bytes >= 1024 ** 3 ? Math.round(bytes / 1024 ** 3) + " GB" : Math.round(bytes / 1024 ** 2) + " MB");
+export function size(bytes: number) {
+  for (const [unit, divisor] of [["GB",1024 ** 3],["MB",1024 ** 2],["KB",1024]] as const) {
+    if (bytes >= divisor) return Number((bytes / divisor).toFixed(2)) + " " + unit;
+  }
+  return bytes + " B";
+}
 
 export function featureRows(l: Lang, p: CatalogPlan): [string, boolean][] {
   const tr = (en: string, pt: string) => (l === "en" ? en : pt);
@@ -38,4 +43,3 @@ export function featureRows(l: Lang, p: CatalogPlan): [string, boolean][] {
     [f.analytics === "advanced" ? tr("Advanced analytics", "Estatísticas avançadas") : tr("Basic analytics", "Estatísticas básicas"), true],
   ];
 }
-

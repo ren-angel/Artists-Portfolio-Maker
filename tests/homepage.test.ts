@@ -1,3 +1,4 @@
+import { defaultPrices, planIds, plans as sharedPlans } from "@studio/shared";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
@@ -15,13 +16,12 @@ for (const lang of ["en", "pt-BR"] as const) {
       lang,
       name: "Test Studio",
       domain: "artists.example",
-      limits: ["37 MB"],
     };
     const render = (component: typeof Hero) =>
       renderToStaticMarkup(createElement(component, props));
     const hero = render(Hero);
     assert.match(hero, /href="\/auth\/register"/);
-    assert.match(hero, /href="#templates"/);
+    assert.match(hero, /href="\/templates"/);
     assert.match(hero, /lunamori\.artists\.example/);
     assert.ok(
       hero.includes(lang === "en" ? "Your art deserves" : "Sua arte merece"),
@@ -36,9 +36,20 @@ for (const lang of ["en", "pt-BR"] as const) {
         asset,
       );
     }
-    const plans = render(PlansSection);
+    const catalog = {
+      provider: "mock", live: false, plans: planIds.map(id => ({
+        ...sharedPlans[id], limits: id === "free" ? { ...sharedPlans.free.limits, storage: 37 * 1024 ** 2 } : sharedPlans[id].limits,
+        prices: id === "free" ? null : defaultPrices[id],
+      })),
+    };
+    const plans = renderToStaticMarkup(createElement(PlansSection, { ...props, catalog }));
     assert.match(plans, /37 MB/);
     assert.match(plans, /href="\/auth\/register"/);
-    assert.equal(plans.match(/aria-disabled="true"/g)?.length, 2);
+    assert.match(plans, /<table/);
+    assert.ok(plans.indexOf('<table') > plans.lastIndexOf('</article>'));
+    assert.equal(plans.match(/scope="row"/g)?.length, 12);
+    assert.match(plans, /350/);
+    assert.match(plans, /href="\/auth\/register\?plan=artist&amp;cycle=monthly"/);
+    assert.doesNotMatch(plans, /Unlimited|Ilimitad|Coming soon|Em breve/);
   });
 }

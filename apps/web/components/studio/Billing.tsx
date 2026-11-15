@@ -1,13 +1,16 @@
 "use client";
+import { studioIntent } from "../../lib/studio-intent";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { AlertTriangle, CreditCard, ExternalLink, FlaskConical, QrCode, RefreshCw, X } from "lucide-react";
+import { AlertTriangle, Check, CreditCard, ExternalLink, FlaskConical, QrCode, RefreshCw, X } from "lucide-react";
 import { formatMoney, plans, type Cycle, type Features, type Limits, type Method, type PlanId } from "@studio/shared";
 import { api } from "../../lib/client";
 import { message, type Lang } from "../../lib/copy";
 import { cn } from "../home/types";
 import { buttonClasses, Field, inputClasses } from "../auth/Field";
 import { card, EmptyStudio, PageHeader } from "./parts";
-import { PlanCards, planName, size, type Catalog } from "./PlanCards";
+import { CompareTable } from "../billing/CompareTable";
+import { Sticker } from "../home/bits";
+import { PlanCards, featureRows, planName, size, type Catalog } from "./PlanCards";
 
 type Sub = {
   id: string;
@@ -109,6 +112,11 @@ export function Billing({ l, onChange }: { l: Lang; onChange: () => Promise<void
         await onChange();
       }
       await load();
+      const intent = studioIntent(location.search);
+      if (intent.plan) {
+        setChoice({ plan: intent.plan, cycle: intent.cycle });
+        history.replaceState(null, "", location.pathname + "?tab=billing");
+      }
     });
   }, [load, onChange]);
   if (!b || !catalog)
@@ -185,38 +193,48 @@ export function Billing({ l, onChange }: { l: Lang; onChange: () => Promise<void
       )}
 
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <section className={cn(card, "p-5")}>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/40">{tr("Current plan", "Plano atual")}</p>
+        <section className="relative isolate overflow-hidden rounded-[1.2rem] border border-ink bg-ink p-5 text-paper">
+          <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 -z-10 h-40 w-40 rounded-full bg-coral/25 blur-3xl" />
+          <Sticker tone="coral" className="float-right rotate-3 text-ink">{tr("Your plan", "Seu plano")}</Sticker>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-paper/65">{tr("Current plan", "Plano atual")}</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <h2 className="font-display text-[26px] font-semibold tracking-tight">{planName(l, b.plan)}</h2>
-            {current && <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider", STATUS[current.status][2])}>{STATUS[current.status][l === "en" ? 0 : 1]}</span>}
+            {current && <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-ink", STATUS[current.status][2])}>{STATUS[current.status][l === "en" ? 0 : 1]}</span>}
           </div>
           {current ? (
             <dl className="mt-4 grid gap-3 text-[12.5px] sm:grid-cols-2">
               <div>
-                <dt className="text-ink/45">{tr("Price", "Valor")}</dt>
+                <dt className="text-paper/65">{tr("Price", "Valor")}</dt>
                 <dd className="font-medium">
                   {formatMoney({ amount: current.amount, currency: current.currency }, l)} / {current.cycle === "monthly" ? tr("month", "mês") : tr("year", "ano")}
                 </dd>
               </div>
               <div>
-                <dt className="text-ink/45">{tr("Payment", "Pagamento")}</dt>
+                <dt className="text-paper/65">{tr("Payment", "Pagamento")}</dt>
                 <dd className="font-medium">
                   {current.method === "card" ? tr("Card · renews automatically", "Cartão · renova automaticamente") : tr("Pix · you pay each invoice", "Pix · você paga cada fatura")}
                 </dd>
               </div>
               <div>
-                <dt className="text-ink/45">
+                <dt className="text-paper/65">
                   {current.status === "canceling" ? tr("Access until", "Acesso até") : current.status === "past_due" ? tr("Grace period until", "Carência até") : tr("Paid through", "Pago até")}
                 </dt>
                 <dd className="font-medium">{date(current.status === "past_due" ? current.graceUntil : current.periodEnd)}</dd>
               </div>
             </dl>
           ) : (
-            <p className="mt-2 text-[13px] text-ink/55">{tr("You're on the free plan. Upgrade whenever you need more room.", "Você está no plano grátis. Faça upgrade quando precisar de mais espaço.")}</p>
+            <p className="mt-2 text-[13px] text-paper/70">{tr("You're on the free plan. Upgrade whenever you need more room.", "Você está no plano grátis. Faça upgrade quando precisar de mais espaço.")}</p>
           )}
+          <ul className="mt-4 grid gap-1.5 sm:grid-cols-2">
+            {featureRows(l, { id: b.plan, limits: b.limits, features: b.features, prices: null })
+              .filter(([, included]) => included).map(([label]) =>
+                <li key={label} className="flex items-center gap-2 text-[11.5px] text-paper/80"><Check aria-hidden className="h-3 w-3 shrink-0 text-mint" />{label}</li>)}
+          </ul>
+          <a href="#plan-comparison" className="mr-4 mt-5 inline-flex rounded-full border border-paper/30 px-4 py-2 text-[12px] hover:bg-paper/10">
+            {tr("Compare plans", "Comparar planos")}
+          </a>
           {current?.status === "past_due" && (
-            <p className="mt-4 flex items-start gap-2 rounded-xl bg-coral/15 px-3 py-2.5 text-[12.5px] text-[#8a2f25]">
+            <p className="mt-4 flex items-start gap-2 rounded-xl bg-coral/15 px-3 py-2.5 text-[12.5px] text-paper">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               {tr(
                 "We couldn't confirm your renewal. Your plan stays active during the grace period; after that the site keeps working on the free plan and nothing is deleted.",
@@ -227,7 +245,7 @@ export function Billing({ l, onChange }: { l: Lang; onChange: () => Promise<void
           {pending.map((s) => {
             const p = due(s.id);
             return (
-              <div key={s.id} className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-ink/20 px-3 py-2.5 text-[12.5px]">
+              <div key={s.id} className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-paper/35 px-3 py-2.5 text-[12.5px]">
                 <span>
                   {planName(l, s.plan)} · {s.method === "card" ? tr("card", "cartão") : "Pix"} ·{" "}
                   {new Date(s.startsAt) > new Date() ? tr("starts", "começa em") + " " + date(s.startsAt) : tr("awaiting payment", "aguardando pagamento")}
@@ -265,7 +283,7 @@ export function Billing({ l, onChange }: { l: Lang; onChange: () => Promise<void
                 )
                   void run(async () => (await api("/billing/cancel", "POST", { subscriptionId: current.id }), await onChange(), await load()));
               }}
-              className="mt-5 text-[12px] text-ink/50 underline decoration-ink/20 underline-offset-4 hover:text-[#a3392c]"
+              className="mt-5 text-[12px] text-paper/75 underline decoration-paper/40 underline-offset-4 hover:text-coral"
             >
               {tr("Cancel subscription", "Cancelar assinatura")}
             </button>
@@ -368,7 +386,8 @@ export function Billing({ l, onChange }: { l: Lang; onChange: () => Promise<void
         </form>
       )}
 
-      <PlanCards l={l} catalog={catalog} current={current ? current.plan : b.plan} onChoose={(plan, cycle) => plan !== "free" && setChoice({ plan, cycle })} />
+      <PlanCards l={l} catalog={catalog} current={current ? current.plan : b.plan} currentCycle={current?.cycle} onChoose={(plan, cycle) => plan !== "free" && setChoice({ plan, cycle })} />
+      <CompareTable l={l} catalog={catalog} />
 
       <section className={cn(card, "overflow-hidden")}>
         <h3 className="border-b border-ink/10 px-5 py-3 font-display text-[15px] font-semibold tracking-tight">{tr("Payment history", "Histórico de pagamentos")}</h3>
@@ -398,6 +417,7 @@ export function Billing({ l, onChange }: { l: Lang; onChange: () => Promise<void
                           overdue: tr("Overdue", "Vencido"),
                           refunded: tr("Refunded", "Reembolsado"),
                           failed: tr("Failed", "Falhou"),
+                          deleted: tr("Canceled", "Cancelado"),
                         }[p.status]
                       }
                     </td>

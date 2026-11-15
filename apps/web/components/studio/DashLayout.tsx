@@ -1,6 +1,7 @@
 "use client";
 import { useState, type ReactNode } from "react";
 import {
+  BookOpen, Users, FolderKanban, ShoppingBag,
   ChevronLeft,
   ExternalLink,
   FileText,
@@ -26,9 +27,7 @@ import { Language } from "../Language";
 import { Sparkle } from "../home/bits";
 import { cn } from "../home/types";
 
-/* Port of Design/src/components/dashboard/DashLayout.jsx and nav.js. Only
-   implemented workspaces appear; billing, analytics, domains, commissions and
-   the "coming soon" group stay out of the navigation until they exist. */
+/* Navigation follows the reference workspace and uses the signed-in site. */
 
 export type Tab =
   | "overview"
@@ -186,6 +185,18 @@ function Sidebar(p: Props & { collapsed: boolean; onNavigate?: () => void }) {
             <NavItem key={item.id} item={item} l={l} active={p.tab === item.id} collapsed={collapsed} onClick={() => go(item.id)} />
           ))}
         </div>
+        {!collapsed && (
+          <details className="mt-4 px-2 text-ink/55">
+            <summary className="cursor-pointer py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em]">
+              {l === "en" ? "Coming soon" : "Em breve"}
+            </summary>
+            <ul className="mt-1 space-y-1.5 text-[12px]">
+              {([[BookOpen, "Comics", "Quadrinhos"], [Users, "Characters", "Personagens"],
+                [FolderKanban, "Projects", "Projetos"], [ShoppingBag, "Shop", "Loja"]] as const).map(([Icon, en, pt]) =>
+                <li key={en} className="flex items-center gap-2 py-1"><Icon aria-hidden className="h-4 w-4" />{l === "en" ? en : pt}</li>)}
+            </ul>
+          </details>
+        )}
       </nav>
 
       {!collapsed && (

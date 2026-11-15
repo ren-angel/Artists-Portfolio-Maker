@@ -87,19 +87,24 @@ async function check(db: Database, env: Config, net: Network, id: string) {
   const dnsOk =
     (!!target && cname.some((c) => c.toLowerCase().replace(/\.$/, "") === target)) ||
     (!!env.DOMAIN_TARGET_IP && a.includes(env.DOMAIN_TARGET_IP));
-  const tlsOk = owned && dnsOk && env.DOMAIN_TLS_CHECK === "probe" ? await net.tls(d.hostname) : false;
-  const error = !owned ? "txt_missing" : !dnsOk ? "dns_not_pointing" : !tlsOk ? "tls_pending" : null;
+  // The edge asks the API during the first TLS handshake. Commit the DNS
+  // proof before probing so on-demand issuance can succeed on this check.
+  const checked = await first<{ stamp: string }>(db, sql`
+    update domains set status=${owned ? "verified" : "failed"}, dns_ok=${dnsOk},
+      tls_ok=tls_ok and ${owned && dnsOk}, is_primary=is_primary and ${owned && dnsOk},
+      last_error=${!owned ? "txt_missing" : !dnsOk ? "dns_not_pointing" : "tls_pending"},
+      checked_at=clock_timestamp(), verified_at=case when ${owned} then coalesce(verified_at,now()) else verified_at end
+    where id=${id} returning checked_at::text as stamp`);
+  if (!checked || !owned || !dnsOk) return;
+  const tlsOk = env.DOMAIN_TLS_CHECK === "probe" && await net.tls(d.hostname);
   await db.transaction(async (tx) => {
-    await tx.execute(
-      sql`update domains set status=${owned ? "verified" : "failed"},dns_ok=${dnsOk},tls_ok=${tlsOk},last_error=${error},checked_at=now(),
-        verified_at=case when ${owned} then coalesce(verified_at,now()) else verified_at end,
-        is_primary=case when ${owned} then is_primary else false end where id=${id}`,
-    );
-    // The first verified domain becomes primary automatically.
-    if (owned)
-      await tx.execute(
-        sql`update domains set is_primary=true where id=${id} and not exists (select 1 from domains where site_id=${d.site_id} and is_primary)`,
-      );
+    await tx.execute(sql`select id from sites where id=${d.site_id} for update`);
+    // A newer DNS result or a disconnect supersedes an outstanding handshake.
+    await tx.execute(sql`update domains set tls_ok=${tlsOk},
+      last_error=${tlsOk ? null : "tls_pending"},
+      is_primary=${tlsOk} and (is_primary or not exists (
+        select 1 from domains where site_id=${d.site_id} and is_primary))
+      where id=${id} and checked_at=${checked.stamp}::timestamptz`);
   });
 }
 
@@ -154,14 +159,17 @@ export function domainRoutes(app: FastifyInstance, db: Database, env: Config, ne
       assert(await first(tx, sql`select 1 from domains where id=${id} and site_id=${s.id}`), 404, "domain_missing");
     });
     await check(db, env, net, id);
-    return view(env)((await first<Record<string, unknown>>(db, sql`${select} where id=${id}`))!);
+    const record = await first<Record<string, unknown>>(db, sql`${select} where id=${id}`);
+    assert(record, 404, "domain_missing");
+    return view(env)(record);
   });
   app.post("/sites/:site/domains/:id/primary", async (req) => {
     const u = await account(db, req, env);
     const { id } = z.object({ id: z.uuid() }).parse(req.params);
     await db.transaction(async (tx) => {
       const s = await owned(tx, siteId(req), u.id);
-      assert(await first(tx, sql`select 1 from domains where id=${id} and site_id=${s.id} and status='verified'`), 409, "domain_unverified");
+      assert((await entitlement(tx, env, u.id)).features.customDomain, 403, "plan_required");
+      assert(await first(tx, sql`select 1 from domains where id=${id} and site_id=${s.id} and status='verified' and dns_ok and tls_ok`), 409, "domain_unverified");
       await tx.execute(sql`update domains set is_primary=false where site_id=${s.id}`);
       await tx.execute(sql`update domains set is_primary=true where id=${id}`);
     });
@@ -185,7 +193,7 @@ export function domainRoutes(app: FastifyInstance, db: Database, env: Config, ne
     const r = await first<{ handle: string; plan: keyof typeof plans }>(
       db,
       sql`select s.handle,${planSql(sql`s.owner_id`)} as plan from domains d join sites s on s.id=d.site_id join users u on u.id=s.owner_id
-        where d.hostname=${host} and d.status='verified' and u.restricted_at is null and s.published_id is not null`,
+        where d.hostname=${host} and d.status='verified' and d.dns_ok and d.tls_ok and u.restricted_at is null and s.published_id is not null`,
     );
     assert(r && plans[r.plan].features.customDomain, 404, "domain_missing");
     return { handle: r.handle };
@@ -195,7 +203,7 @@ export function domainRoutes(app: FastifyInstance, db: Database, env: Config, ne
     const host = z.object({ domain: z.string().max(260) }).parse(req.query).domain.toLowerCase();
     const r = await first<{ plan: keyof typeof plans }>(
       db,
-      sql`select ${planSql(sql`s.owner_id`)} as plan from domains d join sites s on s.id=d.site_id where d.hostname=${host} and d.status='verified'`,
+      sql`select ${planSql(sql`s.owner_id`)} as plan from domains d join sites s on s.id=d.site_id join users u on u.id=s.owner_id where d.hostname=${host} and d.status='verified' and d.dns_ok and u.restricted_at is null`,
     );
     return reply.code(r && plans[r.plan].features.customDomain ? 200 : 404).send();
   });

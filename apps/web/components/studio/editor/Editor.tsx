@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { PanelLeft, Rocket, SlidersHorizontal } from "lucide-react";
+import { Eye, Undo2, Redo2, PanelLeft, Rocket, SlidersHorizontal } from "lucide-react";
 import { newBlock, type Block, type Draft, type Features } from "@studio/shared";
 import type { Limits, Update } from "../../../lib/use-draft";
 import { t, type Lang } from "../../../lib/copy";
@@ -35,7 +35,7 @@ export type EditorProps = {
   onPublish: () => Promise<void>;
   onResend: () => Promise<void>;
   onUpload: (files: File[]) => void;
-  onPreview: () => void;
+  onPreview: (pageId: string) => void;
   onExit: (tab?: "galleries" | "library" | "pages" | "commissions" | "billing") => void;
   features: Features;
   /** Page to open first; defaults to the home page. */
@@ -62,6 +62,7 @@ function restore(x: Draft, s: Snapshot) {
   for (const p of x.pages)
     for (const b of p.blocks) {
       if (b.artId && !art.has(b.artId)) b.artId = null;
+      if (b.bgArtId && !art.has(b.bgArtId)) b.bgArtId = null;
       if (b.galleryId && !galleries.has(b.galleryId)) b.galleryId = null;
     }
 }
@@ -73,7 +74,9 @@ export function Editor(props: EditorProps) {
     [tab, setTab] = useState<RailTab>("blocks"),
     [open, setOpen] = useState(true),
     [mode, setMode] = useState<"simple" | "advanced">("simple"),
-    [device, setDevice] = useState<Device>("desktop"),
+    [device, setDevice] = useState<Device>(() =>
+      typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches ? "mobile" : "desktop",
+    ),
     [publishOpen, setPublishOpen] = useState(false),
     [picker, setPicker] = useState(false),
     [sheet, setSheet] = useState<"rail" | "props" | null>(null),
@@ -269,6 +272,11 @@ export function Editor(props: EditorProps) {
         <span className="min-w-0 flex-1 truncate text-[10px] uppercase tracking-[0.16em] text-ink/40">
           {block ? t(l, "editing") + " " + blockName(l, block.type) : t(l, "selectSection")}
         </span>
+        <div className="flex gap-1 sm:hidden">
+          <button type="button" onClick={undo} disabled={!past.current.length} aria-label={t(l,"undo")} className="p-2 disabled:opacity-30"><Undo2 className="h-4 w-4" /></button>
+          <button type="button" onClick={redo} disabled={!future.current.length} aria-label={t(l,"redo")} className="p-2 disabled:opacity-30"><Redo2 className="h-4 w-4" /></button>
+          <button type="button" onClick={() => props.onPreview(page.id)} aria-label={t(l,"preview")} className="p-2"><Eye className="h-4 w-4" /></button>
+        </div>
         <button
           type="button"
           onClick={() => setPublishOpen(true)}

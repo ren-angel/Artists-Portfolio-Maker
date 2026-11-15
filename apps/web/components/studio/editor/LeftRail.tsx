@@ -340,6 +340,8 @@ function BlockGlyph({ type }: { type: Block["type"] }) {
           <span className="h-4 w-4 rounded-full bg-ink/20" />
           <span className={cn(bar, "h-1.5 w-5")} />
         </>
+      ) : type === "spacer" ? (
+        <span className="h-4 w-8 border-y border-dashed border-ink/30" />
       ) : type === "divider" ? (
         <span className="h-px w-8 bg-ink/30" />
       ) : type === "cta" ? (

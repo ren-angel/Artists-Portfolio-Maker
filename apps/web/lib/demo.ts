@@ -70,7 +70,7 @@ const specs: Record<Template, Spec> = {
       { type: "hero", heading: "hi, i'm\nluna ✦", text: "I draw cheerful characters, elaborate fanart and the occasional small universe. Everything here is made with too much colour and one very tired graphics tablet.", artId: art(0) },
       { type: "featured", heading: "some favourites" },
       { type: "galleryPreview" },
-      { type: "cta", heading: "want me to draw *your character?*", text: "From R$180 · 3 slots open this round · 1–3 week turnaround", url: "https://ko-fi.com" },
+      { type: "cta", heading: "want me to draw *your character?*", text: "From R$180 · 3 slots open this round · 1–3 week turnaround", url: "portfolio:commissions" },
       { type: "about", heading: "about luna", text: "Illustrator and full-time fan of characters with too many accessories. I've been drawing since I was seven, posting since I was fourteen, and painting tiny universes ever since. Currently based in São Paulo with one very judgemental cat.", artId: art(3) },
     ],
     about: [
@@ -158,11 +158,31 @@ export function demo(template: Template, lang: Lang): Draft {
     home: id(1),
     step: 7,
     theme: { ...initialDraft("").theme, template, accent: templateAccent[template] },
-    commissions: commissionSchema.parse({}),
+    commissions: commissionSchema.parse(template === "creative" ? {
+      status: "open", currency: "BRL", turnaround: pick(L("1–3 weeks", "1–3 semanas")),
+      note: pick(L("Three slots for character illustration this round.", "Três vagas para ilustração de personagens nesta rodada.")),
+      types: [
+        [pick(L("Headshot", "Retrato")), 180, 3], [pick(L("Bust", "Busto")), 260, 0],
+        [pick(L("Half-body", "Meio corpo")), 380, 4], [pick(L("Full-body", "Corpo inteiro")), 520, 2],
+      ].map(([name,priceFrom,image], i) => ({ id:id(700+i),name,priceFrom,priceTo:null,description:"",turnaround:"",artId:art(Number(image)),galleryId:gallery(0),visible:true })),
+      contacts: [{ kind: "email", label: pick(L("Example inquiry", "Exemplo de consulta")), value: "luna@example.invalid" }],
+      terms: pick(L("For personal illustration. Agree on the brief and delivery date before work begins.", "Para ilustração pessoal. Combine o briefing e o prazo antes do início do trabalho.")),
+      allowed: [pick(L("Original characters", "Personagens originais")), "Fanart"], disallowed: [pick(L("Commercial use", "Uso comercial"))],
+    } : {}),
     social: s.social,
     pages: [
       { id: id(1), title: pick(s.home), slug: "home", inNav: true, blocks: s.blocks(art, gallery).map((b, i) => block(b, 300 + i)) },
       { id: id(2), title: lang === "en" ? "About" : "Sobre", slug: "about", inNav: true, blocks: s.about.map((b, i) => block(b, 400 + i)) },
+      ...(template === "creative" ? [{
+        id: id(3), title: pick(L("Commissions", "Encomendas")), slug: "commissions", inNav: true,
+        blocks: [
+          block({type:"commissionStatus", heading:pick(L("Let’s draw something *together*", "Vamos desenhar *juntos*"))}, 501),
+          block({type:"commissionPrices"},502),
+          block({type:"richText",heading:pick(L("How it works", "Como funciona")),text:pick(L("1. Share references and your brief.\n\n2. Review a sketch.\n\n3. Receive the finished illustration.", "1. Envie referências e o briefing.\n\n2. Revise o esboço.\n\n3. Receba a ilustração final."))},503),
+          block({type:"commissionTerms"},504),
+          block({type:"contactLinks",heading:pick(L("Have a character in mind?", "Tem um personagem em mente?"))},505),
+        ],
+      }] : []),
     ],
     galleries: s.galleries.map((g, i) => ({
       id: gallery(i),
@@ -178,6 +198,12 @@ export function demo(template: Template, lang: Lang): Draft {
       assetId: id(1000 + i),
       title: pick(w.title),
       description: w.description ? pick(w.description) : "",
+      ...(template === "gallery" ? { details: {
+        year: ["2026", "2025", "2025", "2024"][i],
+        medium: i === 2 ? pick(L("Gelatin silver print", "Impressão em gelatina e prata")) : pick(L("Archival pigment print", "Impressão pigmentada de arquivo")),
+        dimensions: ["60 × 80 cm", "80 × 100 cm", "40 × 50 cm", "50 × 70 cm"][i],
+        edition: "12 + 2 AP", availability: pick(L("Enquire for prints", "Consulte sobre impressões")),
+      } } : {}),
       alt: pick(w.title),
       featured: Boolean(w.featured),
     })),

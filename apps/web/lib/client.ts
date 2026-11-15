@@ -13,7 +13,7 @@ export async function api<T = Record<string, unknown>>(
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  const data = await r.json().catch(() => ({ error: "request_failed" }));
+  const data = await r.json().catch(() => { throw Error("request_failed"); });
   if (!r.ok) throw Error(data.error || "request_failed");
   return data as T;
 }

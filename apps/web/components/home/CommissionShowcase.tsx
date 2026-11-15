@@ -13,7 +13,7 @@ export default function CommissionShowcase(props: Common) {
       <div className="mx-auto max-w-[1240px] px-5 py-20 lg:py-28">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <Eyebrow>{tr("Commissions · preview")}</Eyebrow>
+            <Eyebrow>{tr("Commissions · Artist and Studio")}</Eyebrow>
             <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.02] tracking-[-0.03em] sm:text-[44px]">
               {tr("Say yes to work")}
               <span className="font-serif italic text-ink/55">
@@ -42,8 +42,8 @@ export default function CommissionShowcase(props: Common) {
               ))}
             </ul>
 
-            <MButton href="/demo/creative" variant="ink" className="mt-8">
-              {tr("Explore the Creative template")}
+            <MButton href="/demo/creative/commissions" variant="ink" className="mt-8">
+              {tr("Explore commission pages")}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </MButton>
           </div>

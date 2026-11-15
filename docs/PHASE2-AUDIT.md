@@ -1,0 +1,23 @@
+# Phase 2 audit · 14 November 2026
+
+| Area | Classification | Verification and release boundary |
+| --- | --- | --- |
+| Subscriptions and quotas | Complete and tested locally | Free, Artist and Studio read the same catalog in pricing, checkout and enforcement. PostgreSQL tests exercise concurrent reservations, immutable paid periods, cancellation, payment failure, grace, over-limit drafts, scheduled changes, duplicate notifications and out-of-order events. A lost provider response and two concurrent retries result in a single provider subscription. Paid access starts on the confirmed service date. The browser completed a simulated invoice and cancellation. |
+| Asaas | Implemented and externally blocked for live verification | The adapter and webhook token checks passed with controlled provider responses. A real sandbox account, API key and reachable webhook are needed to verify card renewal, Pix, refund and settlement timing. |
+| Commissions | Complete and tested locally | Artists manage availability, types, prices, examples, gallery links, terms, turnaround and contact destinations. The editor and public routes share the renderer. A real draft save persisted a gallery selection. Hidden galleries disappear from published links. Deleting a gallery clears draft references and preserves the existing publication. Migration 0008 supports older content. |
+| Analytics | Complete and tested locally | Server-rendered visits wrote four page views in a controlled interval, including one work and one gallery view. The two browser widths displayed those totals. Period filtering, chart inspection, no-traffic periods, plan-based comparisons and isolated tenant reports were exercised. The service aggregates daily counts and coarse sources without a visitor identifier. |
+| Free platform addresses | Complete and tested locally | Two separately published tenants served their own revisions under independent Hosts. Private routes returned 404 under those hosts. Registration checks reserved and colliding handles. Deployment requires the platform's wildcard DNS and certificate. |
+| Existing external domains | Complete and tested locally, public infrastructure externally blocked | TXT ownership and correct CNAME/A routing precede edge certificate authorization. A successful TLS probe precedes routing and primary selection. Tests exercised pending/failed DNS, pending TLS, collisions, restricted access, loss of entitlement and removal. The studio shows DNS instructions and retains the free address. Browser checks added and removed a test hostname. The product charges only for the eligible hosting plan. |
+| Appearance and editor | Complete and tested locally | The contract and the shared renderer cover type, color, background, shape, spacing, gallery layout, image treatment, hover and navigation. Checked four public templates, mobile and desktop previews, selected blocks, advanced properties, save and publish review. The mobile editor opens a phone-width canvas. |
+| Administration and accounts | Complete and tested locally | Server tests exercised operator-only access, restrictions, support, consent, export, audit records and account deletion. The seven operator tabs and user search worked at both widths. Rapidly changing tabs discards stale responses. Published image delivery also checks account restrictions. |
+| Hosting and operations | Partially implemented, externally blocked for release | Local readiness, migration mismatch, unavailable image storage, error responses, build and private local backups were checked. Deployment still needs working provider credentials, TLS ingress, scheduled maintenance, alerts, production backup retention, a combined database/object restore rehearsal and policy review. |
+
+## Staging acceptance
+
+1. Configure a staging PostgreSQL runtime pool and direct migration connection. Apply the eight migrations and confirm readiness through the web proxy.
+2. Deliver verification and recovery mail, upload and publish using the private object bucket, then unpublish and verify access withdrawal.
+3. Exercise Asaas card and Pix payments, renewal, refusal, refund, duplicate delivery and a delayed plan change. Reconcile the operator view against the provider.
+4. Publish two platform hosts, connect an already-owned test domain, verify its DNS and certificate externally, switch its primary address and disconnect it. Check the free address throughout.
+5. Run the scheduled maintenance job and observe alerts. Restore a consistent database and bucket backup into an isolated environment and verify media delivery.
+
+See the [deployment runbook](DEPLOYMENT.md), [recovery record](RECOVERY-STATUS.md) and [visual comparison](DESIGN-COMPLETENESS-AUDIT.md).

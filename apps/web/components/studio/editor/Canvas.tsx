@@ -21,6 +21,7 @@ export function Canvas({
   l,
   site,
   brand,
+  features,
   address,
   page,
   device,
@@ -67,6 +68,7 @@ export function Canvas({
                 draft={d}
                 site={site}
                 brand={brand}
+                branding={!features.removeBranding}
                 base="/preview"
                 path={page.id === d.home ? [] : [page.slug]}
                 selectBlock={(id) => onSelect(id)}

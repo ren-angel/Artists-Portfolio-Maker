@@ -9,12 +9,14 @@ export function ScaledPortfolio({
   site,
   brand,
   width = 1280,
+  branding,
   className,
 }: {
   draft: Draft;
   site: string;
   brand: string;
   width?: number;
+  branding?: boolean;
   className?: string;
 }) {
   const frame = useRef<HTMLDivElement>(null);
@@ -30,7 +32,7 @@ export function ScaledPortfolio({
     <div ref={frame} className={className} inert>
       {box > 0 && (
         <div style={{ width, zoom: Math.min(1, box / width) }}>
-          <Portfolio draft={draft} site={site} brand={brand} base="/preview" />
+          <Portfolio draft={draft} site={site} brand={brand} branding={branding} base="/preview" />
         </div>
       )}
     </div>

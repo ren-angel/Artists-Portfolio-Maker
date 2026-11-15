@@ -9,13 +9,13 @@ import MButton from "./MButton";
 import { cn } from "./types";
 
 const NAV = [
-  { label: "Explore", to: "#artists" },
-  { label: "Templates", to: "#templates" },
-  { label: "Features", to: "#editor" },
-  { label: "Pricing", to: "#plans" },
+  { label: "Explore", to: "/explore" },
+  { label: "Templates", to: "/templates" },
+  { label: "Features", to: "/features" },
+  { label: "Pricing", to: "/pricing" },
 ];
 
-export default function SiteHeader({ lang, name }: Common) {
+export default function SiteHeader({ lang, name, active }: Common & {active?: string}) {
   const tr = translator({ lang, name });
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -44,10 +44,12 @@ export default function SiteHeader({ lang, name }: Common) {
             {NAV.map((item) => (
               <a
                 key={item.to}
+                aria-current={active === item.to ? "page" : undefined}
                 href={item.to}
                 className="relative rounded-full px-3.5 py-2 text-[14px] text-ink/70 transition-colors duration-200 hover:text-ink"
               >
                 {tr(item.label)}
+                {active === item.to && <span aria-hidden className="hidden lg:block absolute inset-x-3.5 -bottom-0.5 h-[2px] rounded-full bg-coral" />}
               </a>
             ))}
           </nav>
@@ -86,11 +88,13 @@ export default function SiteHeader({ lang, name }: Common) {
             {NAV.map((item) => (
               <a
                 key={item.to}
+                aria-current={active === item.to ? "page" : undefined}
                 href={item.to}
                 onClick={() => setOpen(false)}
                 className="border-b border-ink/[0.07] py-3.5 font-display text-lg text-ink"
               >
                 {tr(item.label)}
+                {active === item.to && <span aria-hidden className="hidden lg:block absolute inset-x-3.5 -bottom-0.5 h-[2px] rounded-full bg-coral" />}
               </a>
             ))}
             <a

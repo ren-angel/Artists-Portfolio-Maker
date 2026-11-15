@@ -1,3 +1,4 @@
+import { commissionPrice } from "../../lib/commission-price";
 import type { ReactNode } from "react";
 import { ArrowUpRight, Check, Clock, X } from "lucide-react";
 import type { Art, Block } from "@studio/shared";
@@ -19,19 +20,6 @@ const STATUS = {
   waitlist: ["Waitlist", "Lista de espera", "bg-butter text-ink"],
   closed: ["Closed", "Fechadas", "bg-pf-ink/10 text-pf-ink/70"],
 } as const;
-
-export function money(ctx: Ctx, value: number) {
-  return new Intl.NumberFormat(ctx.d.language, {
-    style: "currency",
-    currency: ctx.d.commissions.currency,
-    maximumFractionDigits: Number.isInteger(value) ? 0 : 2,
-  }).format(value);
-}
-export function priceLabel(ctx: Ctx, from: number | null, to: number | null) {
-  if (from === null && to === null) return ctx.tr("Price on request", "Sob consulta");
-  if (from !== null && to !== null && to > from) return money(ctx, from) + " – " + money(ctx, to);
-  return ctx.tr("from ", "a partir de ") + money(ctx, (from ?? to)!);
-}
 
 function Heading({ ctx, b, fallback }: { ctx: Ctx; b: Block; fallback: [string, string] }) {
   return (
@@ -70,6 +58,20 @@ export function commissionBlock(b: Block, ctx: Ctx): ReactNode {
   switch (b.type) {
     case "commissionStatus": {
       const [en, pt, tone] = STATUS[c.status];
+      const lead = ctx.d.theme.template === "creative" && ctx.route.kind === "page" &&
+        ctx.route.page.blocks.find(block => block.visible)?.id === b.id;
+      if (lead) return <W><section style={sy(4)} className="text-center">
+        <span className={cn("inline-block -rotate-2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em]", tone)}>{ctx.tr(en,pt)}</span>
+        <h1 className="mx-auto mt-6 max-w-[720px] font-pf-display text-[40px] font-bold leading-[0.95] tracking-[-0.04em] csm:text-[58px]">
+          <Inline text={b.heading || ctx.tr("Commissions", "Encomendas")} em="font-serif italic text-pf-accent" />
+        </h1>
+        <Rich text={b.text || c.note} className="mx-auto mt-5 max-w-[440px] text-[14.5px] leading-relaxed text-pf-ink/65" />
+        <div className="mt-7 flex flex-wrap justify-center gap-5 text-[11px] uppercase tracking-[0.14em] text-pf-ink/55">
+          {c.turnaround && <span className="inline-flex items-center gap-1.5"><Clock className="h-3 w-3" />{c.turnaround}</span>}
+          <span>{ctx.tr("Prices in", "Valores em")} {c.currency}</span>
+        </div>
+        {c.status !== "closed" && <div className="mt-4 flex justify-center"><Contacts ctx={ctx} compact /></div>}
+      </section></W>;
       return (
         <W>
           <section style={sy(3.5)} className={cn("grid gap-6 csm:grid-cols-[1.3fr_1fr] csm:items-end", b.layout === "center" && "text-center csm:grid-cols-1")}>
@@ -110,18 +112,25 @@ export function commissionBlock(b: Block, ctx: Ctx): ReactNode {
               <Heading ctx={ctx} b={b} fallback={["What I offer", "O que eu ofereço"]} />
             </div>
             {b.text && <Rich text={b.text} className="mt-3 max-w-[560px] text-[14px] leading-relaxed text-pf-ink/65" />}
-            <div className="mt-8 grid gap-4 csm:grid-cols-2 clg:grid-cols-3">
+            <div className={cn("mt-8 grid gap-4 csm:grid-cols-2", ctx.d.theme.template !== "creative" && "clg:grid-cols-3")}>
               {types.map((t) => {
-                const art = t.artId ? ctx.arts.get(t.artId) : undefined;
+                const gallery = ctx.galleries.find(g => g.id === t.galleryId);
+                const art = ctx.arts.get(t.artId ?? "") ?? (gallery && ctx.cover(gallery));
                 return (
-                  <article key={t.id} className="flex flex-col overflow-hidden rounded-[1.2rem] border border-pf-ink/12 bg-pf-surface">
-                    {art && <Img ctx={ctx} art={art} className="aspect-[4/3] w-full object-cover" />}
+                  <article key={t.id} className="group flex flex-col overflow-hidden rounded-[1.5rem] border border-pf-ink/12 bg-pf-surface">
+                    {art && <Img ctx={ctx} art={art} className="aspect-[16/10] w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />}
                     <div className="flex flex-1 flex-col p-5">
                       <div className="flex items-baseline justify-between gap-3">
                         <h3 className="font-pf-display text-[20px] leading-tight">{t.name}</h3>
+                        <p className="font-serif text-[20px] italic text-pf-accent">{commissionPrice(ctx.l, c.currency, t.priceFrom, t.priceTo)}</p>
                       </div>
-                      <p className="mt-1 text-[15px] font-semibold text-pf-accent">{priceLabel(ctx, t.priceFrom, t.priceTo)}</p>
+                      {gallery && <a href={ctx.galleryHref(gallery)} className="mt-2 text-[12px] underline underline-offset-4">{ctx.tr("See examples", "Ver exemplos")} · {gallery.title}</a>}
                       {t.description && <p className="mt-2 text-[13px] leading-relaxed text-pf-ink/65">{t.description}</p>}
+                      {c.status !== "closed" && c.contacts.length > 0 && (
+                        <a href={ctx.contactUrl(0)} rel="noreferrer nofollow" className="mt-4 inline-flex items-center gap-1 text-[12px] font-semibold underline underline-offset-4">
+                          {ctx.tr("Request", "Solicitar")} · {t.name} <ArrowUpRight className="h-3 w-3" />
+                        </a>
+                      )}
                       {t.turnaround && (
                         <p className="mt-auto flex items-center gap-1.5 pt-4 text-[11px] uppercase tracking-[0.12em] text-pf-ink/45">
                           <Clock className="h-3 w-3" /> {t.turnaround}
@@ -165,7 +174,7 @@ export function commissionBlock(b: Block, ctx: Ctx): ReactNode {
               )}
             </div>
             {c.terms && (
-              <div className="mt-6 max-w-[720px] space-y-3">
+              <div className="mt-6 space-y-3 rounded-[1.5rem] border border-pf-ink/10 bg-pf-accent/10 p-6">
                 <Rich text={c.terms} className="text-[13px] leading-[1.8] text-pf-ink/65" />
               </div>
             )}
@@ -177,7 +186,7 @@ export function commissionBlock(b: Block, ctx: Ctx): ReactNode {
       if (!c.contacts.length) return null;
       return (
         <W>
-          <section style={sy(2.5)} className={cn("flex flex-col gap-4", b.layout === "center" && "items-center text-center")}>
+          <section style={sy(2.5)} className={cn("flex flex-col gap-4", ctx.d.theme.template === "creative" && "mb-8 rounded-[1.6rem] bg-pf-ink px-6 text-pf-bg", b.layout === "center" && "items-center text-center")}>
             {b.heading && <Heading ctx={ctx} b={b} fallback={["Get in touch", "Fale comigo"]} />}
             {b.text && <Rich text={b.text} className="max-w-[520px] text-[14px] leading-relaxed text-pf-ink/65" />}
             <Contacts ctx={ctx} />

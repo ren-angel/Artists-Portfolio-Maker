@@ -93,6 +93,7 @@ export function Portfolio(props: Props) {
         T.root,
       )}
       style={style}
+      data-texture={d.theme.paperTexture || undefined}
       data-radius={d.theme.radius}
       data-shadow={d.theme.shadow}
       data-hover={d.theme.hover}
@@ -111,6 +112,7 @@ export function Portfolio(props: Props) {
               const grid = d.theme.grid !== "template" && (b.type === "featured" || b.type === "galleryGrid");
               const gallery = ctx.galleries.find((g) => g.id === b.galleryId);
               const content =
+                b.type === "spacer" ? <div aria-hidden="true" style={{ height: "calc(4rem * var(--sy))" }} /> :
                 commissionBlock(b, ctx) ??
                 (grid ? (
                   <GridBlock
@@ -136,7 +138,7 @@ export function Portfolio(props: Props) {
                     b.background === "paper" && T.paper,
                     editing && "group/block cursor-pointer",
                   )}
-                  style={{ "--sy": spaceScale[b.spacing] } as CSSProperties}
+                  style={{ "--sy": Number(spaceScale[b.spacing]) * d.theme.sectionScale } as CSSProperties}
                   onClick={
                     selectBlock
                       ? (e) => {

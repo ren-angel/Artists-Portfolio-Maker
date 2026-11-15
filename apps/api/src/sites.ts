@@ -3,6 +3,9 @@ import { z } from "zod";
 import { sql, first, rows, type Database } from "@studio/db";
 import {
   initialDraft,
+  visibilitySchema,
+  type DiscoveryWork,
+  templateNames,
   draftSchema,
   handle,
   publishable,
@@ -14,7 +17,7 @@ import { account } from "./auth.ts";
 import type { Config } from "./config.ts";
 import { assert } from "./errors.ts";
 import { owned, readDraft, writeDraft, prune, usage } from "./drafts.ts";
-import { entitlement, limits as planLimits, planSql } from "./plan.ts";
+import { entitlement, limits as planLimits, planOf, planSql } from "./plan.ts";
 
 export const siteId = (req: FastifyRequest) =>
   z.object({ site: z.uuid() }).parse(req.params).site;
@@ -34,6 +37,7 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
     const b = z
       .object({
         handle,
+        template: z.enum(templateNames).optional(),
         title: z.string().trim().min(1).max(120),
         language: z.enum(["pt-BR", "en"]).default("pt-BR"),
       })
@@ -44,8 +48,9 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
         tx,
         sql`select count(*)::int n from sites where owner_id=${u.id}`,
       );
-      assert(count!.n < planLimits(env, "free").sites, 409, "site_limit");
+      assert(count!.n < planLimits(env, await planOf(tx, u.id)).sites, 409, "site_limit");
       const d = initialDraft(b.title, b.language);
+      if (b.template) d.theme.template = b.template;
       const s = await first<{ id: string }>(
         tx,
         sql`insert into sites(owner_id,handle,title,home) values(${u.id},${b.handle},${b.title},${d.home}) returning id`,
@@ -149,18 +154,47 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
         return { published, version: version + 1 };
       });
     });
+  app.get("/sites/:site/visibility", async (req) => {
+    const u = await account(db, req, env);
+    const row = await first(db, sql`select discoverable,indexable from sites where id=${siteId(req)} and owner_id=${u.id}`);
+    assert(row, 404, "site_missing");
+    return visibilitySchema.parse(row);
+  });
+  app.put("/sites/:site/visibility", async (req) => {
+    const u = await account(db, req, env);
+    const v = visibilitySchema.parse(req.body);
+    const site = await first(db, sql`update sites set discoverable=${v.discoverable},indexable=${v.indexable}
+      where id=${siteId(req)} and owner_id=${u.id} returning id`);
+    assert(site, 404, "site_missing");
+    return v;
+  });
+  app.get("/discover", async (req) => {
+    const { offset, q } = z.object({
+      offset: z.coerce.number().int().min(0).default(0), q: z.string().trim().max(120).default(""),
+    }).parse(req.query);
+    const works = await rows<DiscoveryWork>(db, sql`
+      select s.handle, r.snapshot->>'title' as artist, a->>'id' as "artId",
+        a->>'title' as title,a->>'alt' as alt, '/api/media/'||s.id||'/'||(a->>'assetId')||'/thumb' as thumbnail
+      from sites s join users u on u.id=s.owner_id join revisions r on r.id=s.published_id and r.site_id=s.id
+      cross join lateral jsonb_array_elements(r.snapshot->'artworks') as a
+      where s.discoverable and u.restricted_at is null
+        and strpos(lower(concat_ws(' ',r.snapshot->>'title',a->>'title',s.handle)),lower(${q}))>0
+      order by s.handle,a->>'id' limit 25 offset ${offset}`);
+    return { works: works.slice(0,24), more: works.length > 24 };
+  });
   app.get("/public/:handle", async (req) => {
     const h = handle.parse((req.params as { handle: string }).handle);
     const record = await first<{
       id: string;
       revision: string;
+      indexable: boolean;
       draft: unknown;
       plan: PlanId;
       domain: string | null;
     }>(
       db,
-      sql`select s.id,r.id as revision,r.snapshot as draft,${planSql(sql`s.owner_id`)} as plan,
-        (select hostname from domains d where d.site_id=s.id and d.is_primary and d.status='verified') as domain
+      sql`select s.id,s.indexable,r.id as revision,r.snapshot as draft,${planSql(sql`s.owner_id`)} as plan,
+        (select hostname from domains d where d.site_id=s.id and d.is_primary and d.status='verified' and d.dns_ok and d.tls_ok) as domain
         from sites s join revisions r on r.site_id=s.id and r.id=s.published_id join users u on u.id=s.owner_id
         where s.handle=${h} and u.restricted_at is null`,
     );
@@ -171,6 +205,7 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
     return {
       id: record.id,
       revision: record.revision,
+      indexable: record.indexable,
       draft: entitle(draftSchema.parse(record.draft), features),
       branding: !features.removeBranding,
       domain: features.customDomain ? record.domain : null,

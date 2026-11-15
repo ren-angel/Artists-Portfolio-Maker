@@ -20,7 +20,7 @@ export default function TemplatesSection(props: Common) {
             </h2>
           </div>
           <a
-            href="#template-collection"
+            href="/templates"
             className="group inline-flex items-center gap-2 self-start rounded-full border border-ink/25 px-5 py-2.5 text-[13.5px] font-medium transition-colors hover:border-ink/60 sm:self-auto"
           >
             {tr("See the full collection")}

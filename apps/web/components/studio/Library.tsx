@@ -1,7 +1,8 @@
 "use client";
 import { useMemo, useState, type ChangeEvent, type DragEvent } from "react";
 import { ArrowLeft, ArrowRight, Check, ImageUp, Search, Star, Trash2, Upload, X } from "lucide-react";
-import type { Draft } from "@studio/shared";
+import { detailLabel } from "../../lib/artwork-details";
+import { artworkDetailKeys, type Draft } from "@studio/shared";
 import { t, type Lang } from "../../lib/copy";
 import type { Limits, Update } from "../../lib/use-draft";
 import { reorder } from "../../lib/reorder";
@@ -85,7 +86,11 @@ export function Library({
         g.artIds = g.artIds.filter((id) => id !== a.id);
         if (g.cover === a.id) g.cover = null;
       }
-      for (const p of x.pages) for (const b of p.blocks) if (b.artId === a.id) b.artId = null;
+      for (const p of x.pages) for (const b of p.blocks) {
+        if (b.artId === a.id) b.artId = null;
+        if (b.bgArtId === a.id) b.bgArtId = null;
+      }
+      for (const type of x.commissions.types) if (type.artId === a.id) type.artId = null;
     });
     setChosen("");
   };
@@ -271,6 +276,16 @@ export function Library({
                     <span className={small}>{t(l, "alt")}</span>
                     <input value={a.alt} maxLength={500} onChange={(e) => patch({ alt: e.target.value })} className={field} />
                   </label>
+                  <details className="rounded-lg border border-ink/12 bg-paper/60 px-3 py-2" key={a.id}>
+                    <summary className="cursor-pointer text-[12px] font-medium">{tr("Artwork details", "Ficha da obra")}</summary>
+                    <div className="mt-3 space-y-2">
+                      {artworkDetailKeys.map(key => <label key={key} className="block">
+                        <span className={small}>{detailLabel(key, l)}</span>
+                        <input value={a.details?.[key] ?? ""} maxLength={160} className={field}
+                          onChange={e => patch({ details: { ...a.details, [key]: e.target.value } })} />
+                      </label>)}
+                    </div>
+                  </details>
                   {d.galleries.length > 0 && (
                     <div role="group" aria-label={t(l, "galleries")}>
                       <span className={small}>{t(l, "galleries")}</span>

@@ -1,3 +1,4 @@
+import { readerPageNumber } from "../../../../components/templates/kit";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { templateNames } from "@studio/shared";
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: Props) {
   const d = demo(selected, await language());
   return { title: d.title + " · " + brand(), robots: { index: false } };
 }
-export default async function Demo({ params }: Props) {
+export default async function Demo({ params, searchParams }: Props & {searchParams: Promise<{page?: string | string[]}>}) {
   const { template, path = [] } = await params;
   const selected = templateNames.find((v) => v === template);
   if (!selected) notFound();
@@ -31,7 +32,7 @@ export default async function Demo({ params }: Props) {
           </span>
         </span>
         <a
-          href="/auth/register"
+          href={"/auth/register?template=" + selected}
           className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-coral px-3 py-1 font-medium text-ink transition-transform hover:-translate-y-0.5"
         >
           {t(l, "register")} <ArrowRight className="h-3 w-3" />
@@ -42,6 +43,7 @@ export default async function Demo({ params }: Props) {
           site=""
           base={"/demo/" + selected}
           path={path}
+          readerPage={readerPageNumber((await searchParams).page)}
           draft={draft}
           brand={brand()}
           demoImages={demoImages(selected)}

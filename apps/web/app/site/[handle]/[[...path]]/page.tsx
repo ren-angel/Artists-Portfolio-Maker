@@ -1,3 +1,4 @@
+import { readerPageNumber } from "../../../../components/templates/kit";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { after } from "next/server";
@@ -14,7 +15,7 @@ import "../../../../components/ui/ui.css";
 type Props = { params: Promise<{ handle: string; path?: string[] }> };
 export async function generateMetadata({ params }: Props) {
   const { handle, path = [] } = await params;
-  const { draft, id, domain } = await published(handle);
+  const { draft, id, domain, indexable } = await published(handle);
   const item = matchPage(draft, path);
   if (!item) notFound();
   const title = path.length ? item.title + " · " + draft.title : draft.title;
@@ -29,6 +30,7 @@ export async function generateMetadata({ params }: Props) {
   return {
     title,
     description: draft.description,
+    robots: indexable ? undefined : { index: false, follow: false },
     alternates: { canonical },
     openGraph: {
       title,
@@ -38,7 +40,7 @@ export async function generateMetadata({ params }: Props) {
     },
   };
 }
-export default async function PublicPage({ params }: Props) {
+export default async function PublicPage({ params, searchParams }: Props & {searchParams: Promise<{page?: string | string[]}>}) {
   const { handle, path = [] } = await params;
   const { draft, id, branding } = await published(handle);
   if (!matchPage(draft, path)) notFound();
@@ -61,6 +63,7 @@ export default async function PublicPage({ params }: Props) {
         draft={draft}
         site={id}
         path={path}
+          readerPage={readerPageNumber((await searchParams).page)}
         brand={brand()}
         branding={branding}
         track

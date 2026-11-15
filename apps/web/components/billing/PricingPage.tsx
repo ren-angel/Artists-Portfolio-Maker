@@ -1,14 +1,22 @@
-import { Check, Minus } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import type { Lang } from "../../lib/copy";
-import { Eyebrow, Sparkle, Squiggle } from "../home/bits";
+import { Eyebrow, Sparkle } from "../home/bits";
 import { PlanCards } from "../studio/PlanCards";
-import { featureRows, planName, type Catalog } from "../studio/plan-text";
+import PageIntro from "../marketing/PageIntro";
+import { CompareTable } from "./CompareTable";
+import type { Catalog } from "../studio/plan-text";
 
 /** Public plan comparison. Prices and limits come from the API catalog. */
 export function PricingPage({ l, catalog, brand }: { l: Lang; catalog: Catalog; brand: string }) {
   const tr = (en: string, pt: string) => (l === "en" ? en : pt);
-  const rows = catalog.plans.map((p) => featureRows(l, p));
+  const currencies = [...new Set(catalog.plans.flatMap(p =>
+    p.prices ? [p.prices.monthly.currency, p.prices.yearly.currency] : []))].join(" / ");
   const faqs: [string, string][] = [
+    [tr("Do I need to know how to code?", "Preciso saber programar?"), tr("Choose a template, add your images and arrange sections in the visual editor.", "Escolha um modelo, envie suas imagens e organize as seções no editor visual.")],
+    [tr("Can I change templates later?", "Posso trocar de modelo depois?"), tr("Yes. Your pages, galleries and artwork carry over when you switch templates.", "Sim. Suas páginas, galerias e obras acompanham você quando troca de modelo.")],
+    [tr("How does pricing work in Brazil?", "Como funcionam os preços no Brasil?"),
+      tr(`Choose monthly or yearly billing. Prices are shown in ${currencies} and the annual amount covers the full year.`,
+        `Escolha a cobrança mensal ou anual. Os preços aparecem em ${currencies} e o valor anual cobre o ano inteiro.`)],
     [
       tr("Do card payments renew automatically?", "O cartão renova automaticamente?"),
       tr(
@@ -36,87 +44,41 @@ export function PricingPage({ l, catalog, brand }: { l: Lang; catalog: Catalog; 
     ],
   ];
   return (
-    <div className="mx-auto max-w-[1180px] px-5 pb-24 pt-14 sm:px-8">
-      <div className="mx-auto max-w-[720px] text-center">
-        <Eyebrow className="justify-center">{tr("Plans & pricing", "Planos e preços")}</Eyebrow>
-        <h1 className="mt-4 font-display text-[44px] font-semibold leading-[1] tracking-[-0.04em] sm:text-[64px]">
-          {tr("Grow at your", "Cresça no seu")} <span className="font-serif font-normal italic text-coral">{tr("own pace.", "próprio ritmo.")}</span>
-        </h1>
-        <Squiggle className="mx-auto mt-4 text-coral" width={140} />
-        <p className="mx-auto mt-5 max-w-[520px] text-[15px] leading-relaxed text-ink/60">
-          {tr(
-            "Start free with all four templates. Upgrade when you want your own domain, commission pages and more room for your work.",
-            "Comece grátis com os quatro modelos. Faça upgrade quando quiser domínio próprio, páginas de encomenda e mais espaço para suas obras.",
-          )}
-        </p>
-      </div>
-      <div className="mt-12">
+    <>
+      <PageIntro eyebrow={tr("Plans", "Planos")} title={<>{tr("Priced for artists,", "Planos para artistas,")}<br />
+        <span className="font-serif italic text-coral">{tr("from your first portfolio.", "desde o primeiro portfólio.")}</span></>}
+        subtitle={tr("Start free with all four templates. Upgrade for a custom domain, commission pages and more room for your work.",
+          "Comece grátis com os quatro modelos. Amplie seu plano para ter domínio próprio, páginas de encomendas e mais espaço para suas obras.")} />
+      <div className="mx-auto max-w-[1100px] px-5 py-14 lg:py-20">
         <PlanCards l={l} catalog={catalog} href="/auth/register" />
-      </div>
-      <section className="mt-16 overflow-x-auto rounded-[1.4rem] border border-ink/10 bg-ivory">
-        <table className="w-full min-w-[640px] text-left text-[13px]">
-          <caption className="sr-only">{tr("Plan comparison", "Comparação de planos")}</caption>
-          <thead>
-            <tr className="border-b border-ink/10">
-              <th className="px-5 py-4 font-display text-[15px] font-semibold">{tr("Compare", "Compare")}</th>
-              {catalog.plans.map((p) => (
-                <th key={p.id} className="px-5 py-4 font-display text-[15px] font-semibold">
-                  {planName(l, p.id)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows[0].map((_, i) => (
-              <tr key={i} className="border-b border-ink/[0.06] last:border-0">
-                <th scope="row" className="px-5 py-3 font-normal text-ink/60">
-                  {[
-                    tr("Pages", "Páginas"),
-                    tr("Artworks", "Obras"),
-                    tr("Storage", "Armazenamento"),
-                    tr("Templates", "Modelos"),
-                    tr("Subdomain", "Subdomínio"),
-                    tr("Custom domain", "Domínio próprio"),
-                    tr("No platform branding", "Sem marca da plataforma"),
-                    tr("Commission sections", "Seções de encomenda"),
-                    tr("Customization", "Personalização"),
-                    tr("Analytics", "Estatísticas"),
-                  ][i]}
-                </th>
-                {rows.map((r, j) => (
-                  <td key={j} className="px-5 py-3">
-                    {i >= 5 && i <= 7 ? (
-                      r[i][1] ? <Check className="h-4 w-4 text-[#2f8a68]" aria-label={tr("Included", "Incluso")} /> : <Minus className="h-4 w-4 text-ink/30" aria-label={tr("Not included", "Não incluso")} />
-                    ) : (
-                      r[i][0]
-                    )}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-      <section className="mx-auto mt-16 max-w-[760px]">
-        <h2 className="flex items-center gap-2 font-display text-[28px] font-semibold tracking-[-0.03em]">
-          <Sparkle size={16} className="text-coral" /> {tr("Questions", "Perguntas")}
-        </h2>
-        <div className="mt-5 divide-y divide-ink/10 rounded-[1.2rem] border border-ink/10 bg-ivory">
-          {faqs.map(([q, a]) => (
-            <details key={q} className="group px-5 py-4">
-              <summary className="cursor-pointer list-none font-medium marker:hidden">{q}</summary>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-ink/60">{a}</p>
-            </details>
-          ))}
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[tr("Start without a card", "Comece sem cartão"), tr("Your artwork stays yours", "As obras são suas"),
+            tr("Cancel in the studio", "Cancele pelo ateliê"), tr("Keep your work on downgrade", "Mantenha suas obras ao reduzir o plano")].map(item =>
+            <p key={item} className="flex items-center gap-2.5 rounded-xl border border-ink/10 bg-ivory px-4 py-3 text-[12.5px]">
+              <Check aria-hidden className="h-3.5 w-3.5 text-coral" />{item}</p>)}
         </div>
-        <p className="mt-6 text-center text-[12px] text-ink/45">
-          {tr("Prices in Brazilian reais. See the", "Preços em reais. Veja a")}{" "}
-          <a href="/legal/refunds" className="underline underline-offset-2">
-            {tr("refund and cancellation policy", "política de reembolso e cancelamento")}
-          </a>
-          .
-        </p>
-      </section>
-    </div>
+        <div className="mt-16"><CompareTable l={l} catalog={catalog} /></div>
+        <section className="mt-16 grid gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
+          <div><Eyebrow>{tr("Questions", "Perguntas")}</Eyebrow>
+            <h2 className="mt-4 font-display text-[30px] font-semibold leading-[1.05] tracking-[-0.03em] sm:text-[38px]">
+              {tr("The things artists", "O que os artistas")} <span className="font-serif italic text-ink/55">{tr("actually ask.", "querem saber.")}</span>
+            </h2>
+            <p className="mt-4 max-w-[300px] text-[14px] text-ink/65">{tr("Start free and explore the editor at your pace.", "Comece grátis e explore o editor no seu ritmo.")}</p>
+            <p className="mt-6 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-ink/55"><Sparkle size={10} />
+              {tr("Billed in", "Cobrança em")} {currencies}
+            </p>
+            <a href="/legal/refunds" className="mt-5 inline-block text-[12px] underline">{tr("Refund and cancellation policy", "Política de reembolso e cancelamento")}</a>
+          </div>
+          <div className="rounded-[1.5rem] border border-ink/12 bg-ivory px-6 py-2">
+            {faqs.map(([q,a]) => <details name="pricing-faq" key={q} className="group border-b border-ink/12 last:border-0">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-5 font-display text-[16.5px] font-medium">
+                {q}<ChevronDown aria-hidden className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" />
+              </summary>
+              <p className="pb-5 pr-8 text-[14px] leading-relaxed text-ink/65">{a}</p>
+            </details>)}
+          </div>
+        </section>
+      </div>
+    </>
   );
 }

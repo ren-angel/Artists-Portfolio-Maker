@@ -119,7 +119,7 @@ export function Properties({
 
             {mode === "simple" ? (
               <>
-                {block.type !== "divider" && (
+                {!["divider", "spacer"].includes(block.type) && (
                   <Field label={block.type === "hero" ? t(l, "headline") : block.type === "cta" ? tr("Statement", "Chamada") : t(l, "title")}>
                     <textarea
                       value={block.heading}
@@ -131,6 +131,13 @@ export function Properties({
                   </Field>
                 )}
 
+                {block.type === "spacer" && (
+                  <Field label={t(l, "spacing")}>
+                    <select value={block.spacing} className={inputClass} onChange={e => patch({ spacing: e.target.value as Block["spacing"] })}>
+                      {(["compact", "normal", "roomy"] as const).map(v => <option key={v} value={v}>{t(l, v)}</option>)}
+                    </select>
+                  </Field>
+                )}
                 {isCommission(block.type) && (
                   <div className="rounded-lg bg-butter/40 px-2.5 py-2 text-[10.5px] leading-relaxed text-ink/65">
                     {tr("Status, prices, terms and contacts are shared by all commission sections.", "Status, valores, termos e contatos são compartilhados por todas as seções de encomenda.")}{" "}
@@ -165,7 +172,7 @@ export function Properties({
                   </Field>
                 )}
 
-                {!["divider", "featured", "galleryGrid", "galleryPreview", "social"].includes(block.type) && (
+                {!["divider", "spacer", "featured", "galleryGrid", "galleryPreview", "social"].includes(block.type) && (
                   <Field label={t(l, "layout")} group>
                     <div className="flex gap-1" role="radiogroup">
                       {([
@@ -283,7 +290,17 @@ export function Properties({
                 )}
 
                 {takesLink(block.type) && (
-                  <Field label={block.type === "hero" ? t(l, "buttonLink") : t(l, "link")}>
+                  <div className="space-y-2">
+                  <Field label={tr("Destination", "Destino")}>
+                    <select className={inputClass} value={block.url === "portfolio:commissions" ? block.url : "external"}
+                      onChange={e => patch({ url: e.target.value === "external" ? "" : e.target.value }, "url")}>
+                      <option value="external">{tr("Web address", "Endereço da web")}</option>
+                      <option value="portfolio:commissions">{tr("Commissions page", "Página de encomendas")}</option>
+                    </select>
+                  </Field>
+                  {block.url === "portfolio:commissions" ? <p className="text-[11px] text-ink/60">
+                    {tr("Links to a navigation page with a visible commission status or price list.", "Abre uma página do menu com status ou tabela de preços de encomendas visível.")}
+                  </p> : <Field label={block.type === "hero" ? t(l, "buttonLink") : t(l, "link")}>
                     <input
                       type="url"
                       inputMode="url"
@@ -293,10 +310,11 @@ export function Properties({
                       onChange={(e) => patch({ url: e.target.value }, "url")}
                       className={cn(inputClass, "font-mono text-[11px]")}
                     />
-                  </Field>
+                  </Field>}
+                  </div>
                 )}
 
-                {block.type !== "divider" && (
+                {!["divider", "spacer"].includes(block.type) && (
                   <Field label={t(l, "background")} group>
                     <div className="flex gap-1.5" role="radiogroup">
                       {([

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   addCycle,
+  draftSchema,
   derive,
   entitle,
   initialDraft,
@@ -30,6 +31,7 @@ test("subscription state is derived from confirmed payments, independent of even
   assert.equal(derive(facts(), [{ status: "pending", periodEnd: null }], now).status, "pending");
   const active = derive(facts(), [paid(20)], now);
   assert.equal(active.status, "active");
+  assert.equal(derive(facts({createdAt: new Date(now.getTime()+day)}), [paid(31)], now).status, "pending");
   // Same facts in any order give the same answer.
   const a = derive(facts(), [paid(-10), paid(20), { status: "overdue", periodEnd: null }], now);
   const b = derive(facts(), [{ status: "overdue", periodEnd: null }, paid(20), paid(-10)], now);
@@ -49,6 +51,8 @@ test("subscription state is derived from confirmed payments, independent of even
 test("cycles, tax IDs and price overrides", () => {
   assert.equal(addCycle(new Date("2026-01-31T00:00:00Z"), "yearly").toISOString().slice(0, 10), "2027-01-31");
   assert.equal(addCycle(new Date("2026-11-13T00:00:00Z"), "monthly").toISOString().slice(0, 10), "2026-12-13");
+  assert.equal(addCycle(new Date("2026-01-31T00:00:00Z"), "monthly").toISOString().slice(0, 10), "2026-02-28");
+  assert.equal(addCycle(new Date("2024-02-29T00:00:00Z"), "yearly").toISOString().slice(0, 10), "2025-02-28");
   assert(validTaxId("529.982.247-25"));
   assert(validTaxId("11.222.333/0001-81"));
   assert(!validTaxId("111.111.111-11"));
@@ -75,4 +79,16 @@ test("entitlements filter published output without touching the draft", () => {
   assert.equal(artist.theme.radius, "round");
   assert.equal(artist.theme.grid, "template");
   assert.equal(publishable(d, "studio").theme.grid, "masonry");
+});
+
+test("Studio can edit and publish a gallery at its advertised artwork limit", () => {
+  const draft = initialDraft("Archive", "en");
+  draft.artworks = Array.from({ length: plans.studio.limits.artworks }, (_, i) => ({
+    id: crypto.randomUUID(), assetId: crypto.randomUUID(), title: "Study " + i,
+    alt: "", description: "", featured: false,
+  }));
+  draft.galleries = [{ id: crypto.randomUUID(), slug: "archive", title: "Archive", visible: true,
+    cover: null, description: "", artIds: draft.artworks.map(a => a.id) }];
+  assert.ok(draftSchema.safeParse(draft).success);
+  assert.equal(publishable(draft, "studio").artworks.length, plans.studio.limits.artworks);
 });

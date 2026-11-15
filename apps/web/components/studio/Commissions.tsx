@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Eye, EyeOff, Lock, Plus, Sparkles, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpRight, Eye, EyeOff, ImageIcon, Lock, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { newBlock, type Commissions as Settings, type Contact, type Draft } from "@studio/shared";
 import type { Lang } from "../../lib/copy";
 import type { Limits, Update } from "../../lib/use-draft";
+import { commissionPrice } from "../../lib/commission-price";
 import { reorder } from "../../lib/reorder";
 import { cn } from "../home/types";
 import { buttonClasses } from "../auth/Field";
@@ -64,6 +65,7 @@ export function Commissions({
   limits,
   onUpgrade,
   onEditPage,
+  onPreview,
 }: {
   d: Draft;
   update: Update;
@@ -73,10 +75,17 @@ export function Commissions({
   limits: Limits;
   onUpgrade: () => void;
   onEditPage: (id: string) => void;
+  onPreview: (id: string) => void;
 }) {
   const tr = (en: string, pt: string) => (l === "en" ? en : pt);
   const c = d.commissions;
+  const [editingType, setEditingType] = useState<string | null>(null);
   const set = (fn: (c: Settings) => void) => update((x) => fn(x.commissions));
+  const addType = (name: string) => {
+    const id = crypto.randomUUID();
+    set(x => x.types.push({ id, name, description: "", priceFrom: null, priceTo: null, turnaround: "", artId: null, visible: true }));
+    setEditingType(id);
+  };
   const thumb = (assetId: string) => "/api/media/" + site + "/" + assetId + "/thumb";
   const placed = d.pages.find((p) => p.blocks.some((b) => b.type === "commissionPrices" || b.type === "commissionStatus"));
   const addSections = () => {
@@ -100,9 +109,14 @@ export function Commissions({
         )}
         actions={
           placed ? (
+            <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => onPreview(placed.id)} className={buttonClasses("paper", "sm")}>
+              {tr("Preview page", "Prévia da página")} <ArrowUpRight className="h-3.5 w-3.5" />
+            </button>
             <button type="button" onClick={() => onEditPage(placed.id)} className={buttonClasses("paper", "sm")}>
               {tr("Edit the page", "Editar a página")}
             </button>
+            </div>
           ) : (
             <button type="button" onClick={addSections} className={buttonClasses("ink", "sm")}>
               <Sparkles className="h-3.5 w-3.5" /> {tr("Add a commissions page", "Criar página de encomendas")}
@@ -180,32 +194,48 @@ export function Commissions({
                   key={p[0]}
                   type="button"
                   disabled={c.types.length >= 20}
-                  onClick={() =>
-                    set((x) =>
-                      x.types.push({ id: crypto.randomUUID(), name: p[l === "en" ? 0 : 1], description: "", priceFrom: null, priceTo: null, turnaround: "", artId: null, visible: true }),
-                    )
-                  }
+                  onClick={() => addType(p[l === "en" ? 0 : 1])}
                   className="inline-flex items-center gap-1 rounded-full border border-dashed border-ink/25 px-2.5 py-1 text-[11.5px] text-ink/55 hover:border-ink/50 hover:text-ink"
                 >
                   <Plus className="h-3 w-3" /> {p[l === "en" ? 0 : 1]}
                 </button>
               ))}
-            <button
-              type="button"
-              disabled={c.types.length >= 20}
-              onClick={() => set((x) => x.types.push({ id: crypto.randomUUID(), name: tr("New type", "Novo tipo"), description: "", priceFrom: null, priceTo: null, turnaround: "", artId: null, visible: true }))}
-              className={buttonClasses("ink", "sm")}
-            >
-              <Plus className="h-3.5 w-3.5" /> {tr("Custom", "Personalizado")}
-            </button>
+
           </div>
         </div>
         {c.types.length === 0 && <EmptyStudio compact tone="butter" title={tr("No commission types yet", "Nenhum tipo ainda")} body={tr("Start with a preset above.", "Comece com uma sugestão acima.")} />}
+        <div className="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {c.types.map((t, i) => {
+          const art = d.artworks.find(a => a.id === t.artId);
+          const amount = commissionPrice(l, c.currency, t.priceFrom, t.priceTo);
+          const expanded = editingType === t.id;
           const patch = (fn: (t: Settings["types"][number]) => void) => set((x) => fn(x.types[i]));
           const num = (v: string) => (v === "" ? null : Math.max(0, Math.min(1_000_000, Number(v))));
           return (
-            <article key={t.id} className={cn(card, "grid gap-4 p-4 md:grid-cols-[120px_1fr]", !t.visible && "opacity-60")}>
+            <article key={t.id} className={cn(card, "group min-w-0 overflow-hidden", expanded && "sm:col-span-full")}>
+              <button type="button" className="block w-full text-left" aria-expanded={expanded}
+                aria-controls={"type-" + t.id} onClick={() => setEditingType(expanded ? null : t.id)}>
+                <div className="relative grid h-[130px] place-items-center overflow-hidden bg-lilac/15">
+                  {art ? <img src={thumb(art.assetId)} alt="" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    : <ImageIcon aria-hidden className="h-6 w-6 text-ink/25" />}
+                  <span className="absolute right-2 top-2 rounded-full bg-paper/95 px-2 py-1 text-[10px]">
+                    {t.visible ? tr("Visible", "Visível") : tr("Hidden", "Oculto")}
+                  </span>
+                </div>
+                <div className="p-4">
+                  <div className="flex flex-wrap items-baseline justify-between gap-1">
+                    <h3 className="font-display text-[15px] font-semibold">{t.name}</h3>
+                    <span className="font-serif italic">{amount}</span>
+                  </div>
+                  {t.description && <p className="mt-1.5 text-[12px] text-ink/65">{t.description}</p>}
+                  <div className="mt-3 flex items-center justify-between border-t border-ink/10 pt-3 text-[11px]">
+                    <span>{t.turnaround || c.turnaround}</span>
+                    <span>{expanded ? tr("Close editor", "Fechar edição") : tr("Edit", "Editar")}</span>
+                  </div>
+                </div>
+              </button>
+              <div id={"type-" + t.id} hidden={!expanded}>
+              <div className="grid gap-4 border-t border-ink/10 p-4 md:grid-cols-[120px_1fr]">
               <label className="block">
                 <span className={small}>{tr("Example", "Exemplo")}</span>
                 <div className="aspect-square overflow-hidden rounded-lg border border-ink/10 bg-paper">
@@ -245,6 +275,13 @@ export function Commissions({
                   <span className={small}>{tr("Turnaround", "Prazo")}</span>
                   <input maxLength={80} value={t.turnaround} onChange={(e) => patch((x) => void (x.turnaround = e.target.value))} className={field} />
                 </label>
+                <label className="block">
+                  <span className={small}>{tr("Gallery of examples", "Galeria de exemplos")}</span>
+                  <select value={t.galleryId ?? ""} onChange={e => patch(type => { type.galleryId = e.target.value || null; })} className={field}>
+                    <option value="">{tr("No gallery", "Sem galeria")}</option>
+                    {d.galleries.map(g => <option key={g.id} value={g.id}>{g.title}</option>)}
+                  </select>
+                </label>
                 <div className="flex items-end justify-end gap-1">
                   <button type="button" aria-label={tr("Move up", "Mover para cima")} disabled={i === 0} onClick={() => set((x) => reorder(x.types, i, i - 1))} className="grid h-8 w-8 place-items-center rounded-full border border-ink/15 text-ink/50 disabled:opacity-30">
                     <ArrowUp className="h-3.5 w-3.5" />
@@ -260,9 +297,16 @@ export function Commissions({
                   </button>
                 </div>
               </div>
+              </div>
+              </div>
             </article>
           );
         })}
+          <button type="button" disabled={c.types.length >= 20} onClick={() => addType(tr("New type", "Novo tipo"))}
+            className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded-[1.1rem] border border-dashed border-ink/25 p-5 text-[12px] text-ink/65 hover:border-ink/50 disabled:opacity-40">
+            <Plus className="h-4 w-4" /> {tr("Add a commission type", "Adicionar tipo de encomenda")}
+          </button>
+        </div>
       </section>
 
       <section className={cn(card, "grid gap-5 p-5 md:grid-cols-2")}>

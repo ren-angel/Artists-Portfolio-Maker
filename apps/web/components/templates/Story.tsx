@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Rows, Square } from "lucide-react";
 import type { Art, Block } from "@studio/shared";
 import {
   Img,
@@ -54,7 +54,20 @@ function Header({ ctx }: { ctx: Ctx }) {
                 : d.title}
             </p>
           </div>
-          <span className="w-16 shrink-0" />
+          {route.kind === "gallery" && route.gallery.artIds.length > 0 && (
+            <nav aria-label={ctx.tr("Reading mode", "Modo de leitura")} className="flex shrink-0 rounded-full border border-pf-ink/20 p-0.5">
+              {([
+                [Rows, ctx.tr("Scroll", "Rolagem"), "", ctx.readerPage === undefined],
+                [Square, ctx.tr("Single page", "Página individual"), "?page=1", ctx.readerPage !== undefined],
+              ] as const).map(([Icon, label, suffix, active]) => (
+                <a key={label} href={ctx.galleryHref(route.gallery) + suffix} title={label} aria-label={label}
+                  aria-current={active ? "true" : undefined}
+                  className={cn("grid h-7 w-8 place-items-center rounded-full", active && "bg-pf-ink text-pf-bg")}>
+                  <Icon aria-hidden className="h-3.5 w-3.5" />
+                </a>
+              ))}
+            </nav>
+          )}
         </div>
       </header>
     );
@@ -382,7 +395,7 @@ function block(b: Block, ctx: Ctx): ReactNode {
               )}
               {link && (
                 <a href={link} rel="noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-full bg-pf-ink px-5 py-3 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-pf-bg transition-transform hover:-translate-y-0.5">
-                  {b.type === "contact" ? host(link) : ctx.tr("Continue", "Continuar")} <ArrowRight className="h-3 w-3" />
+                  {b.type === "contact" ? ctx.linkLabel(b.url) : ctx.tr("Continue", "Continuar")} <ArrowRight className="h-3 w-3" />
                 </a>
               )}
             </div>
@@ -445,6 +458,9 @@ function ChapterNav({ ctx, gallery }: { ctx: Ctx; gallery: Gallery }) {
 
 function GalleryPage({ ctx, gallery }: { ctx: Ctx; gallery: Gallery }) {
   const works = ctx.works(gallery);
+  const page = ctx.readerPage && works.length ? Math.min(ctx.readerPage, works.length) : null;
+  const visible = page ? works.slice(page - 1, page) : works;
+  const pageButton = "rounded-full border border-pf-ink/25 px-3 py-2 text-[10px] uppercase tracking-wider";
   return (
     <div className="bg-pf-ink/[0.025]">
       <div className="mx-auto max-w-[720px] px-3 py-6 csm:px-5">
@@ -452,16 +468,23 @@ function GalleryPage({ ctx, gallery }: { ctx: Ctx; gallery: Gallery }) {
           <p className="mb-6 text-center font-pf-display text-[18px] italic leading-relaxed text-pf-ink/65">{gallery.description}</p>
         )}
         <div className="space-y-3">
-          {works.map((w, i) => (
+          {visible.map((w, i) => (
             <figure key={w.id} className="border border-pf-ink/15 bg-pf-surface p-1.5">
               <a href={ctx.workHref(w)}>
                 <Img ctx={ctx} art={w} large={i === 0} className="w-full object-cover" />
               </a>
               <figcaption className="py-1 text-center font-pf-display text-[11px] text-pf-ink/35">
-                {i + 1} · {w.title}
+                {page ?? i + 1} · {w.title}
               </figcaption>
             </figure>
           ))}
+          {page !== null && <nav className="flex items-center justify-between" aria-label={ctx.tr("Chapter pages", "Páginas do capítulo")}>
+            {page > 1 ? <a className={pageButton} href={ctx.galleryHref(gallery) + "?page=" + (page - 1)}>{ctx.tr("Previous", "Anterior")}</a>
+              : <span aria-disabled="true" className={cn(pageButton, "opacity-35")}>{ctx.tr("Previous", "Anterior")}</span>}
+            <span className="font-pf-display italic">{page} / {works.length}</span>
+            {page < works.length ? <a className={pageButton} href={ctx.galleryHref(gallery) + "?page=" + (page + 1)}>{ctx.tr("Next", "Próxima")}</a>
+              : <span aria-disabled="true" className={cn(pageButton, "opacity-35")}>{ctx.tr("Next", "Próxima")}</span>}
+          </nav>}
           {works.length === 0 && (
             <p className="py-10 text-center font-pf-display text-[16px] italic text-pf-ink/50">
               {ctx.tr("No pages in this chapter yet.", "Este capítulo ainda não tem páginas.")}

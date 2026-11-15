@@ -13,32 +13,11 @@ import PlansSection from "../components/home/PlansSection";
 import FinalCta from "../components/home/FinalCta";
 import SiteFooter from "../components/home/SiteFooter";
 import "../components/home/home.css";
-import { defaults } from "@studio/shared";
+import { catalog } from "../lib/catalog";
 import { brand, language } from "../lib/server";
 export default async function Home() {
-  const lang = await language();
-  const pt = lang === "pt-BR";
-  const count = (key: string, fallback: number) =>
-    Number(process.env[key] || fallback);
-  const sites = count("MAX_SITES", defaults.sites);
-  const pages = count("MAX_PAGES", defaults.pages);
-  const works = count("MAX_ARTWORKS", defaults.artworks);
-  const storage = Math.floor(
-    count("MAX_STORAGE_BYTES", defaults.storage) / 1024 ** 2,
-  );
-  const props = {
-    lang,
-    name: brand(),
-    domain: process.env.PLATFORM_DOMAIN || "localhost",
-    limits: [
-      pt ? `${sites} portfólio` : `${sites} portfolio website`,
-      pt ? `Até ${works} obras` : `Up to ${works} artworks`,
-      pt ? `${pages} páginas personalizadas` : `${pages} custom pages`,
-      pt ? `${storage} MB de armazenamento` : `${storage} MB storage`,
-      "Muralia subdomain",
-      "All four templates",
-    ],
-  };
+  const [lang, plans] = await Promise.all([language(), catalog()]);
+  const props = { lang, name: brand(), domain: process.env.PLATFORM_DOMAIN || "localhost" };
   return (
     <div className="artist-home">
       <SiteHeader {...props} />
@@ -53,7 +32,7 @@ export default async function Home() {
         <CommissionShowcase {...props} />
         <ComicsShowcase {...props} />
         <Testimonials {...props} />
-        <PlansSection {...props} />
+        <PlansSection {...props} catalog={plans} />
         <FinalCta {...props} />
       </main>
       <SiteFooter {...props} />

@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { tenantFromHost } from "@studio/shared";
-/* Verified custom domains resolve through the API's internal endpoint. Both
-   answers are cached briefly so unknown hosts cannot flood the API, and a
-   removed or lapsed domain stops resolving within the cache lifetime. */
-const domainCache = new Map<string, { handle: string | null; until: number }>();
+// Cache misses briefly. Successful lookups must reflect the current tenant,
+// subscription and certificate, including immediately after disconnection.
+const missingDomains = new Map<string, number>();
 async function customDomain(host: string) {
-  const hit = domainCache.get(host);
-  if (hit && hit.until > Date.now()) return hit.handle;
+  if ((missingDomains.get(host) ?? 0) > Date.now()) return null;
   let handle: string | null = null;
   try {
     const r = await fetch(
@@ -25,11 +23,12 @@ async function customDomain(host: string) {
     if (r.ok) handle = String((await r.json()).handle);
   } catch {
     // Unreachable API: answer 404 now and retry soon.
-    domainCache.set(host, { handle: null, until: Date.now() + 5_000 });
     return null;
   }
-  if (domainCache.size > 5000) domainCache.clear();
-  domainCache.set(host, { handle, until: Date.now() + 60_000 });
+  if (!handle) {
+    if (missingDomains.size >= 5000) missingDomains.clear();
+    missingDomains.set(host, Date.now() + 5_000);
+  }
   return handle;
 }
 export async function proxy(req: NextRequest) {
