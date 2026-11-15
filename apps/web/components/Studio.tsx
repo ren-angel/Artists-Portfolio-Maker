@@ -4,7 +4,8 @@ import { RotateCcw } from "lucide-react";
 import { t, message, type Lang } from "../lib/copy";
 import { api } from "../lib/client";
 import { upload } from "../lib/upload";
-import { useDraft, type Artist, type Limits, type SiteData } from "../lib/use-draft";
+import { useCallback } from "react";
+import { useDraft, type Artist, type Entitlement, type SiteData } from "../lib/use-draft";
 import { Editor, type EditorProps } from "./studio/editor/Editor";
 import { PublishDialog } from "./studio/editor/PublishDialog";
 import { DashLayout, type Tab } from "./studio/DashLayout";
@@ -15,6 +16,11 @@ import { Pages } from "./studio/Pages";
 import { ThemePage } from "./studio/ThemePage";
 import { Settings } from "./studio/Settings";
 import { CreateSite, Setup } from "./studio/Onboarding";
+import { Billing } from "./studio/Billing";
+import { Domains } from "./studio/Domains";
+import { Analytics } from "./studio/Analytics";
+import { Commissions } from "./studio/Commissions";
+import { planName } from "./studio/PlanCards";
 import { Sparkle } from "./home/bits";
 
 const TITLES: Record<Tab, Parameters<typeof t>[1]> = {
@@ -24,13 +30,18 @@ const TITLES: Record<Tab, Parameters<typeof t>[1]> = {
   galleries: "galleries",
   library: "library",
   theme: "theme",
+  commissions: "commissions",
+  analytics: "analytics",
+  domains: "domains",
+  billing: "billing",
   settings: "settingsNav",
 };
 
 function Workspace({
   initial,
   user,
-  limits,
+  ent,
+  refreshEnt,
   l,
   name,
   domain,
@@ -39,7 +50,8 @@ function Workspace({
 }: {
   initial: SiteData;
   user: Artist;
-  limits: Limits;
+  ent: Entitlement;
+  refreshEnt: () => Promise<void>;
   l: Lang;
   name: string;
   domain: string;
@@ -48,9 +60,15 @@ function Workspace({
 }) {
   const { data, update, status, flush, reload, current, error: saveError } = useDraft(initial);
   const d = data.draft;
-  const [tab, setTab] = useState<Tab>("overview"),
+  const limits = ent.limits;
+  const [tab, setTab] = useState<Tab>(() =>
+    typeof location !== "undefined" && new URLSearchParams(location.search).has("billing") ? "billing" : "overview",
+  ),
     [startPage, setStartPage] = useState<string>(),
-    [setup, setSetup] = useState(d.step < 7),
+    // Returning from a payment page goes straight to billing, not setup.
+    [setup, setSetup] = useState(
+      () => d.step < 7 && !(typeof location !== "undefined" && new URLSearchParams(location.search).has("billing")),
+    ),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [progress, setProgress] = useState<number | null>(null),
@@ -113,6 +131,7 @@ function Workspace({
         await flush();
         window.open("/preview", "_blank", "noopener");
       }),
+    features: ent.features,
     onExit: (next) => {
       setStartPage(undefined);
       setTab(next ?? "overview");
@@ -168,6 +187,7 @@ function Workspace({
       artworks={d.artworks.length}
       storageUsed={data.storageUsed}
       limits={limits}
+      planLabel={planName(l, ent.plan)}
       onPublish={() => setPublishOpen(true)}
       onLogout={() =>
         void act(async () => {
@@ -201,6 +221,7 @@ function Workspace({
           data={data}
           user={user}
           limits={limits}
+          ent={ent}
           brand={name}
           address={address}
           publicHref={publicHref}
@@ -226,7 +247,25 @@ function Workspace({
           }}
         />
       )}
-      {tab === "theme" && <ThemePage d={d} update={update} l={l} site={data.id} brand={name} onSave={save} />}
+      {tab === "theme" && <ThemePage d={d} update={update} l={l} site={data.id} brand={name} onSave={save} features={ent.features} onUpgrade={() => go("billing")} />}
+      {tab === "commissions" && (
+        <Commissions
+          d={d}
+          update={update}
+          l={l}
+          site={data.id}
+          entitled={ent.features.commissions}
+          limits={limits}
+          onUpgrade={() => go("billing")}
+          onEditPage={(id) => {
+            setStartPage(id);
+            setTab("editor");
+          }}
+        />
+      )}
+      {tab === "analytics" && <Analytics l={l} site={data.id} onUpgrade={() => go("billing")} />}
+      {tab === "domains" && <Domains l={l} site={data.id} handle={data.handle} address={address} onUpgrade={() => go("billing")} />}
+      {tab === "billing" && <Billing l={l} onChange={refreshEnt} />}
       {tab === "settings" && (
         <Settings
           d={d}
@@ -248,7 +287,7 @@ function Workspace({
 
 export function Studio({ l, name, domain, origin }: { l: Lang; name: string; domain: string; origin: string }) {
   const [user, setUser] = useState<Artist | null>(null),
-    [limits, setLimits] = useState<Limits | null>(null),
+    [ent, setEnt] = useState<Entitlement | null>(null),
     [site, setSite] = useState<SiteData | null>(null),
     [error, setError] = useState(""),
     [saving, setSaving] = useState(false);
@@ -256,9 +295,9 @@ export function Studio({ l, name, domain, origin }: { l: Lang; name: string; dom
     try {
       const u = await api<Artist>("/me");
       setUser(u);
-      const r = await api<{ sites: { id: string }[]; limits: Limits }>("/sites");
+      const r = await api<{ sites: { id: string }[] } & Entitlement>("/sites");
       if (r.sites[0]) setSite(await api<SiteData>("/sites/" + r.sites[0].id));
-      setLimits(r.limits);
+      setEnt({ plan: r.plan, limits: r.limits, features: r.features });
     } catch (err) {
       if ((err as Error).message === "unauthorized") location.replace("/auth/login");
       else setError((err as Error).message);
@@ -281,12 +320,17 @@ export function Studio({ l, name, domain, origin }: { l: Lang; name: string; dom
       setSaving(false);
     }
   }
-  if (user && limits && site)
+  const refreshEnt = useCallback(async () => {
+    const r = await api<Entitlement>("/sites");
+    setEnt({ plan: r.plan, limits: r.limits, features: r.features });
+  }, []);
+  if (user && ent && site)
     return (
       <Workspace
         initial={site}
         user={user}
-        limits={limits}
+        ent={ent}
+        refreshEnt={refreshEnt}
         l={l}
         name={name}
         domain={domain}
@@ -294,7 +338,7 @@ export function Studio({ l, name, domain, origin }: { l: Lang; name: string; dom
         refresh={async () => setUser(await api<Artist>("/me"))}
       />
     );
-  if (!limits)
+  if (!ent)
     return (
       <div className="ui ui-page grid place-items-center px-6" role="status">
         <div className="text-center">

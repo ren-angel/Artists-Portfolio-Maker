@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defaults } from "@studio/shared";
+import { defaults, priceBook } from "@studio/shared";
 export function config(source = process.env) {
   const n = (fallback: number) =>
     z.coerce.number().int().positive().default(fallback);
@@ -28,8 +28,27 @@ export function config(source = process.env) {
       MAX_ARTWORKS: n(defaults.artworks),
       MAX_STORAGE_BYTES: n(defaults.storage),
       MAX_UPLOAD_BYTES: n(defaults.upload),
+      BILLING_DRIVER: z.enum(["mock", "asaas"]).default("mock"),
+      ASAAS_ENV: z.enum(["sandbox", "production"]).default("sandbox"),
+      ASAAS_API_KEY: z.string().optional(),
+      // Shared secret Asaas sends in asaas-access-token (32 to 255 characters).
+      BILLING_WEBHOOK_TOKEN: z
+        .string()
+        .min(32)
+        .max(255)
+        .regex(/^\S+$/)
+        .default("local-development-webhook-token-0000000000"),
+      PLAN_PRICES: z.string().optional(),
+      // Secret shared by the web server for analytics and domain lookups.
+      INTERNAL_TOKEN: z.string().min(24).default("local-development-internal-token"),
+      // Hostname artists point their CNAME at; apex domains use DOMAIN_TARGET_IP.
+      DOMAIN_TARGET: z.string().optional(),
+      DOMAIN_TARGET_IP: z.string().optional(),
+      DOMAIN_TLS_CHECK: z.enum(["probe", "off"]).default("probe"),
+      ANALYTICS_RETENTION_DAYS: n(400),
     })
     .parse(source);
+  const prices = priceBook(env.PLAN_PRICES);
   if (new URL(env.APP_ORIGIN).origin !== env.APP_ORIGIN)
     throw Error("APP_ORIGIN must be an exact origin");
   if (
@@ -51,6 +70,17 @@ export function config(source = process.env) {
     throw Error("Incomplete storage settings");
   if (env.MAIL_DRIVER === "resend" && !(env.MAIL_FROM && env.RESEND_API_KEY))
     throw Error("Incomplete mail settings");
-  return env;
+  if (env.BILLING_DRIVER === "asaas" && !env.ASAAS_API_KEY)
+    throw Error("ASAAS_API_KEY is required for the Asaas billing driver");
+  if (
+    env.NODE_ENV === "production" &&
+    (env.BILLING_DRIVER !== "asaas" ||
+      env.BILLING_WEBHOOK_TOKEN.startsWith("local-") ||
+      env.INTERNAL_TOKEN.startsWith("local-"))
+  )
+    throw Error(
+      "Production requires the Asaas billing driver and private webhook and internal tokens",
+    );
+  return { ...env, prices };
 }
 export type Config = ReturnType<typeof config>;

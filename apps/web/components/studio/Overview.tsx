@@ -14,7 +14,12 @@ import {
 } from "lucide-react";
 import type { Draft } from "@studio/shared";
 import { t, type Lang } from "../../lib/copy";
-import type { Artist, Limits, SiteData } from "../../lib/use-draft";
+import { useEffect, useState } from "react";
+import type { Artist, Entitlement, Limits, SiteData } from "../../lib/use-draft";
+import { api } from "../../lib/client";
+import { Chart, type Report } from "./Analytics";
+import { Usage, usageWarnings, type BillingState } from "./Billing";
+import { planName } from "./PlanCards";
 import { Sparkle, Sticker } from "../home/bits";
 import { cn } from "../home/types";
 import { card, EmptyStudio, inkPill, PageHeader } from "./parts";
@@ -32,6 +37,7 @@ type Props = {
   data: SiteData;
   user: Artist;
   limits: Limits;
+  ent: Entitlement;
   brand: string;
   address: string;
   publicHref: string;
@@ -39,7 +45,24 @@ type Props = {
   onResume?: () => void;
 };
 
-export function Overview({ d, l, data, user, limits, brand, address, publicHref, setTab, onResume }: Props) {
+export function Overview({ d, l, data, user, limits, ent, brand, address, publicHref, setTab, onResume }: Props) {
+  const [billing, setBilling] = useState<BillingState | null>(null),
+    [report, setReport] = useState<Report | null>(null),
+    [domain, setDomain] = useState<{ hostname: string; live: boolean } | null>(null);
+  useEffect(() => {
+    // Three small reads; each card degrades to its own empty state.
+    api<BillingState>("/billing").then(setBilling, () => {});
+    api<Report>("/sites/" + data.id + "/analytics?days=30").then(setReport, () => {});
+    api<{ domains: { hostname: string; primary: boolean; status: string; tlsOk: boolean }[] }>("/sites/" + data.id + "/domains").then(
+      (r) => {
+        const p = r.domains.find((x) => x.primary) ?? r.domains[0];
+        if (p) setDomain({ hostname: p.hostname, live: p.status === "verified" && p.tlsOk });
+      },
+      () => {},
+    );
+  }, [data.id]);
+  const current = billing?.subscriptions.find((s) => ["active", "past_due", "canceling"].includes(s.status));
+  const warnings = billing ? usageWarnings(l, billing).filter((u) => u.share >= 0.8) : [];
   const tr = (en: string, pt: string) => (l === "en" ? en : pt);
   const thumb = (assetId: string) => "/api/media/" + data.id + "/" + assetId + "/thumb";
   const cover = d.artworks.find((a) => a.featured) ?? d.artworks[0];
@@ -200,6 +223,79 @@ export function Overview({ d, l, data, user, limits, brand, address, publicHref,
             <p className="mt-1 text-[11px] text-ink/45">{s.note}</p>
           </button>
         ))}
+      </div>
+
+      {warnings.length > 0 && (
+        <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e2b93b]/50 bg-butter/30 px-4 py-3 text-[12.5px] text-ink/75">
+          <span>
+            {warnings.some((w) => w.over)
+              ? tr("Some content is above your plan's limits. Everything stays online; remove a little or upgrade to add more.", "Parte do conteúdo passa dos limites do plano. Tudo continua no ar; remova um pouco ou faça upgrade para adicionar mais.")
+              : tr("You're close to your plan's limits: ", "Você está perto dos limites do plano: ") + warnings.map((w) => w.label.toLowerCase() + " " + w.text).join(" · ")}
+          </span>
+          <button type="button" onClick={() => setTab("billing")} className="rounded-full border border-ink/20 bg-ivory px-3 py-1.5 text-[11.5px] font-medium hover:border-ink/50">
+            {tr("Compare plans", "Comparar planos")}
+          </button>
+        </div>
+      )}
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <section className={cn(card, "p-5")}>
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/40">{tr("Your plan", "Seu plano")}</p>
+            <button type="button" onClick={() => setTab("billing")} className="text-[11px] font-medium text-ink/55 hover:text-ink">
+              {tr("Manage", "Gerenciar")} →
+            </button>
+          </div>
+          <p className="mt-2 font-display text-[22px] font-semibold tracking-tight">{planName(l, ent.plan)}</p>
+          <p className="mt-0.5 text-[11.5px] text-ink/50">
+            {current
+              ? current.status === "canceling"
+                ? tr("Ends on ", "Termina em ") + new Date(current.periodEnd!).toLocaleDateString(l)
+                : current.status === "past_due"
+                  ? tr("Payment overdue — grace until ", "Pagamento atrasado — carência até ") + new Date(current.graceUntil!).toLocaleDateString(l)
+                  : tr("Renews ", "Renova em ") + new Date(current.periodEnd!).toLocaleDateString(l)
+              : tr("Free forever. Upgrade for a custom domain and more room.", "Grátis para sempre. Faça upgrade para domínio próprio e mais espaço.")}
+          </p>
+          {billing && (
+            <div className="mt-4">
+              <Usage l={l} b={billing} />
+            </div>
+          )}
+        </section>
+        <section className={cn(card, "p-5")}>
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/40">{tr("Views · 30 days", "Visualizações · 30 dias")}</p>
+            <button type="button" onClick={() => setTab("analytics")} className="text-[11px] font-medium text-ink/55 hover:text-ink">
+              {tr("Details", "Detalhes")} →
+            </button>
+          </div>
+          <p className="mt-2 font-display text-[30px] font-semibold leading-none tracking-[-0.03em] tabular-nums">{report ? report.total.toLocaleString(l) : "—"}</p>
+          <div className="mt-4">{report && report.total > 0 ? <Chart series={report.series} l={l} height={70} /> : <p className="text-[11.5px] text-ink/45">{tr("Views of your published site appear here.", "As visualizações do site publicado aparecem aqui.")}</p>}</div>
+        </section>
+        <section className={cn(card, "p-5")}>
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/40">{tr("Address", "Endereço")}</p>
+            <button type="button" onClick={() => setTab("domains")} className="text-[11px] font-medium text-ink/55 hover:text-ink">
+              {tr("Domains", "Domínios")} →
+            </button>
+          </div>
+          <p className="mt-2 truncate font-mono text-[13px]">{domain?.hostname ?? address}</p>
+          <p className="mt-1 text-[11.5px] text-ink/50">
+            {domain
+              ? domain.live && ent.features.customDomain
+                ? tr("Custom domain live with HTTPS.", "Domínio próprio no ar com HTTPS.")
+                : !ent.features.customDomain
+                  ? tr("Custom domain paused on the free plan.", "Domínio próprio pausado no plano grátis.")
+                  : tr("Custom domain setup in progress.", "Configuração do domínio em andamento.")
+              : ent.features.customDomain
+                ? tr("Connect your own domain any time.", "Conecte seu domínio quando quiser.")
+                : tr("Free address included on every plan.", "Endereço gratuito incluso em todos os planos.")}
+          </p>
+          <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-ink/[0.05] px-2.5 py-1 text-[11px] text-ink/60">
+            <span className={cn("h-1.5 w-1.5 rounded-full", data.published ? "bg-[#2f8a68]" : "bg-[#d9a400]")} />
+            {data.published ? tr("Published", "Publicado") : tr("Not published", "Não publicado")}
+          </p>
+        </section>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">

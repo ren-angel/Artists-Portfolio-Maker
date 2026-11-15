@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PanelLeft, Rocket, SlidersHorizontal } from "lucide-react";
-import { newBlock, type Block, type Draft } from "@studio/shared";
+import { newBlock, type Block, type Draft, type Features } from "@studio/shared";
 import type { Limits, Update } from "../../../lib/use-draft";
 import { t, type Lang } from "../../../lib/copy";
 import { reorder } from "../../../lib/reorder";
@@ -36,7 +36,8 @@ export type EditorProps = {
   onResend: () => Promise<void>;
   onUpload: (files: File[]) => void;
   onPreview: () => void;
-  onExit: (tab?: "galleries" | "library" | "pages") => void;
+  onExit: (tab?: "galleries" | "library" | "pages" | "commissions" | "billing") => void;
+  features: Features;
   /** Page to open first; defaults to the home page. */
   startPage?: string;
 };

@@ -1,11 +1,13 @@
 "use client";
 import { Check, LayoutTemplate, Palette, Type } from "lucide-react";
-import { templateNames, type Draft } from "@studio/shared";
+import { templateNames, type Draft, type Features } from "@studio/shared";
 import { t, type Lang } from "../../lib/copy";
 import type { Update } from "../../lib/use-draft";
 import { templatePreview } from "../../lib/demo";
 import { templateAccent } from "../templates/kit";
-import { designs, fonts } from "../Portfolio";
+import { designs, fonts, presets } from "../Portfolio";
+import { AppearanceOptions, PlanBadge } from "./AppearanceOptions";
+import { FONT_LABELS } from "./editor/ThemePanel";
 import { Sparkle } from "../home/bits";
 import { cn } from "../home/types";
 import { Segmented } from "./editor/ThemePanel";
@@ -34,6 +36,8 @@ export function ThemePage({
   site,
   brand,
   onSave,
+  features,
+  onUpgrade,
 }: {
   d: Draft;
   update: Update;
@@ -41,6 +45,8 @@ export function ThemePage({
   site: string;
   brand: string;
   onSave: () => void;
+  features: Features;
+  onUpgrade: () => void;
 }) {
   const tr = (en: string, pt: string) => (l === "en" ? en : pt);
   const T = designs[d.theme.template];
@@ -69,8 +75,8 @@ export function ThemePage({
               <Palette className="h-3.5 w-3.5 text-ink/35" /> {t(l, "palette")}
             </h3>
             <div className="mt-3 space-y-1.5" role="radiogroup">
-              {(["original", "warm", "cool", "noir"] as const).map((p) => {
-                const c = T.palettes[p];
+              {(["original", "warm", "cool", "noir", "blush", "sage", "midnight"] as const).map((p) => {
+                const c = p in presets ? presets[p as keyof typeof presets] : T.palettes[p as keyof typeof T.palettes];
                 return (
                   <button
                     key={p}
@@ -88,7 +94,10 @@ export function ThemePage({
                         <span key={i} className="h-5 w-5 rounded-full border border-ink/10" style={{ backgroundColor: v }} />
                       ))}
                     </span>
-                    <span className="flex-1 text-[12px]">{t(l, p)}</span>
+                    <span className="flex-1 text-[12px]">
+                      {p in presets ? { blush: tr("Blush", "Rosado"), sage: tr("Sage", "Sálvia"), midnight: tr("Midnight", "Meia-noite") }[p as keyof typeof presets] : t(l, p as "original")}
+                      {p in presets && <PlanBadge l={l} need="more" features={features} />}
+                    </span>
                     {d.theme.palette === p && <Check className="h-3.5 w-3.5 text-coral" />}
                   </button>
                 );
@@ -119,7 +128,7 @@ export function ThemePage({
               <Type className="h-3.5 w-3.5 text-ink/35" /> {tr("Typography", "Tipografia")}
             </h3>
             <div className="mt-3 space-y-1.5" role="radiogroup">
-              {(["template", "serif", "sans", "mono"] as const).map((f) => (
+              {(["template", "serif", "sans", "mono", "editorial", "grotesk", "storybook"] as const).map((f) => (
                 <button
                   key={f}
                   type="button"
@@ -132,7 +141,8 @@ export function ThemePage({
                   )}
                 >
                   <span className="block text-[14px]" style={{ fontFamily: f === "template" ? T.display : fonts[f] }}>
-                    {f === "template" ? PAIRS[d.theme.template] : t(l, f)}
+                    {f === "template" ? PAIRS[d.theme.template] : FONT_LABELS[f]}
+                    {["editorial", "grotesk", "storybook"].includes(f) && <PlanBadge l={l} need="more" features={features} />}
                   </span>
                   <span className="mt-0.5 block text-[10px] text-ink/40">
                     {tr("The quick brown fox jumps over the lazy dog.", "A rápida raposa marrom pula sobre o cão preguiçoso.")}
@@ -140,6 +150,18 @@ export function ThemePage({
                 </button>
               ))}
             </div>
+          </section>
+
+          <section className={section}>
+            <h3 className={heading}>{tr("Shape, effects & footer", "Forma, efeitos e rodapé")}</h3>
+            <div className="mt-3">
+              <AppearanceOptions d={d} l={l} features={features} edit={(fn) => update(fn)} />
+            </div>
+            {features.appearance !== "advanced" && (
+              <button type="button" onClick={onUpgrade} className="mt-3 text-[11px] text-ink/50 underline decoration-ink/20 underline-offset-4 hover:text-ink">
+                {tr("Compare plans", "Comparar planos")}
+              </button>
+            )}
           </section>
 
           <section className={section}>

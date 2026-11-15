@@ -107,18 +107,21 @@ function Footer({ ctx }: { ctx: Ctx }) {
         <span>
           © {ctx.year} <span className="lowercase">{ctx.d.title}</span>
         </span>
-        {ctx.social.length > 0 && (
+        {ctx.footerSocial.length > 0 && (
           <span className="flex flex-wrap gap-4">
-            {ctx.social.map((url) => (
+            {ctx.footerSocial.map((url) => (
               <a key={url} href={url} rel="me noreferrer" className="hover:text-pf-ink/70">
                 {short(url)}
               </a>
             ))}
           </span>
         )}
-        <span>
-          {ctx.tr("Made with", "Feito com")} {ctx.brand} ✦
-        </span>
+        {ctx.d.theme.footerText && <span>{ctx.d.theme.footerText}</span>}
+        {ctx.branding && (
+          <span>
+            {ctx.tr("Made with", "Feito com")} {ctx.brand} ✦
+          </span>
+        )}
       </div>
     </footer>
   );

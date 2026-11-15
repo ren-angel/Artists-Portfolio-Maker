@@ -1,6 +1,10 @@
 import { connect, sql, rows } from "@studio/db";
 import { config } from "./config.ts";
 import { storage } from "./storage.ts";
+import { provider } from "./billing/index.ts";
+import { maintain } from "./billing/service.ts";
+import { recheckDomains } from "./domains.ts";
+import { pruneAnalytics } from "./analytics.ts";
 const env = config();
 const { db, pool } = connect(env.DATABASE_URL);
 const store = storage(env);
@@ -24,6 +28,16 @@ try {
       return keys.length;
     });
   } while (count === 100);
+  // Billing reconciliation, domain re-verification and analytics retention.
+  // Each step is independent so one failing provider does not block others.
+  for (const [name, step] of [
+    ["billing", () => maintain(db, provider(env))],
+    ["domains", () => recheckDomains(db, env)],
+    ["analytics", () => pruneAnalytics(db, env)],
+  ] as const)
+    await step().catch((err: Error) =>
+      console.error(JSON.stringify({ job: "maintenance", step: name, error: err.message })),
+    );
 } finally {
   await pool.end();
 }

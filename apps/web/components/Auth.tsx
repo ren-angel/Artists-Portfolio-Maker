@@ -144,7 +144,8 @@ export function Auth({ mode, lang: l, name }: { mode: Mode; lang: Lang; name: st
     e.preventDefault();
     setBusy(true);
     setError("");
-    const values = Object.fromEntries(new FormData(e.currentTarget));
+    const values: Record<string, unknown> = Object.fromEntries(new FormData(e.currentTarget));
+    if (mode === "register") values.accept = values.accept === "on";
     try {
       if (mode === "verify" || mode === "reset") values.token = location.hash.slice(1);
       await api("/auth/" + mode, "POST", values);
@@ -244,6 +245,22 @@ export function Auth({ mode, lang: l, name }: { mode: Mode; lang: Lang; name: st
               <span key={i} className={"h-1 flex-1 rounded-full transition-colors " + (password.length >= 6 + i * 6 ? "bg-coral" : "bg-ink/12")} />
             ))}
           </div>
+        )}
+        {mode === "register" && (
+          <label className="flex items-start gap-2.5 pt-1 text-[12.5px] leading-relaxed text-ink/60">
+            <input type="checkbox" name="accept" required className="mt-0.5 h-4 w-4 shrink-0 accent-coral" />
+            <span>
+              {tr("I accept the ", "Aceito os ")}
+              <a href="/legal/terms" target="_blank" className="underline underline-offset-2 hover:text-ink">
+                {tr("Terms of service", "Termos de uso")}
+              </a>{" "}
+              {tr("and the ", "e a ")}
+              <a href="/legal/privacy" target="_blank" className="underline underline-offset-2 hover:text-ink">
+                {tr("Privacy policy", "Política de privacidade")}
+              </a>
+              . {tr("Your artwork always remains yours.", "Suas obras continuam sempre suas.")}
+            </span>
+          </label>
         )}
         {mode === "login" && (
           <div className="flex justify-end pt-1">

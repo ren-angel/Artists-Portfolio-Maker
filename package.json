@@ -16,9 +16,10 @@
     "migrate": "node --env-file-if-exists=.env --import tsx packages/db/src/migrate.ts",
     "seed": "node --env-file-if-exists=.env --import tsx scripts/seed.ts",
     "cleanup": "node --env-file-if-exists=.env --import tsx apps/api/src/cleanup.ts",
-    "test:unit": "node --import ./tests/register.mjs --test tests/homepage.test.ts tests/model.test.ts tests/render.test.ts",
+    "test:unit": "node --import ./tests/register.mjs --test tests/homepage.test.ts tests/model.test.ts tests/render.test.ts tests/plans.test.ts tests/asaas.test.ts",
     "test:sql": "node --env-file-if-exists=.env scripts/test-sql.mjs",
-    "db:test:migrate": "node --env-file-if-exists=.env --import tsx scripts/migrate-test.ts"
+    "db:test:migrate": "node --env-file-if-exists=.env --import tsx scripts/migrate-test.ts",
+    "admin": "node --env-file-if-exists=.env --import tsx scripts/admin.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",

@@ -6,6 +6,7 @@ import { assert, Fault } from "./errors.ts";
 import { token, digest, hashPassword, verifyPassword } from "./security.ts";
 import { deliver } from "./mail.ts";
 import { prune } from "./drafts.ts";
+import { legalDocuments, requiredConsents } from "@studio/shared";
 const emailSchema = z
   .email()
   .max(254)
@@ -18,6 +19,7 @@ type Account = {
   displayName: string;
   verified: boolean;
   avatar: string | null;
+  restricted: boolean;
 };
 export function cookieName(env: Config) {
   return env.NODE_ENV === "production" ? "__Host-session" : "studio_session";
@@ -27,12 +29,17 @@ export async function account(db: Database, req: FastifyRequest, env: Config) {
   assert(raw, 401, "unauthorized");
   const user = await first<Account>(
     db,
-    sql`select u.id,email,display_name as "displayName",verified,avatar_asset as avatar from sessions s join users u on u.id=s.user_id where s.digest=${digest(raw)} and s.expires_at>now()`,
+    sql`select u.id,email,display_name as "displayName",verified,avatar_asset as avatar,restricted_at is not null as restricted from sessions s join users u on u.id=s.user_id where s.digest=${digest(raw)} and s.expires_at>now()`,
   );
   assert(user, 401, "unauthorized");
   return user;
 }
-export function authRoutes(app: FastifyInstance, db: Database, env: Config) {
+export function authRoutes(
+  app: FastifyInstance,
+  db: Database,
+  env: Config,
+  hooks: { beforeDelete?: (user: string) => Promise<void> } = {},
+) {
   const limit = {
     config: { rateLimit: { max: 10, timeWindow: "10 minutes" } },
   };
@@ -74,7 +81,11 @@ export function authRoutes(app: FastifyInstance, db: Database, env: Config) {
   }
   app.post("/auth/register", limit, async (req, reply) => {
     const { email, password, displayName } = credentials
-      .extend({ displayName: z.string().trim().min(1).max(80) })
+      .extend({
+        displayName: z.string().trim().min(1).max(80),
+        // The registration form requires accepting the current terms.
+        accept: z.literal(true),
+      })
       .parse(req.body);
     const hash = await hashPassword(password);
     const result = await db.transaction(async (tx) => {
@@ -83,6 +94,10 @@ export function authRoutes(app: FastifyInstance, db: Database, env: Config) {
         sql`insert into users(email,password_hash,display_name) values(${email},${hash},${displayName}) returning id`,
       );
       await tx.execute(sql`insert into entitlements(user_id) values(${u!.id})`);
+      for (const d of requiredConsents)
+        await tx.execute(
+          sql`insert into consents(user_id,document,version) values(${u!.id},${d},${legalDocuments[d]})`,
+        );
       return {
         session: await session(tx, u!.id),
         secret: await issue(tx, u!.id, "verify"),
@@ -224,6 +239,8 @@ export function authRoutes(app: FastifyInstance, db: Database, env: Config) {
       403,
       "invalid_credentials",
     );
+    // Stop recurring charges first; billing rows outlive the account.
+    await hooks.beforeDelete?.(u.id);
     assert(
       await first(
         db,

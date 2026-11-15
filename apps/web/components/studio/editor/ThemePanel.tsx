@@ -1,14 +1,23 @@
 "use client";
-import { templateNames, type Draft } from "@studio/shared";
+import { templateNames, type Draft, type Features } from "@studio/shared";
 import { t, type Lang } from "../../../lib/copy";
 import { templatePreview } from "../../../lib/demo";
 import { templateAccent } from "../../templates/kit";
-import { designs, fonts } from "../../Portfolio";
+import { designs, fonts, presets } from "../../Portfolio";
+import { AppearanceOptions, PlanBadge } from "../AppearanceOptions";
 import { Sparkle } from "../../home/bits";
 import { cn } from "../../home/types";
 
 const SWATCHES = ["#ff7868", "#b6a0f6", "#a6e5cb", "#ffe5a0", "#272438"];
 const label = "text-[9px] uppercase tracking-[0.18em] text-ink/35";
+export const FONT_LABELS: Record<Exclude<Draft["theme"]["font"], "template">, string> = {
+  serif: "Fraunces",
+  sans: "Bricolage Grotesque",
+  mono: "Monospace",
+  editorial: "Instrument Serif",
+  grotesk: "Archivo",
+  storybook: "Cormorant Garamond",
+};
 const FONT_NAMES: Record<Draft["theme"]["template"], string> = {
   gallery: "Instrument Serif",
   creative: "Bricolage + Fraunces",
@@ -21,10 +30,12 @@ export function ThemePanel({
   d,
   l,
   edit,
+  features,
 }: {
   d: Draft;
   l: Lang;
   edit: (change: (x: Draft) => void, key?: string) => void;
+  features: Features;
 }) {
   const T = designs[d.theme.template];
   const swatches = [...new Set([templateAccent[d.theme.template], ...SWATCHES])];
@@ -92,7 +103,9 @@ export function ThemePanel({
 
       <p className={cn(label, "mt-4")}>{t(l, "surface")}</p>
       <div className="mt-1.5 grid grid-cols-4 gap-1">
-        {(["original", "warm", "cool", "noir"] as const).map((v) => (
+        {(["original", "warm", "cool", "noir", "blush", "sage", "midnight"] as const).map((v) => {
+          const c = v in presets ? presets[v as keyof typeof presets] : T.palettes[v as keyof typeof T.palettes];
+          return (
           <button
             key={v}
             type="button"
@@ -104,17 +117,22 @@ export function ThemePanel({
               "flex h-8 items-center justify-center gap-0.5 rounded-md border",
               d.theme.palette === v ? "border-ink/50 ring-1 ring-ink/30" : "border-ink/10 hover:border-ink/35",
             )}
-            style={{ backgroundColor: T.palettes[v].bg }}
+            style={{ backgroundColor: c.bg }}
           >
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: T.palettes[v].ink }} />
-            <span className="h-2.5 w-2.5 rounded-full border border-black/5" style={{ backgroundColor: T.palettes[v].surface }} />
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.ink }} />
+            <span className="h-2.5 w-2.5 rounded-full border border-black/5" style={{ backgroundColor: c.surface }} />
           </button>
-        ))}
+          );
+        })}
       </div>
+      <p className="mt-1 text-[9.5px] text-ink/35">
+        {l === "en" ? "Blush, sage and midnight" : "Rosado, sálvia e meia-noite"}
+        <PlanBadge l={l} need="more" features={features} />
+      </p>
 
       <p className={cn(label, "mt-4")}>{t(l, "font")}</p>
       <div className="mt-1.5 space-y-1">
-        {(["template", "serif", "sans", "mono"] as const).map((f) => (
+        {(["template", "serif", "sans", "mono", "editorial", "grotesk", "storybook"] as const).map((f) => (
           <button
             key={f}
             type="button"
@@ -126,7 +144,8 @@ export function ThemePanel({
             )}
           >
             <span style={{ fontFamily: f === "template" ? T.display : fonts[f] }}>
-              {f === "template" ? FONT_NAMES[d.theme.template] : t(l, f)}
+              {f === "template" ? FONT_NAMES[d.theme.template] : FONT_LABELS[f]}
+              {["editorial", "grotesk", "storybook"].includes(f) && <PlanBadge l={l} need="more" features={features} />}
             </span>
             {d.theme.font === f && <Sparkle size={9} className="text-coral" />}
           </button>
@@ -139,6 +158,10 @@ export function ThemePanel({
         options={(["split", "center", "stack"] as const).map((v) => [v, t(l, v)])}
         onChange={(v) => set("nav", v)}
       />
+
+      <div className="mt-5 border-t border-ink/10 pt-4">
+        <AppearanceOptions d={d} l={l} features={features} edit={edit} compact />
+      </div>
 
       <p className={cn(label, "mt-4")}>{t(l, "publicLang")}</p>
       <Segmented

@@ -38,3 +38,34 @@ The verification run found and corrected an optional-link validator that threw o
 ### Phase 2 handoff
 
 Start Phase 2 after the remaining Phase 1 checks pass. Extend the entitlements table into explicit per-plan limits and subscription states. Add authenticated checkout and an idempotent, signature-verified webhook processor. Apply quota increases and downgrades through the same site-lock transactions that reserve uploads. Retain access to existing work when an artist downgrades. If offering rollback, retain revisions and their asset pins together with a retention/usage policy. Add paid navigation and marketing pricing only after the corresponding workflows work end to end.
+
+
+## Phase 2 checkpoint, 13 November 2026
+
+Phase 2 (commercial launch) is implemented in local and test mode. Live payments and custom-domain TLS are **not** verified: they need real Asaas and hosting configuration.
+
+### Implemented
+- **Plans:** central catalog with configurable prices; quotas enforced in the API from the effective plan; plan-gated publishing that keeps draft content.
+- **Billing:** Asaas client and mock driver behind one provider interface; checkout through the hosted invoice; durable idempotent webhook log; reconciliation by re-reading the provider; upgrade/downgrade scheduling; cancellation to period end; 7-day grace; expiry; payment history; account deletion stops charges.
+- **Custom domains:** normalization and blocking of platform/internal names; DNS TXT ownership proof; CNAME/A checks; TLS handshake probe; primary domain and canonical URLs; on-demand TLS gate; daily re-verification; routing by the web proxy.
+- **Commissions:** status, types, ranges, currencies, examples, terms, allowed/disallowed lists, contacts (email, WhatsApp, links), four new sections, and counted contact clicks via a redirect that cannot be used as an open redirect.
+- **Analytics:** cookie-free daily aggregates, bot filtering, referrer categories, optional edge country, tenant isolation, 400-day retention, plan-gated advanced reports.
+- **Customization:** palette presets, extra type pairings, corners, shadows, hover, artwork shape, uniform/masonry grids, section background images, footer note and social toggle. Schema defaults keep older drafts and snapshots valid.
+- **Studio and account:** plan/usage/domain/analytics summaries with limit warnings; public pricing page; draft legal pages marked for legal review; terms acceptance records; data export; support requests; copyright takedown form; admin console with audit log and account restriction.
+
+### Verification actually performed
+- `pnpm test`: Phase 1 plus billing (lifecycle, duplicates, out-of-order events, failure, grace, cancel, upgrade, downgrade, content preservation, concurrent quotas) and platform (domains, collisions, routing rules, commissions gating, analytics isolation, admin authorization, consents, export, deletion stops charges), against PostgreSQL with the mock provider.
+- `pnpm test:unit`: includes the pure lifecycle, tax ID, price and entitlement tests.
+- Playwright: the Phase 1 journeys and a free → Artist (simulated confirmed payment) → paid feature → cancel journey.
+- Manual checks against the running dev pair: custom-domain routing via the Host header (canonical URL, no branding, private routes 404, unknown hosts 404); real-browser view counting with bots excluded; `pnpm cleanup` with billing maintenance.
+
+### Launch blockers
+1. **Asaas:** sandbox account, webhook, and an end-to-end sandbox run including card renewal on the invoice page and refunds; confirm fees and adjust prices.
+2. **Hosting:** edge with on-demand TLS (or a managed custom-domain API), the DNS target, and the hourly maintenance schedule.
+3. **Legal:** qualified review of all `/legal` documents (LGPD, CDC right of withdrawal, refund window, mature content policy, provider list); fill `LEGAL_ENTITY_NAME` and `SUPPORT_EMAIL`.
+4. **Production secrets:** `INTERNAL_TOKEN`, `BILLING_WEBHOOK_TOKEN`, and shared edge rate limits.
+
+### Phase 3 preparation
+- The provider interface allows an international driver (for example Stripe) and per-currency prices (`PLAN_PRICES` already accepts currencies).
+- Multiple sites per account remain capped at one; the plan catalog already carries a `sites` limit.
+- The commission tools are informational. Payments for commissions, contact forms with spam protection and a marketplace are deliberately not built.

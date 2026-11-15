@@ -4,6 +4,7 @@ import { sql, first, type Database } from "@studio/db";
 import type { Config } from "./config.ts";
 import { account } from "./auth.ts";
 import { owned, prune, usage } from "./drafts.ts";
+import { entitlement } from "./plan.ts";
 import { siteId } from "./sites.ts";
 import { assert } from "./errors.ts";
 import { optimize } from "./images.ts";
@@ -38,14 +39,16 @@ export function mediaRoutes(
           404,
           "art_missing",
         );
+      assert(!u.restricted, 403, "account_restricted");
+      const { limits } = await entitlement(tx, env, u.id);
       const used = await usage(tx, s.id);
       assert(
-        replacement || Number(used.art) < env.MAX_ARTWORKS,
+        replacement || Number(used.art) < limits.artworks,
         409,
         "art_limit",
       );
       assert(
-        Number(used.bytes) + bytes <= env.MAX_STORAGE_BYTES,
+        Number(used.bytes) + bytes <= limits.storage,
         409,
         "storage_limit",
       );
@@ -141,8 +144,9 @@ export function mediaRoutes(
         const image = await optimize(source);
         const bytes = image.master.length + image.thumb.length;
         const used = await usage(tx, site);
+        const { limits } = await entitlement(tx, env, u.id);
         assert(
-          Number(used.bytes) - up.source_bytes + bytes <= env.MAX_STORAGE_BYTES,
+          Number(used.bytes) - up.source_bytes + bytes <= limits.storage,
           409,
           "storage_limit",
         );

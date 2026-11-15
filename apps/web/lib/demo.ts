@@ -1,4 +1,4 @@
-import { newBlock, type Block, type Draft, type Template } from "@studio/shared";
+import { commissionSchema, initialDraft, newBlock, type Block, type Draft, type Template } from "@studio/shared";
 import { templateAccent } from "../components/templates/kit";
 import type { Lang } from "./copy";
 
@@ -157,7 +157,8 @@ export function demo(template: Template, lang: Lang): Draft {
     language: lang,
     home: id(1),
     step: 7,
-    theme: { template, accent: templateAccent[template], palette: "original", font: "template", nav: "split" },
+    theme: { ...initialDraft("").theme, template, accent: templateAccent[template] },
+    commissions: commissionSchema.parse({}),
     social: s.social,
     pages: [
       { id: id(1), title: pick(s.home), slug: "home", inNav: true, blocks: s.blocks(art, gallery).map((b, i) => block(b, 300 + i)) },

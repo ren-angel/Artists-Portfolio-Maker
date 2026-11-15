@@ -315,6 +315,41 @@ const phrases = {
   manage: ["Manage", "Gerenciar"],
   chooseGallery: ["All visible galleries", "Todas as galerias visíveis"],
   settingsNav: ["Settings", "Configurações"],
+  commissionStatus: ["Commission status", "Status das encomendas"],
+  commissionPrices: ["Commission prices", "Tabela de encomendas"],
+  commissionTerms: ["Commission terms", "Termos de encomenda"],
+  contactLinks: ["Contact buttons", "Botões de contato"],
+  commissions: ["Commissions", "Encomendas"],
+  billing: ["Plan & billing", "Plano e cobrança"],
+  domains: ["Custom domain", "Domínio próprio"],
+  analytics: ["Analytics", "Estatísticas"],
+  plan_required: [
+    "Your current plan doesn't include this feature.",
+    "Seu plano atual não inclui este recurso.",
+  ],
+  invalid_tax_id: ["Check the CPF or CNPJ.", "Confira o CPF ou CNPJ."],
+  tax_id_required: [
+    "Enter a CPF or CNPJ for the invoice.",
+    "Informe um CPF ou CNPJ para a cobrança.",
+  ],
+  already_subscribed: [
+    "You're already on this plan.",
+    "Você já está neste plano.",
+  ],
+  invalid_domain: [
+    "Use a domain you own, like artist.com or portfolio.artist.com.",
+    "Use um domínio seu, como artista.com ou portfolio.artista.com.",
+  ],
+  domain_limit: ["Domain limit reached.", "Limite de domínios atingido."],
+  domain_unverified: ["Verify the domain first.", "Verifique o domínio primeiro."],
+  account_restricted: [
+    "This account is restricted. Contact support.",
+    "Esta conta está restrita. Fale com o suporte.",
+  ],
+  locked: ["Paid plan", "Plano pago"],
+  blush: ["Blush", "Rosado"],
+  sage: ["Sage", "Sálvia"],
+  midnight: ["Midnight", "Meia-noite"],
 } satisfies Record<string, [string, string]>;
 export type Key = keyof typeof phrases;
 export const t = (lang: Lang, key: Key) => phrases[key][lang === "en" ? 0 : 1];

@@ -13,6 +13,8 @@ export type Site = {
   home: string;
   social: string[];
   published_id: string | null;
+  owner_id: string;
+  settings: { commissions?: unknown };
 };
 export async function owned(tx: Tx, site: string, user: string) {
   const row = await first<Site>(
@@ -48,6 +50,7 @@ export async function readDraft(tx: Tx, s: Site): Promise<Draft> {
     step: s.step,
     social: s.social,
     theme: theme?.config,
+    commissions: s.settings?.commissions,
     pages,
     galleries,
     artworks,
@@ -56,7 +59,7 @@ export async function readDraft(tx: Tx, s: Site): Promise<Draft> {
 // One locked, optimistic draft write. Stable IDs survive slug changes. SQL values remain bound parameters.
 export async function writeDraft(tx: Tx, site: string, d: Draft) {
   await tx.execute(
-    sql`update sites set title=${d.title},description=${d.description},language=${d.language},step=${d.step},social=${JSON.stringify(d.social)}::jsonb,home=${d.home},updated_at=now() where id=${site}`,
+    sql`update sites set title=${d.title},description=${d.description},language=${d.language},step=${d.step},social=${JSON.stringify(d.social)}::jsonb,home=${d.home},settings=jsonb_set(settings,'{commissions}',${JSON.stringify(d.commissions)}::jsonb),updated_at=now() where id=${site}`,
   );
   await tx.execute(
     sql`insert into themes values(${site},${JSON.stringify(d.theme)}::jsonb) on conflict(site_id) do update set config=excluded.config`,

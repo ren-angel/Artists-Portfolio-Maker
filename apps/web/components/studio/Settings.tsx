@@ -1,6 +1,6 @@
 "use client";
 import { useState, type ReactNode } from "react";
-import { AlertTriangle, Check, Globe, Lock, User } from "lucide-react";
+import { AlertTriangle, Check, Download, Globe, LifeBuoy, Lock, Shield, User } from "lucide-react";
 import type { Draft } from "@studio/shared";
 import { t, message, type Lang } from "../../lib/copy";
 import { api } from "../../lib/client";
@@ -16,6 +16,8 @@ const SECTIONS = [
   { id: "profile", icon: User, label: ["Profile", "Perfil"] },
   { id: "account", icon: Lock, label: ["Account details", "Dados da conta"] },
   { id: "language", icon: Globe, label: ["Language", "Idioma"] },
+  { id: "data", icon: Shield, label: ["Your data", "Seus dados"] },
+  { id: "support", icon: LifeBuoy, label: ["Help & support", "Ajuda e suporte"] },
   { id: "danger", icon: AlertTriangle, label: ["Account management", "Gerenciar conta"] },
 ] as const;
 const inputCls = "w-full rounded-lg border border-ink/12 bg-paper px-3 py-2 text-[12.5px] focus:border-ink/40 focus:outline-none";
@@ -244,6 +246,66 @@ export function Settings({
                 </Row>
               </div>
             </div>
+          )}
+
+          {section === "data" && (
+            <div>
+              <h2 className="font-display text-[16px] font-semibold tracking-tight">{tr("Your data", "Seus dados")}</h2>
+              <div className="mt-4">
+                <Row
+                  title={tr("Download your data", "Baixar seus dados")}
+                  body={tr("Account details, portfolio content, billing history and consents as a JSON file.", "Dados da conta, conteúdo do portfólio, histórico de cobrança e aceites em um arquivo JSON.")}
+                >
+                  <a href="/api/me/export" download className={pill + " inline-flex items-center gap-1.5"}>
+                    <Download className="h-3.5 w-3.5" /> {tr("Export", "Exportar")}
+                  </a>
+                </Row>
+                <Row title={tr("Your artwork is yours", "Suas obras são suas")} body={tr("We never claim ownership of what you upload.", "Nunca reivindicamos a propriedade do que você envia.")}>
+                  <a href="/legal/content" target="_blank" className={pill}>
+                    {tr("Read policy", "Ler política")}
+                  </a>
+                </Row>
+                <Row title={tr("Privacy policy", "Política de privacidade")} body={tr("How analytics, billing and storage handle personal data.", "Como estatísticas, cobrança e armazenamento tratam dados pessoais.")}>
+                  <a href="/legal/privacy" target="_blank" className={pill}>
+                    {tr("Read", "Ler")}
+                  </a>
+                </Row>
+              </div>
+            </div>
+          )}
+
+          {section === "support" && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const f = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
+                const form = e.currentTarget;
+                void run(async () => {
+                  await api("/support", "POST", { topic: f.topic, message: f.message });
+                  form.reset();
+                }, tr("Sent. We'll reply to " + user.email + ".", "Enviado. Responderemos para " + user.email + "."));
+              }}
+            >
+              <h2 className="font-display text-[16px] font-semibold tracking-tight">{tr("Help & support", "Ajuda e suporte")}</h2>
+              <p className="mt-1 text-[11.5px] text-ink/45">{tr("Real people read every message.", "Pessoas de verdade leem cada mensagem.")}</p>
+              <label className="mt-4 block max-w-[260px]">
+                <span className={small}>{tr("Topic", "Assunto")}</span>
+                <select name="topic" className={inputCls}>
+                  <option value="billing">{tr("Billing", "Cobrança")}</option>
+                  <option value="domain">{tr("Custom domain", "Domínio próprio")}</option>
+                  <option value="account">{tr("Account", "Conta")}</option>
+                  <option value="bug">{tr("Something isn't working", "Algo não funciona")}</option>
+                  <option value="other">{tr("Other", "Outro")}</option>
+                </select>
+              </label>
+              <label className="mt-3 block">
+                <span className={small}>{tr("Message", "Mensagem")}</span>
+                <textarea name="message" required minLength={10} maxLength={5000} rows={5} className={cn(inputCls, "resize-y leading-relaxed")} />
+              </label>
+              <button disabled={busy} className="mt-3 rounded-full bg-ink px-4 py-2 text-[11.5px] font-medium text-paper disabled:opacity-50">
+                {tr("Send", "Enviar")}
+              </button>
+            </form>
           )}
 
           {section === "danger" && (

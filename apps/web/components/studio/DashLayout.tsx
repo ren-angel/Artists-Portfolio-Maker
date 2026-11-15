@@ -12,6 +12,10 @@ import {
   Palette,
   PenLine,
   Rocket,
+  Receipt,
+  LineChart,
+  Globe,
+  CreditCard,
   Settings,
   Sparkles,
   X,
@@ -26,7 +30,18 @@ import { cn } from "../home/types";
    implemented workspaces appear; billing, analytics, domains, commissions and
    the "coming soon" group stay out of the navigation until they exist. */
 
-export type Tab = "overview" | "editor" | "pages" | "galleries" | "library" | "theme" | "settings";
+export type Tab =
+  | "overview"
+  | "editor"
+  | "pages"
+  | "galleries"
+  | "library"
+  | "theme"
+  | "commissions"
+  | "analytics"
+  | "domains"
+  | "billing"
+  | "settings";
 const STUDIO: { id: Tab; icon: typeof LayoutDashboard; key: Key }[] = [
   { id: "overview", icon: LayoutDashboard, key: "overview" },
   { id: "editor", icon: PenLine, key: "editor" },
@@ -34,6 +49,12 @@ const STUDIO: { id: Tab; icon: typeof LayoutDashboard; key: Key }[] = [
   { id: "galleries", icon: Layers, key: "galleries" },
   { id: "library", icon: Images, key: "library" },
   { id: "theme", icon: Palette, key: "theme" },
+  { id: "commissions", icon: Receipt, key: "commissions" },
+];
+const GROWTH: typeof STUDIO = [
+  { id: "analytics", icon: LineChart, key: "analytics" },
+  { id: "domains", icon: Globe, key: "domains" },
+  { id: "billing", icon: CreditCard, key: "billing" },
 ];
 const ACCOUNT: typeof STUDIO = [{ id: "settings", icon: Settings, key: "settingsNav" }];
 
@@ -53,6 +74,7 @@ type Props = {
   artworks: number;
   storageUsed?: number;
   limits: Limits;
+  planLabel: string;
   onPublish: () => void;
   onLogout: () => void;
   children: ReactNode;
@@ -125,7 +147,12 @@ function Sidebar(p: Props & { collapsed: boolean; onNavigate?: () => void }) {
               <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-coral text-[10px] font-bold text-white">{initials}</span>
             )}
             <div className="min-w-0">
-              <p className="truncate text-[12px] font-medium leading-none">{user.displayName}</p>
+              <p className="flex items-center gap-1.5 truncate text-[12px] font-medium leading-none">
+                {user.displayName}
+                <button type="button" onClick={() => go("billing")} className="rounded-full bg-ink/[0.07] px-1.5 py-[1px] text-[9px] font-semibold uppercase tracking-wider text-ink/55 hover:bg-ink hover:text-paper">
+                  {p.planLabel}
+                </button>
+              </p>
               <p className="mt-1 truncate font-mono text-[9.5px] text-ink/40">{p.address}</p>
             </div>
           </div>
@@ -144,6 +171,12 @@ function Sidebar(p: Props & { collapsed: boolean; onNavigate?: () => void }) {
         {!collapsed && <p className="px-2 pb-1.5 text-[9px] font-semibold uppercase tracking-[0.2em] text-ink/30">{t(l, "studio")}</p>}
         <div className="space-y-0.5">
           {STUDIO.map((item) => (
+            <NavItem key={item.id} item={item} l={l} active={p.tab === item.id} collapsed={collapsed} onClick={() => go(item.id)} />
+          ))}
+        </div>
+        {!collapsed && <p className="mt-5 px-2 pb-1.5 text-[9px] font-semibold uppercase tracking-[0.2em] text-ink/30">{l === "en" ? "Growth" : "Crescimento"}</p>}
+        <div className={cn("space-y-0.5", collapsed && "mt-3")}>
+          {GROWTH.map((item) => (
             <NavItem key={item.id} item={item} l={l} active={p.tab === item.id} collapsed={collapsed} onClick={() => go(item.id)} />
           ))}
         </div>

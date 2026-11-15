@@ -19,6 +19,10 @@ export const library: { type: Block["type"]; hint: [string, string] }[] = [
   { type: "contact", hint: ["How to reach you", "Como falar com você"] },
   { type: "cta", hint: ["One clear button", "Um botão claro"] },
   { type: "divider", hint: ["A drawn line", "Uma linha desenhada"] },
+  { type: "contactLinks", hint: ["Email, WhatsApp, links", "E-mail, WhatsApp, links"] },
+  { type: "commissionStatus", hint: ["Open, closed or waitlist", "Abertas, fechadas ou espera"] },
+  { type: "commissionPrices", hint: ["Types and prices", "Tipos e valores"] },
+  { type: "commissionTerms", hint: ["Rules and terms", "Regras e termos"] },
 ];
 
 export const takesArt = (type: Block["type"]) => ["hero", "image", "about"].includes(type);
@@ -26,3 +30,4 @@ export const takesGallery = (type: Block["type"]) => ["galleryGrid", "galleryPre
 export const takesText = (type: Block["type"]) =>
   ["hero", "richText", "about", "contact", "image", "cta", "featured", "heading", "galleryGrid"].includes(type);
 export const takesLink = (type: Block["type"]) => ["cta", "contact", "hero", "about"].includes(type);
+export const isCommission = (type: Block["type"]) => type.startsWith("commission") || type === "contactLinks";

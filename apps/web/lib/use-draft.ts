@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Draft } from "@studio/shared";
+import type { Draft, Features, PlanId } from "@studio/shared";
 import { api } from "./client";
 export type SiteData = {
   id: string;
@@ -25,6 +25,7 @@ export type Limits = {
   storage: number;
   upload: number;
 };
+export type Entitlement = { plan: PlanId; limits: Limits; features: Features };
 export type Update = (change: (draft: Draft) => void) => void;
 export function useDraft(initial: SiteData) {
   const [data, setData] = useState(initial),

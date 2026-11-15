@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { plans, type Features, type PlanId } from "./plans.ts";
+export * from "./plans.ts";
+export * from "./legal.ts";
 
 export const templateNames = [
   "gallery",
@@ -19,15 +22,18 @@ export const blockTypes = [
   "contact",
   "cta",
   "divider",
+  "commissionStatus",
+  "commissionPrices",
+  "commissionTerms",
+  "contactLinks",
 ] as const;
-export const defaults = {
-  sites: 1,
-  pages: 5,
-  artworks: 50,
-  storage: 200 * 1024 ** 2,
-  upload: 12 * 1024 ** 2,
-  pixels: 32_000_000,
-};
+/** Sections that require the commissions feature to be published. */
+export const commissionBlocks = new Set<string>([
+  "commissionStatus",
+  "commissionPrices",
+  "commissionTerms",
+]);
+export const defaults = { ...plans.free.limits, pixels: 32_000_000 };
 export const reserved = new Set(
   "www app api admin support help billing assets media cdn mail status static studio dashboard auth preview gallery galleries sitemap robots localhost site demo report prints ftp smtp mailer cdn-assets security postmaster abuse".split(
     " ",
@@ -48,6 +54,9 @@ const reservedPages = new Set([
   "demo",
   "prints",
   "galleries",
+  "works",
+  "go",
+  "legal",
 ]);
 export const handle = slug.min(3).refine((s) => !reserved.has(s));
 const id = z.uuid();
@@ -65,13 +74,25 @@ export const safeLink = z
     );
   });
 const color = z.string().regex(/^#[a-fA-F0-9]{6}$/);
+/* Schema revision 1.1: every field added after Phase 1 is optional with a
+   default, so stored drafts and published snapshots parse unchanged. */
+export const palettes = ["original", "warm", "cool", "noir", "blush", "sage", "midnight"] as const;
+export const fontChoices = ["template", "serif", "sans", "mono", "editorial", "grotesk", "storybook"] as const;
 export const themeSchema = z.object({
   template: z.enum(templateNames),
   accent: color,
-  palette: z.enum(["original", "warm", "cool", "noir"]).default("original"),
-  font: z.enum(["template", "serif", "sans", "mono"]),
+  palette: z.enum(palettes).default("original"),
+  font: z.enum(fontChoices),
   nav: z.enum(["split", "center", "stack"]),
+  radius: z.enum(["template", "square", "soft", "round"]).default("template"),
+  shadow: z.enum(["template", "none", "soft", "lifted"]).default("template"),
+  hover: z.enum(["template", "none", "zoom", "lift"]).default("template"),
+  aspect: z.enum(["template", "square", "portrait", "landscape", "original"]).default("template"),
+  grid: z.enum(["template", "uniform", "masonry"]).default("template"),
+  footerText: z.string().max(200).default(""),
+  footerSocial: z.boolean().default(true),
 });
+export type Theme = z.infer<typeof themeSchema>;
 export const blockSchema = z.object({
   version: z.literal(1),
   id,
@@ -85,6 +106,8 @@ export const blockSchema = z.object({
   artId: id.nullable(),
   galleryId: id.nullable(),
   url: z.union([safeLink, z.literal("")]),
+  /** Studio plan: an artwork shown behind the section. */
+  bgArtId: id.nullable().default(null),
 });
 export const pageSchema = z.object({
   id,
@@ -110,6 +133,44 @@ export const artSchema = z.object({
   alt: z.string().max(500),
   featured: z.boolean(),
 });
+const contactSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("email"), label: z.string().max(40), value: z.email().max(254) }),
+  z.object({ kind: z.literal("whatsapp"), label: z.string().max(40), value: z.string().regex(/^\+?\d{8,15}$/) }),
+  z.object({ kind: z.literal("link"), label: z.string().max(40), value: safeLink }),
+]);
+export type Contact = z.infer<typeof contactSchema>;
+export const commissionSchema = z.object({
+  status: z.enum(["open", "closed", "waitlist"]).default("closed"),
+  currency: z.string().regex(/^[A-Z]{3}$/).default("BRL"),
+  note: z.string().max(300).default(""),
+  turnaround: z.string().max(120).default(""),
+  types: z
+    .array(
+      z.object({
+        id,
+        name: z.string().trim().min(1).max(60),
+        description: z.string().max(500),
+        priceFrom: z.number().nonnegative().max(1_000_000).nullable(),
+        priceTo: z.number().nonnegative().max(1_000_000).nullable(),
+        turnaround: z.string().max(80),
+        artId: id.nullable(),
+        visible: z.boolean(),
+      }),
+    )
+    .max(20)
+    .default([]),
+  terms: z.string().max(5000).default(""),
+  allowed: z.array(z.string().trim().min(1).max(100)).max(20).default([]),
+  disallowed: z.array(z.string().trim().min(1).max(100)).max(20).default([]),
+  contacts: z.array(contactSchema).max(10).default([]),
+});
+export type Commissions = z.infer<typeof commissionSchema>;
+/** Safe outbound URL for a contact entry; never a script or data URL. */
+export function contactHref(c: Contact) {
+  if (c.kind === "email") return "mailto:" + c.value;
+  if (c.kind === "whatsapp") return "https://wa.me/" + c.value.replace(/\D/g, "");
+  return c.value;
+}
 export const draftSchema = z
   .object({
     version: z.literal(1),
@@ -123,6 +184,7 @@ export const draftSchema = z
     pages: z.array(pageSchema).min(1).max(100),
     galleries: z.array(gallerySchema).max(100),
     artworks: z.array(artSchema).max(1000),
+    commissions: commissionSchema.default(commissionSchema.parse({})),
   })
   .superRefine((d, ctx) => {
     const issue = (message: string) =>
@@ -151,10 +213,13 @@ export const draftSchema = z
       for (const b of p.blocks)
         if (
           (b.artId && !art.has(b.artId)) ||
+          (b.bgArtId && !art.has(b.bgArtId)) ||
           (b.galleryId && !galleries.has(b.galleryId))
         )
           issue("invalid_block_reference");
     }
+    for (const c of d.commissions.types)
+      if (c.artId && !art.has(c.artId)) issue("invalid_commission_reference");
   });
 export type Draft = z.infer<typeof draftSchema>;
 export type Block = z.infer<typeof blockSchema>;
@@ -174,6 +239,7 @@ export function newBlock(type: Block["type"]): Block {
     artId: null,
     galleryId: null,
     url: "",
+    bgArtId: null,
   };
 }
 export function initialDraft(
@@ -194,6 +260,13 @@ export function initialDraft(
       palette: "original",
       font: "template",
       nav: "split",
+      radius: "template",
+      shadow: "template",
+      hover: "template",
+      aspect: "template",
+      grid: "template",
+      footerText: "",
+      footerSocial: true,
     },
     social: [],
     pages: [
@@ -211,9 +284,29 @@ export function initialDraft(
     ],
     galleries: [],
     artworks: [],
+    commissions: commissionSchema.parse({}),
   };
 }
-export function publishable(draft: Draft): Draft {
+/** Plan-gated choices fall back to template defaults when the plan lacks
+    them, so a downgrade never deletes the draft, only what is published. */
+export function entitle(draft: Draft, features: Features): Draft {
+  const d = structuredClone(draft);
+  const t = d.theme;
+  if (features.appearance === "basic") {
+    Object.assign(t, { radius: "template", shadow: "template", hover: "template", aspect: "template", footerText: "" });
+    if (!["original", "warm", "cool", "noir"].includes(t.palette)) t.palette = "original";
+    if (!["template", "serif", "sans", "mono"].includes(t.font)) t.font = "template";
+  }
+  if (features.appearance !== "advanced") {
+    t.grid = "template";
+    for (const p of d.pages) for (const b of p.blocks) b.bgArtId = null;
+  }
+  if (!features.commissions)
+    for (const p of d.pages) p.blocks = p.blocks.filter((b) => !commissionBlocks.has(b.type));
+  return d;
+}
+export function publishable(draft: Draft, plan: PlanId = "free"): Draft {
+  draft = entitle(draft, plans[plan].features);
   const galleries = draft.galleries.filter((g) => g.visible);
   const allowed = new Set(galleries.map((g) => g.id));
   const used = new Set(
@@ -225,8 +318,11 @@ export function publishable(draft: Draft): Draft {
       .filter((b) => b.visible && (!b.galleryId || allowed.has(b.galleryId)))
       .map((b) => {
         if (b.artId) used.add(b.artId);
+        if (b.bgArtId) used.add(b.bgArtId);
         if (b.type === "featured")
           for (const art of draft.artworks) if (art.featured) used.add(art.id);
+        if (b.type === "commissionPrices")
+          for (const c of draft.commissions.types) if (c.artId && c.visible) used.add(c.artId);
         return b;
       }),
   }));
@@ -235,6 +331,10 @@ export function publishable(draft: Draft): Draft {
     pages,
     galleries,
     artworks: draft.artworks.filter((a) => used.has(a.id)),
+    commissions: {
+      ...draft.commissions,
+      types: draft.commissions.types.map((c) => ({ ...c, artId: c.artId && used.has(c.artId) ? c.artId : null })),
+    },
   });
 }
 export function tenantFromHost(host: string, domain: string): string | null {

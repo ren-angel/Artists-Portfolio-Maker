@@ -15,3 +15,44 @@ The reports table contains a report ID, site ID, submission time, reason and rev
 ## Production choices still to verify
 
 Check live mail delivery, R2 permissions, DNS, TLS, limits at the edge and deletion propagation under the actual hosting configuration. The local adapter exercises a private filesystem. It does not authenticate to an external provider. Phase 1 uses one API process and rereads public snapshots. Introduce shared rate limits and revision-aware caching before horizontal scale.
+
+## Phase 2 operations
+
+### Billing
+1. Create an Asaas account and generate a sandbox API key. Set `BILLING_DRIVER=asaas`, `ASAAS_ENV=sandbox`, `ASAAS_API_KEY` and a random 48-character `BILLING_WEBHOOK_TOKEN`.
+2. In Asaas, add a webhook to `https://APP_HOST/api/billing/webhooks/asaas`. Use the same auth token, sequential delivery, and the `PAYMENT_*` and `SUBSCRIPTION_*` events. The URL must answer directly with no redirect.
+3. Run the full sandbox journey with a test card and with Pix: upgrade, renewal, failed card, cancellation, refund from the dashboard, downgrade. Confirm that invoice-page card payments renew automatically for your account. Only then switch to `ASAAS_ENV=production` with a production key.
+4. Production refuses the mock driver and default secrets. Set `INTERNAL_TOKEN` to a long random value on **both** the web and API services.
+
+See [BILLING.md](BILLING.md) for states, grace and plan-change policy.
+
+### Custom domains and TLS
+- Point `DOMAIN_TARGET` (for example `sites.your-domain.example`) at the web ingress and set `DOMAIN_TARGET_IP` for apex domains. Artists add a TXT record `_studio-verify.HOST` with the token shown in the studio, plus a CNAME (or A record).
+- The API never issues certificates. Use an edge that supports on-demand TLS and ask the API before issuing. With Caddy:
+
+```
+{
+  on_demand_tls {
+    ask http://API_PRIVATE_HOST:4000/domains/tls-ask
+  }
+}
+https:// {
+  tls { on_demand }
+  reverse_proxy WEB_PRIVATE_HOST:3000
+}
+```
+
+  `/domains/tls-ask?domain=` answers 200 only for verified domains whose owner's plan includes custom domains. Managed platforms (Vercel, Cloudflare for SaaS, Fly) can be used instead. Their domain APIs would be added behind the same verification flow.
+- The studio reports HTTPS as active only after a real TLS handshake to the domain succeeds (`DOMAIN_TLS_CHECK=probe`).
+- Domains are re-verified daily. If the TXT proof disappears, the domain stops routing. Unverified claims are released after 14 days.
+
+### Scheduled work and monitoring
+- Run `pnpm cleanup` hourly. It does upload/session cleanup, object garbage collection, billing event retries, time-based subscription transitions, bounded provider re-reads for pending and past-due purchases, retried provider cancellations, domain re-verification and analytics retention. It logs one JSON line per failing step.
+- `GET /health` checks the database and reports the billing driver. Alert on non-200 responses, API 5xx, unprocessed provider events older than one hour, and subscriptions with `sync_error` (`/admin/billing`).
+- Grant operators with `pnpm admin grant person@example.com`. Admin actions are recorded in `admin_audit`.
+
+### Backups and recovery
+Enable PostgreSQL point-in-time recovery (Neon branches or your provider's PITR) and versioned object storage. Rehearse restoring the database and bucket to the same point in time, then run `pnpm cleanup` and a billing re-sync (`/admin/billing` → Re-sync) to reconcile any payments received after the backup.
+
+### Analytics
+Views are counted by the web server after rendering public pages. The counts are daily aggregates without cookies, IPs or identifiers. Set `ANALYTICS_COUNTRY_HEADER` only if a trusted edge supplies a country code and strips the header from client requests.

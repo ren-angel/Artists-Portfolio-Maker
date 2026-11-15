@@ -25,6 +25,7 @@ try {
         email,
         password: crypto.randomUUID(),
         displayName: "Demo " + template,
+        accept: true,
       },
     });
     if (register.statusCode !== 201)

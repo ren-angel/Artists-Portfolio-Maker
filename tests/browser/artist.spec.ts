@@ -12,6 +12,7 @@ test("mobile artist creates, customizes, uploads, verifies, publishes and visits
   await page.getByLabel("Display name").fill("Studio Artist");
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel(/Password/).fill("browser-test-password");
+  await page.getByRole("checkbox", { name: /Terms/ }).check();
   await page.getByRole("button", { name: /Create your portfolio/ }).click();
   await page.getByLabel("Portfolio address").fill(handle);
   await page.getByLabel("Title", { exact: true }).fill("Paper Garden");
@@ -82,7 +83,7 @@ test("independent artist hosts render their own revisions and ignore forwarded t
     const password = "test-routing-password";
     const registered = await request.post("/api/auth/register", {
       headers,
-      data: { email, password, displayName: handle },
+      data: { email, password, displayName: handle, accept: true },
     });
     expect(registered.status()).toBe(201);
     const site = await request.post("/api/sites", {

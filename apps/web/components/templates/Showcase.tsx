@@ -92,14 +92,17 @@ function Footer({ ctx }: { ctx: Ctx }) {
           {ctx.d.description && ctx.d.description.length < 60 ? " · " + ctx.d.description : ""}
         </span>
         <span className="flex flex-wrap gap-5">
-          {ctx.social.map((url) => (
+          {ctx.footerSocial.map((url) => (
             <a key={url} href={url} rel="me noreferrer" className="transition-colors hover:text-pf-ink/60">
               {host(url)}
             </a>
           ))}
-          <span>
-            {ctx.tr("Made with", "Feito com")} {ctx.brand}
-          </span>
+          {ctx.d.theme.footerText && <span>{ctx.d.theme.footerText}</span>}
+          {ctx.branding && (
+            <span>
+              {ctx.tr("Made with", "Feito com")} {ctx.brand}
+            </span>
+          )}
         </span>
       </W>
     </footer>

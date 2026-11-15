@@ -17,10 +17,11 @@ import {
 } from "lucide-react";
 import type { Block, Draft } from "@studio/shared";
 import { t } from "../../../lib/copy";
-import { designs } from "../../Portfolio";
+import { paletteOf } from "../../Portfolio";
 import { Sparkle } from "../../home/bits";
 import { cn } from "../../home/types";
-import { blockName, takesArt, takesGallery, takesLink } from "./blocks";
+import { blockName, isCommission, takesArt, takesGallery, takesLink } from "./blocks";
+import { allows, PlanBadge } from "../AppearanceOptions";
 import { Segmented } from "./ThemePanel";
 import type { EditorProps } from "./Editor";
 
@@ -42,6 +43,7 @@ export function Properties({
   onPick,
   onClose,
   onExit,
+  features,
 }: EditorProps & {
   block: Block | null;
   page: Draft["pages"][number];
@@ -53,8 +55,7 @@ export function Properties({
   onClose: () => void;
 }) {
   const tr = (en: string, pt: string) => (l === "en" ? en : pt);
-  const T = designs[d.theme.template];
-  const palette = T.palettes[d.theme.palette];
+  const palette = paletteOf(d);
   const thumb = (assetId: string) => "/api/media/" + site + "/" + assetId + "/thumb";
   const Icon = !block
     ? ImageIcon
@@ -130,7 +131,23 @@ export function Properties({
                   </Field>
                 )}
 
-                {["hero", "richText", "about", "contact", "cta", "featured", "galleryGrid"].includes(block.type) && (
+                {isCommission(block.type) && (
+                  <div className="rounded-lg bg-butter/40 px-2.5 py-2 text-[10.5px] leading-relaxed text-ink/65">
+                    {tr("Status, prices, terms and contacts are shared by all commission sections.", "Status, valores, termos e contatos são compartilhados por todas as seções de encomenda.")}{" "}
+                    <button type="button" onClick={() => onExit("commissions")} className="font-medium underline underline-offset-2 hover:text-ink">
+                      {tr("Edit commission details", "Editar detalhes das encomendas")}
+                    </button>
+                    {block.type !== "contactLinks" && !features.commissions && (
+                      <span className="mt-1 block">
+                        {tr("Shown on your published site with Artist or Studio.", "Aparece no site publicado com Artista ou Estúdio.")}
+                        <button type="button" onClick={() => onExit("billing")} className="ml-1 underline underline-offset-2">
+                          {tr("See plans", "Ver planos")}
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                )}
+                {["hero", "richText", "about", "contact", "cta", "featured", "galleryGrid", "commissionStatus", "commissionPrices", "contactLinks"].includes(block.type) && (
                   <Field label={block.type === "hero" ? t(l, "introText") : t(l, "body")}>
                     <textarea
                       value={block.text}
@@ -339,6 +356,23 @@ export function Properties({
                     onChange={(v) => patch({ background: v })}
                   />
                 </div>
+                <label className="block">
+                  <span className="mb-1 block text-[9.5px] uppercase tracking-[0.14em] text-ink/40">
+                    {tr("Background image", "Imagem de fundo")}
+                    <PlanBadge l={l} need="advanced" features={features} />
+                  </span>
+                  <select value={block.bgArtId ?? ""} onChange={(e) => patch({ bgArtId: e.target.value || null })} className={inputClass}>
+                    <option value="">{t(l, "none")}</option>
+                    {d.artworks.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.title}
+                      </option>
+                    ))}
+                  </select>
+                  {block.bgArtId && !allows(features, "advanced") && (
+                    <span className="mt-1 block text-[9.5px] text-ink/40">{tr("Preview only on your plan.", "Só na prévia no seu plano.")}</span>
+                  )}
+                </label>
                 <p className="text-[9.5px] leading-relaxed text-ink/35">{t(l, "advancedHint")}</p>
               </div>
             )}

@@ -1,18 +1,25 @@
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
-import { published, publicOrigin, brand } from "../../../../lib/server";
+import { after } from "next/server";
+import {
+  published,
+  publicOrigin,
+  brand,
+  recordHit,
+  visit,
+} from "../../../../lib/server";
 import { Portfolio, matchPage } from "../../../../components/Portfolio";
 import { t } from "../../../../lib/copy";
 import "../../../../components/ui/ui.css";
 type Props = { params: Promise<{ handle: string; path?: string[] }> };
 export async function generateMetadata({ params }: Props) {
   const { handle, path = [] } = await params;
-  const { draft, id } = await published(handle);
+  const { draft, id, domain } = await published(handle);
   const item = matchPage(draft, path);
   if (!item) notFound();
   const title = path.length ? item.title + " · " + draft.title : draft.title;
   const canonical =
-    publicOrigin(handle) + (path.length ? "/" + path.join("/") : "");
+    publicOrigin(handle, domain) + (path.length ? "/" + path.join("/") : "");
   const a =
     (path[0] === "works" && draft.artworks.find((a) => a.id === path[1])) ||
     (draft.artworks.find((a) => a.featured) ?? draft.artworks[0]);
@@ -33,8 +40,21 @@ export async function generateMetadata({ params }: Props) {
 }
 export default async function PublicPage({ params }: Props) {
   const { handle, path = [] } = await params;
-  const { draft, id } = await published(handle);
+  const { draft, id, branding } = await published(handle);
   if (!matchPage(draft, path)) notFound();
+  // Count the view after the response is sent; prefetches are not visits.
+  const v = await visit();
+  if (!v.prefetch)
+    after(() =>
+      recordHit({
+        handle,
+        kind: "view",
+        path: "/" + path.join("/"),
+        referrer: v.referrer,
+        country: v.country,
+        agent: v.agent,
+      }),
+    );
   return (
     <main className="ui">
       <Portfolio
@@ -42,6 +62,8 @@ export default async function PublicPage({ params }: Props) {
         site={id}
         path={path}
         brand={brand()}
+        branding={branding}
+        track
         base={
           (await headers()).get("x-portfolio-host") === handle
             ? ""

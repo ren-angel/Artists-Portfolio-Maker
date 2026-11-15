@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  contactHref,
   safeLink,
   type Art,
   type Block,
@@ -23,6 +24,10 @@ export type PortfolioProps = {
   /** Demonstration pages map asset IDs to bundled images. */
   demoImages?: Record<string, string>;
   brand?: string;
+  /** Platform credit in footers; removed on paid plans. */
+  branding?: boolean;
+  /** Public pages route contact links through a counting redirect. */
+  track?: boolean;
   selectBlock?: (id: string) => void;
   selected?: string;
 };
@@ -34,11 +39,15 @@ export type Ctx = {
   route: Route;
   editing: boolean;
   brand: string;
+  branding: boolean;
   year: number;
   arts: Map<string, Art>;
   galleries: Gallery[];
   featured: Art[];
   social: string[];
+  footerSocial: string[];
+  /** Outbound URL for commission contact i (tracked on public pages). */
+  contactUrl: (i: number) => string;
   nav: { id: string; title: string; href: string; current: boolean }[];
   src: (a: Art, size?: "thumb" | "master") => string;
   href: (suffix: string) => string;
@@ -74,6 +83,8 @@ export function context(
     base,
     demoImages,
     brand = "Muralia",
+    branding = true,
+    track = false,
     selectBlock,
   }: PortfolioProps,
   route: Route,
@@ -84,17 +95,24 @@ export function context(
   const homeHref = href("");
   const current = route.kind === "page" ? route.page.id : "";
   const galleries = d.galleries.filter((g) => g.visible);
+  const social = d.social.filter((url) => safeLink.safeParse(url).success);
   return {
     d,
     l,
     route,
     editing: Boolean(selectBlock),
     brand,
+    branding,
     year: new Date().getFullYear(),
     arts,
     galleries,
     featured: d.artworks.filter((a) => a.featured),
-    social: d.social.filter((url) => safeLink.safeParse(url).success),
+    social,
+    footerSocial: d.theme.footerSocial ? social : [],
+    contactUrl: (i) => {
+      const c = d.commissions.contacts[i];
+      return track ? href("/go/contact/" + i) : c ? contactHref(c) : "#";
+    },
     nav: d.pages
       .filter((p) => p.inNav)
       .map((p) => ({
@@ -218,7 +236,7 @@ export type BlockRenderer = (b: Block, ctx: Ctx, index: number) => ReactNode;
 export type TemplateDesign = {
   /** Original palette plus three alternates: page, text and raised surface. */
   palettes: Record<
-    Draft["theme"]["palette"],
+    "original" | "warm" | "cool" | "noir",
     { bg: string; ink: string; surface: string }
   >;
   display: string;

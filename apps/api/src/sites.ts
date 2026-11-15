@@ -1,11 +1,20 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { sql, first, rows, type Database } from "@studio/db";
-import { initialDraft, draftSchema, handle, publishable } from "@studio/shared";
+import {
+  initialDraft,
+  draftSchema,
+  handle,
+  publishable,
+  entitle,
+  plans,
+  type PlanId,
+} from "@studio/shared";
 import { account } from "./auth.ts";
 import type { Config } from "./config.ts";
 import { assert } from "./errors.ts";
 import { owned, readDraft, writeDraft, prune, usage } from "./drafts.ts";
+import { entitlement, limits as planLimits, planSql } from "./plan.ts";
 
 export const siteId = (req: FastifyRequest) =>
   z.object({ site: z.uuid() }).parse(req.params).site;
@@ -17,13 +26,7 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
         db,
         sql`select id,handle,title from sites where owner_id=${u.id} order by created_at`,
       ),
-      limits: {
-        sites: env.MAX_SITES,
-        pages: env.MAX_PAGES,
-        artworks: env.MAX_ARTWORKS,
-        storage: env.MAX_STORAGE_BYTES,
-        upload: env.MAX_UPLOAD_BYTES,
-      },
+      ...(await entitlement(db, env, u.id)),
     };
   });
   app.post("/sites", async (req) => {
@@ -41,7 +44,7 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
         tx,
         sql`select count(*)::int n from sites where owner_id=${u.id}`,
       );
-      assert(count!.n < env.MAX_SITES, 409, "site_limit");
+      assert(count!.n < planLimits(env, "free").sites, 409, "site_limit");
       const d = initialDraft(b.title, b.language);
       const s = await first<{ id: string }>(
         tx,
@@ -75,10 +78,22 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
     const { version, draft } = z
       .object({ version: z.int().positive(), draft: draftSchema })
       .parse(req.body);
-    assert(draft.pages.length - 1 <= env.MAX_PAGES, 409, "page_limit");
     return db.transaction(async (tx) => {
       const s = await owned(tx, siteId(req), u.id);
       assert(version === s.version, 409, "conflict");
+      // A downgrade never locks editing: an over-limit site may keep or
+      // reduce its pages, but cannot add more until it is within the plan.
+      const { limits } = await entitlement(tx, env, u.id);
+      const before = await first<{ n: number }>(
+        tx,
+        sql`select count(*)::int as n from pages where site_id=${s.id}`,
+      );
+      assert(
+        draft.pages.length - 1 <= limits.pages ||
+          draft.pages.length <= before!.n,
+        409,
+        "page_limit",
+      );
       const old = await rows<{ id: string; asset: string }>(
         tx,
         sql`select id,asset_id as asset from artworks where site_id=${s.id}`,
@@ -109,7 +124,9 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
         let published: string | null = null;
         if (action === "publish") {
           assert(u.verified, 403, "verify_email");
-          const snapshot = publishable(await readDraft(tx, s));
+          assert(!u.restricted, 403, "account_restricted");
+          const { plan } = await entitlement(tx, env, u.id);
+          const snapshot = publishable(await readDraft(tx, s), plan);
           const rev = await first<{ id: string }>(
             tx,
             sql`insert into revisions(site_id,snapshot) values(${s.id},${JSON.stringify(snapshot)}::jsonb) returning id`,
@@ -138,12 +155,26 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
       id: string;
       revision: string;
       draft: unknown;
+      plan: PlanId;
+      domain: string | null;
     }>(
       db,
-      sql`select s.id,r.id as revision,r.snapshot as draft from sites s join revisions r on r.site_id=s.id and r.id=s.published_id where s.handle=${h}`,
+      sql`select s.id,r.id as revision,r.snapshot as draft,${planSql(sql`s.owner_id`)} as plan,
+        (select hostname from domains d where d.site_id=s.id and d.is_primary and d.status='verified') as domain
+        from sites s join revisions r on r.site_id=s.id and r.id=s.published_id join users u on u.id=s.owner_id
+        where s.handle=${h} and u.restricted_at is null`,
     );
     assert(record, 404, "site_missing");
-    return { ...record, draft: draftSchema.parse(record.draft) };
+    const features = plans[record.plan].features;
+    // Entitlements are re-applied on every read, so a lapsed plan reverts
+    // the public site to free features without republishing or data loss.
+    return {
+      id: record.id,
+      revision: record.revision,
+      draft: entitle(draftSchema.parse(record.draft), features),
+      branding: !features.removeBranding,
+      domain: features.customDomain ? record.domain : null,
+    };
   });
   app.post(
     "/reports",

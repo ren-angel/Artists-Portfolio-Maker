@@ -53,6 +53,7 @@ test("real API stores an isolated draft, verifies an upload, atomically publishe
       email: address,
       password,
       displayName: "Test artist",
+      accept: true,
     });
     assert.equal(r.statusCode, 201, r.body);
     return r.cookies[0].name + "=" + r.cookies[0].value;

@@ -2,15 +2,27 @@ import Fastify from "fastify";
 import cookie from "@fastify/cookie";
 import rateLimit from "@fastify/rate-limit";
 import { ZodError } from "zod";
-import { connect } from "@studio/db";
+import { connect, sql } from "@studio/db";
 import { authRoutes } from "./auth.ts";
 import { siteRoutes } from "./sites.ts";
 import { mediaRoutes } from "./uploads.ts";
 import { storage } from "./storage.ts";
 import { config, type Config } from "./config.ts";
 import { Fault } from "./errors.ts";
+import { provider as billingProvider } from "./billing/index.ts";
+import { billingRoutes } from "./billing/routes.ts";
+import type { BillingProvider } from "./billing/provider.ts";
+import { domainRoutes, realNetwork, type Network } from "./domains.ts";
+import { analyticsRoutes } from "./analytics.ts";
+import { adminRoutes } from "./admin.ts";
+import { accountRoutes } from "./account.ts";
+import { endAll } from "./billing/service.ts";
 
-export async function createApp(env: Config = config()) {
+export async function createApp(
+  env: Config = config(),
+  billing: BillingProvider = billingProvider(env),
+  network: Network = realNetwork,
+) {
   const { pool, db } = connect(env.DATABASE_URL);
   const app = Fastify({
     logger: env.NODE_ENV !== "test",
@@ -26,6 +38,10 @@ export async function createApp(env: Config = config()) {
       .header("Cache-Control", "private, no-store")
       .header("X-Content-Type-Options", "nosniff")
       .header("Referrer-Policy", "no-referrer");
+    // Provider webhooks and web-server internal calls authenticate with
+    // their own secrets instead of the browser origin check.
+    const url = req.url.split("?")[0];
+    if (url.startsWith("/billing/webhooks/") || url.startsWith("/internal/")) return;
     if (
       !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
       (req.headers.origin !== env.APP_ORIGIN ||
@@ -70,9 +86,21 @@ export async function createApp(env: Config = config()) {
       return reply.code(status).send({ error: code });
     },
   );
-  authRoutes(app, db, env);
+  authRoutes(app, db, env, { beforeDelete: (id) => endAll(db, billing, id) });
   siteRoutes(app, db, env);
   mediaRoutes(app, db, env, storage(env));
-  app.get("/health", async () => ({ ok: true }));
+  billingRoutes(app, db, env, billing);
+  domainRoutes(app, db, env, network);
+  analyticsRoutes(app, db, env);
+  adminRoutes(app, db, env, billing);
+  accountRoutes(app, db, env);
+  app.get("/health", async (_req, reply) => {
+    try {
+      await db.execute(sql`select 1`);
+      return { ok: true, billing: billing.name, live: billing.live };
+    } catch {
+      return reply.code(503).send({ ok: false });
+    }
+  });
   return app;
 }

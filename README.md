@@ -66,9 +66,14 @@ pnpm e2e
 
 `pnpm test:unit` runs the model, image, password and renderer tests without a database. `pnpm test` also runs the real API integration test and requires the test database.
 
+## Plans and billing (Phase 2)
+
+Free, Artist and Studio plans are defined in `packages/shared/src/plans.ts`. Locally, `BILLING_DRIVER=mock` opens a simulated invoice where you can approve or fail a payment; no money moves. Choose a plan under **Plan & billing** in the studio. See [billing](docs/BILLING.md) for the Asaas integration, states and policies, and grant yourself the operator console at `/admin` with `pnpm admin grant you@example.com`.
+
 ## Project documentation
 
 - [Architecture and tenant boundaries](docs/ARCHITECTURE.md)
 - [Visual implementation guide](docs/VISUAL-GUIDE.md)
 - [Deployment and maintenance](docs/DEPLOYMENT.md)
+- [Billing, plans and entitlements](docs/BILLING.md)
 - [Implementation checkpoint and Phase 2 handoff](docs/CHECKPOINT.md)

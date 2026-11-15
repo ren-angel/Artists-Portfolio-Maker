@@ -19,6 +19,7 @@ import {
 import type { Block, Draft } from "@studio/shared";
 import { t } from "../../../lib/copy";
 import { blockName, library, takesArt, takesGallery } from "./blocks";
+import { Lock } from "lucide-react";
 import { ThemePanel } from "./ThemePanel";
 import { cn } from "../../home/types";
 import type { EditorProps } from "./Editor";
@@ -135,7 +136,10 @@ export function LeftRail(
                     className="group rounded-lg border border-ink/10 bg-paper p-2 text-left transition-all hover:-translate-y-0.5 hover:border-ink/35"
                   >
                     <BlockGlyph type={b.type} />
-                    <span className="block text-[10.5px] font-medium leading-tight">{blockName(l, b.type)}</span>
+                    <span className="flex items-center gap-1 text-[10.5px] font-medium leading-tight">
+                      {blockName(l, b.type)}
+                      {b.type.startsWith("commission") && !props.features.commissions && <Lock className="h-2.5 w-2.5 shrink-0 text-ink/40" aria-label={t(l, "locked")} />}
+                    </span>
                     <span className="mt-0.5 block text-[9px] leading-tight text-ink/35">{l === "en" ? b.hint[0] : b.hint[1]}</span>
                   </button>
                 ))}
@@ -231,7 +235,7 @@ export function LeftRail(
               </>
             )}
 
-            {tab === "theme" && <ThemePanel d={d} l={l} edit={props.edit} />}
+            {tab === "theme" && <ThemePanel d={d} l={l} edit={props.edit} features={props.features} />}
 
             {tab === "layers" && (
               <div className="space-y-1">

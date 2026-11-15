@@ -23,6 +23,11 @@
 @source "../Auth.tsx";
 @source "../Studio.tsx";
 @source "../Portfolio.tsx";
+@source "../billing";
+@source "../admin";
+@source "../legal";
+@source "../../app/legal";
+@source "../../app/admin";
 
 @font-face {
   font-family: "UI Bricolage";
@@ -301,5 +306,70 @@
       transition-duration: 0.001ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+/* Plan-gated appearance options (Artist and Studio). They override the
+   template's own artwork frames through data attributes on the portfolio
+   root, so every template supports them without separate compositions. */
+.portfolio[data-radius="square"] .pf-block :is(:has(> img), img) {
+  border-radius: 0 !important;
+}
+.portfolio[data-radius="soft"] .pf-block :is(:has(> img), img) {
+  border-radius: 0.6rem !important;
+}
+.portfolio[data-radius="round"] .pf-block :is(:has(> img), img) {
+  border-radius: 1.6rem !important;
+}
+.portfolio[data-shadow="none"] .pf-block :has(> img) {
+  box-shadow: none !important;
+}
+.portfolio[data-shadow="soft"] .pf-block a :has(> img),
+.portfolio[data-shadow="soft"] .pf-block figure :has(> img) {
+  box-shadow: 0 18px 40px -28px rgb(0 0 0 / 0.45) !important;
+}
+.portfolio[data-shadow="lifted"] .pf-block a :has(> img),
+.portfolio[data-shadow="lifted"] .pf-block figure :has(> img) {
+  box-shadow: 0 34px 60px -30px rgb(0 0 0 / 0.6) !important;
+}
+.portfolio[data-hover="none"] .pf-block img {
+  transform: none !important;
+}
+.portfolio[data-hover="zoom"] .pf-block a img {
+  transition: transform 0.7s ease !important;
+}
+.portfolio[data-hover="zoom"] .pf-block a:hover img {
+  transform: scale(1.06) !important;
+}
+.portfolio[data-hover="lift"] .pf-block a {
+  transition: transform 0.4s ease;
+}
+.portfolio[data-hover="lift"] .pf-block a:hover {
+  transform: translateY(-5px);
+}
+.portfolio[data-hover="lift"] .pf-block a:hover img {
+  transform: none !important;
+}
+.portfolio[data-aspect="square"] .pf-block a img {
+  aspect-ratio: 1 / 1 !important;
+  object-fit: cover !important;
+}
+.portfolio[data-aspect="portrait"] .pf-block a img {
+  aspect-ratio: 4 / 5 !important;
+  object-fit: cover !important;
+}
+.portfolio[data-aspect="landscape"] .pf-block a img {
+  aspect-ratio: 4 / 3 !important;
+  object-fit: cover !important;
+}
+.portfolio[data-aspect="original"] .pf-block a img {
+  aspect-ratio: auto !important;
+  height: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .portfolio[data-hover] .pf-block a,
+  .portfolio[data-hover] .pf-block img {
+    transition: none !important;
+    transform: none !important;
   }
 }
