@@ -26,6 +26,7 @@ const en = (v: Vars): Record<LegalDocument, Doc> => ({
     title: "Privacy policy",
     sections: [
       ["Data we keep", "Account: email, display name, password hash, verification status. Content: your portfolio and uploads. Billing: plan, amounts, dates and the payment provider's customer reference. We do not store card numbers or your CPF/CNPJ; those go directly to the payment provider."],
+      ["Reading and video", "Comic preferences and progress are stored on your device. Loading a YouTube player connects your browser to YouTube. Artists can separately opt into the public directory."],
       ["Visitor analytics", "Public portfolio views are counted on our servers as daily totals per page, a referrer category and, if our hosting edge supplies it, a country code. We do not use cookies for analytics and we do not store visitors' IP addresses, browsers or identifiers."],
       ["Processors", "Hosting, database, object storage, transactional email and the payment provider process data on our behalf. [LIST PROVIDERS AND COUNTRIES]."],
       ["Your rights (LGPD)", `You can export your data from Settings, correct it, or delete your account at any time. Contact ${v.email} for other requests.`],
@@ -45,6 +46,8 @@ const en = (v: Vars): Record<LegalDocument, Doc> => ({
   content: {
     title: "Content ownership policy",
     sections: [
+      ["AI training", "We never use uploaded artist content to train AI models."],
+      ["Digital products", "The external store named on the product page handles payment and order support. Artists may authorize private file delivery after checking an order."],
       ["Ownership", `Artists own their work. ${v.brand} claims no ownership of uploaded artwork, and the platform name never replaces your authorship on your portfolio.`],
       ["Processing", "Uploads are re-encoded for display and stripped of camera metadata. Originals are not shared with third parties beyond our storage processors."],
       ["After deletion", "Deleting an artwork or your account removes it from your portfolio; stored files are queued for deletion."],
@@ -62,6 +65,7 @@ const en = (v: Vars): Record<LegalDocument, Doc> => ({
     title: "Copyright and takedown requests",
     sections: [
       ["Report infringement", "If a portfolio uses your work without permission, send the address of the page, a description of your work, your contact details and a statement that you are the rights holder or authorized to act for them."],
+      ["Appeals", `Send the portfolio address, the decision you received and any supporting information to ${v.email} for human review.`],
       ["What happens next", "We review each notice, may restrict the content while we do, and inform the portfolio owner, who may respond."],
     ],
   },
@@ -85,6 +89,7 @@ const pt = (v: Vars): Record<LegalDocument, Doc> => ({
       ["Dados que guardamos", "Conta: e-mail, nome artístico, hash da senha, status de verificação. Conteúdo: portfólio e envios. Cobrança: plano, valores, datas e a referência de cliente do provedor. Não guardamos números de cartão nem seu CPF/CNPJ; eles vão diretamente ao provedor de pagamento."],
       ["Estatísticas de visitantes", "Visualizações do portfólio público são contadas nos nossos servidores como totais diários por página, uma categoria de origem e, se a infraestrutura informar, o país. Não usamos cookies de estatística nem guardamos IP, navegador ou identificadores de visitantes."],
       ["Operadores", "Hospedagem, banco de dados, armazenamento de arquivos, e-mail transacional e provedor de pagamento tratam dados em nosso nome. [LISTAR FORNECEDORES E PAÍSES]."],
+      ["Leitura e vídeo", "As preferências e o progresso de leitura ficam no seu dispositivo. Ao carregar um player do YouTube, seu navegador se conecta ao YouTube. Artistas podem optar separadamente por aparecer no diretório público."],
       ["Seus direitos (LGPD)", `Você pode exportar seus dados nas Configurações, corrigi-los ou excluir a conta a qualquer momento. Outros pedidos: ${v.email}.`],
       ["Retenção", "Contas excluídas saem do banco de dados ativo imediatamente. Registros de cobrança exigidos por lei são mantidos sem dados de acesso. Backups expiram após [PERÍODO]. Estatísticas agregadas ficam até 400 dias."],
     ],
@@ -102,6 +107,8 @@ const pt = (v: Vars): Record<LegalDocument, Doc> => ({
   content: {
     title: "Política de propriedade do conteúdo",
     sections: [
+      ["Treinamento de IA", "Nunca usamos o conteúdo enviado por artistas para treinar modelos de IA."],
+      ["Produtos digitais", "A loja externa indicada na página do produto cuida do pagamento e do atendimento do pedido. O artista pode autorizar a entrega privada de arquivos após conferir o pedido."],
       ["Propriedade", `As obras pertencem aos artistas. ${v.brand} não reivindica a propriedade das obras enviadas, e o nome da plataforma nunca substitui sua autoria no portfólio.`],
       ["Processamento", "Os envios são recodificados para exibição e têm os metadados de câmera removidos. Os originais não são compartilhados com terceiros além dos operadores de armazenamento."],
       ["Após a exclusão", "Excluir uma obra ou a conta a remove do portfólio; os arquivos armazenados entram na fila de exclusão."],
@@ -119,6 +126,7 @@ const pt = (v: Vars): Record<LegalDocument, Doc> => ({
     title: "Direitos autorais e pedidos de remoção",
     sections: [
       ["Denuncie uma violação", "Se um portfólio usa sua obra sem permissão, envie o endereço da página, a descrição da obra, seus contatos e uma declaração de que você é titular dos direitos ou está autorizado a agir em nome dele."],
+      ["Recursos", `Envie o endereço do portfólio, a decisão recebida e as informações de apoio para ${v.email} para análise humana.`],
       ["O que acontece depois", "Analisamos cada pedido, podemos restringir o conteúdo durante a análise e informamos o dono do portfólio, que pode responder."],
     ],
   },

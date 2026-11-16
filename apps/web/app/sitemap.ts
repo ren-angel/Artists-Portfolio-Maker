@@ -12,6 +12,7 @@ export default async function sitemap() {
     ...draft.pages.map((p) => ({
       url: base + (p.id === draft.home ? "" : "/" + p.slug),
     })),
+    ...draft.pages.flatMap(p=>(p.creative?.chapters??[]).map(h=>({url:base+"/"+p.slug+"/chapters/"+h.id}))),
     ...draft.galleries.map((g) => ({ url: base + "/galleries/" + g.slug })),
   ];
 }

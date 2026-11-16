@@ -3,11 +3,11 @@
    is recorded with its time. All texts are drafts pending qualified review. */
 export const legalDocuments = {
   terms: "2026-11-draft",
-  privacy: "2026-11-draft",
+  privacy: "2026-11-phase3-draft",
   refunds: "2026-11-draft",
-  content: "2026-11-draft",
+  content: "2026-11-phase3-draft",
   "acceptable-use": "2026-11-draft",
-  copyright: "2026-11-draft",
+  copyright: "2026-11-phase3-draft",
 } as const;
 export type LegalDocument = keyof typeof legalDocuments;
 /** Documents an account must accept to register and keep using the studio. */

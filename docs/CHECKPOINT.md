@@ -1,6 +1,23 @@
-# Phase 1 implementation checklist
+# Artists Portfolio Maker checkpoint
 
-## Current handoff · 14 November 2026
+## Phase 3 · 15 November 2026
+
+Artist authoring is available in **Studio → Pages**. Comics, characters, projects and digital products use the existing page, theme and publication workflow. The page editor includes responsive containers, reusable sections and private revision history. Artist directory participation is opt-in. See the [Phase 3 guide](PHASE3.md) for limits, checkout ownership, reader behavior and rollout.
+
+| Verification | Observed result |
+| --- | --- |
+| `pnpm migrate`, `pnpm db:test:migrate` | Applied 0009 and 0010 to the configured local studio. All ten migrations applied on fresh PostgreSQL 16 databases. Running the test migration again made no changes. |
+| `pnpm test:sql`, `pnpm test:unit`, `pnpm test` | Passed. The full suite ran 37 tests with zero failures or skips. Coverage includes tenant isolation, publication filtering, chapter ordering, content relationships, download authorization and expiry, plan limits and opt-out. |
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed, including the production API bundle and Next.js build. |
+| `pnpm exec playwright install chromium`, `pnpm e2e` | Chromium available. All seven browser journeys passed against isolated local services. New journeys cover comic authoring and mobile reader resume, plus editor undo/redo, section reuse and revision restore after reload. |
+
+Baseline testing exposed a renewal-date display mismatch when PostgreSQL returned a timestamp in the local timezone. The billing response now serializes the period end in UTC. Browser verification also caught a template choice that could receive a click before hydration. The picker now enables its controls when the client can handle selection.
+
+Testing used local PostgreSQL, file storage, file mail and mock subscription billing. External provider playback, a real seller purchase, production object storage, mail and domain TLS still require staging. The marketplace checkout has no implementation. Legal texts remain drafts pending review.
+
+## Earlier checkpoints
+
+## Recovery handoff · 14 November 2026
 
 The source and storage recovery, current command results and outstanding temporary image are recorded in the [recovery record](RECOVERY-STATUS.md). See the [Phase 2 audit](PHASE2-AUDIT.md) for local coverage and the provider release gates, and the [design audit](DESIGN-COMPLETENESS-AUDIT.md) for full-page comparisons. The original interrupted state is preserved on `codex/pre-recovery-20261114`. The verified work is on `codex/recovery-20261114`. The older entries below are historical.
 

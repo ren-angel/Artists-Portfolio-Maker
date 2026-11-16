@@ -49,7 +49,7 @@ export async function proxy(req: NextRequest) {
     !tenant && process.env.STORAGE_DRIVER === "s3" && process.env.S3_ENDPOINT
       ? new URL(process.env.S3_ENDPOINT).origin
       : "";
-  const csp = `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' ${uploadOrigin} ${process.env.NODE_ENV === "development" ? "ws:" : ""}; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`;
+  const csp = `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' ${uploadOrigin} ${process.env.NODE_ENV === "development" ? "ws:" : ""}; frame-src https://www.youtube-nocookie.com; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`;
   const headers = new Headers(req.headers);
   headers.set("Content-Security-Policy", csp);
   headers.delete("x-portfolio-host");

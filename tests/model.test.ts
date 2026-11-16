@@ -1,3 +1,5 @@
+import { checkCreativeChanges } from "../apps/api/src/creative.ts";
+import { newCreative } from "@studio/shared";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -162,4 +164,27 @@ test("environment defaults support local testing and reject incomplete productio
   assert.throws(() => config({ ...base, STORAGE_DRIVER: "s3" }));
   assert.throws(() => config({ ...base, MAIL_DRIVER: "resend" }));
   assert.throws(() => config({ ...base, MAX_STORAGE_BYTES: "-1" }));
+});
+
+test("creative quotas allow retained chapters after a downgrade and the rollout flag blocks new content", () => {
+  const d = initialDraft("Morning"),
+    before = structuredClone(d),
+    c = newCreative("comic");
+  d.pages[0].creative = c;
+  c.visible = true;
+  const chapter = {
+    id: crypto.randomUUID(),
+    title: "One",
+    artIds: [],
+    cover: null,
+    visible: true,
+    date: null,
+  };
+  c.chapters.push(chapter);
+  assert.throws(() => checkCreativeChanges(before, d, false, 3), /creative_disabled/);
+  assert.throws(() => checkCreativeChanges(before, d, true, 0), /chapter_limit/);
+  assert.doesNotThrow(() => checkCreativeChanges(d, d, false, 0));
+  const old = structuredClone(d);
+  d.pages[0].blocks.push(newBlock("latestChapters"));
+  assert.throws(() => checkCreativeChanges(old, d, false, 2), /creative_disabled/);
 });

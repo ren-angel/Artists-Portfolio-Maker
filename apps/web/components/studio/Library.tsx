@@ -1,4 +1,5 @@
 "use client";
+import { cleanPageReferences } from "@studio/shared";
 import { useMemo, useState, type ChangeEvent, type DragEvent } from "react";
 import { ArrowLeft, ArrowRight, Check, ImageUp, Search, Star, Trash2, Upload, X } from "lucide-react";
 import { detailLabel } from "../../lib/artwork-details";
@@ -90,6 +91,7 @@ export function Library({
         if (b.artId === a.id) b.artId = null;
         if (b.bgArtId === a.id) b.bgArtId = null;
       }
+      cleanPageReferences(x);
       for (const type of x.commissions.types) if (type.artId === a.id) type.artId = null;
     });
     setChosen("");

@@ -7,6 +7,7 @@ import {
   type PortfolioProps,
   type TemplateDesign,
 } from "./templates/kit";
+import { CreativePage, creativeBlock } from "./templates/CreativeContent";
 import { gallery } from "./templates/Gallery";
 import { creative } from "./templates/Creative";
 import { showcase } from "./templates/Showcase";
@@ -20,7 +21,10 @@ export const designs: Record<Template, TemplateDesign> = {
   showcase,
   story,
 };
-export const fonts: Record<Exclude<Draft["theme"]["font"], "template">, string> = {
+export const fonts: Record<
+  Exclude<Draft["theme"]["font"], "template">,
+  string
+> = {
   serif: '"UI Fraunces", Georgia, serif',
   sans: '"UI Bricolage", ui-sans-serif, system-ui, sans-serif',
   mono: "ui-monospace, SFMono-Regular, Menlo, monospace",
@@ -39,13 +43,15 @@ export const presets = {
 export function paletteOf(d: Draft) {
   return d.theme.palette in presets
     ? presets[d.theme.palette as keyof typeof presets]
-    : designs[d.theme.template].palettes[d.theme.palette as keyof TemplateDesign["palettes"]];
+    : designs[d.theme.template].palettes[
+        d.theme.palette as keyof TemplateDesign["palettes"]
+      ];
 }
 
 export function matchPage(d: Draft, path: string[]) {
   const route = matchRoute(d, path);
   return route?.kind === "page"
-    ? route.page
+    ? (route.chapter ?? route.page)
     : route?.kind === "gallery"
       ? route.gallery
       : route?.kind === "work"
@@ -83,6 +89,123 @@ export function Portfolio(props: Props) {
   const stay = (e: MouseEvent) => {
     if ((e.target as HTMLElement).closest("a")) e.preventDefault();
   };
+  const blocks = route.kind === "page" ? route.page.blocks : [];
+  function renderBlock(b: Block, i: number): React.ReactNode {
+    const grid =
+      d.theme.grid !== "template" &&
+      (b.type === "featured" || b.type === "galleryGrid");
+    const gallery = ctx.galleries.find((g) => g.id === b.galleryId);
+    const content =
+      b.type === "spacer" ? (
+        <div aria-hidden="true" style={{ height: "calc(4rem * var(--sy))" }} />
+      ) : b.type === "columns" ? (
+        <div
+          className="creative-columns"
+          style={
+            {
+              "--cols": b.columns ?? 2,
+              "--tablet": b.tabletColumns ?? 1,
+            } as CSSProperties
+          }
+        >
+          {blocks
+            .filter((k) => k.visible && k.parentId === b.id)
+            .map(renderBlock)}
+        </div>
+      ) : (
+        (creativeBlock(b, ctx) ??
+        commissionBlock(b, ctx) ??
+        (grid ? (
+          <GridBlock
+            ctx={ctx}
+            b={b}
+            mode={d.theme.grid as "uniform" | "masonry"}
+            works={
+              b.type === "featured"
+                ? ctx.featured
+                : gallery
+                  ? ctx.works(gallery)
+                  : []
+            }
+          />
+        ) : (
+          T.block(b, ctx, i)
+        )))
+      );
+    const backdrop = b.bgArtId ? ctx.arts.get(b.bgArtId) : undefined;
+    if (!content && !editing) return null;
+    const chosen = selected === b.id;
+    return (
+      <div
+        key={b.id}
+        data-block={b.id}
+        data-decoration={b.decoration}
+        className={cn(
+          "pf-block relative",
+          backdrop && "isolate overflow-hidden",
+          b.background === "tint" && T.tint,
+          b.background === "paper" && T.paper,
+          editing && "group/block cursor-pointer",
+        )}
+        style={
+          {
+            ...(b.typography && {
+              "--pf-display": fonts[b.typography],
+              "--pf-body": fonts[b.typography],
+            }),
+            "--sy": Number(spaceScale[b.spacing]) * d.theme.sectionScale,
+          } as CSSProperties
+        }
+        onClick={
+          selectBlock
+            ? (e) => {
+                e.stopPropagation();
+                selectBlock(b.id);
+              }
+            : undefined
+        }
+      >
+        {backdrop && (
+          <div aria-hidden="true" className="absolute inset-0 -z-10">
+            <img
+              src={ctx.src(backdrop, "master")}
+              alt=""
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-[color-mix(in_oklab,var(--pf-overlay)_82%,transparent)]" />
+          </div>
+        )}
+        {content ?? (
+          <div className="mx-auto my-6 max-w-[640px] rounded-[1.1rem] border border-dashed border-current/30 px-6 py-8 text-center text-[13px] opacity-60">
+            {props.emptyLabel}
+          </div>
+        )}
+        {editing && (
+          <>
+            <span
+              className={cn(
+                "pointer-events-none absolute inset-0 z-30 transition-all",
+                chosen
+                  ? "ring-[3px] ring-coral ring-inset"
+                  : "ring-transparent group-hover/block:ring-2 group-hover/block:ring-inset group-hover/block:ring-ink/25",
+              )}
+            />
+            <span
+              className={cn(
+                "pointer-events-none absolute left-4 top-1.5 z-30 rounded-full px-2.5 py-0.5 font-body text-[11px] font-bold uppercase tracking-[0.1em] text-white transition-opacity",
+                chosen
+                  ? "bg-coral"
+                  : "bg-ink/60 opacity-0 group-hover/block:opacity-100",
+              )}
+            >
+              {blockLabel?.(b) ?? b.type}
+            </span>
+          </>
+        )}
+      </div>
+    );
+  }
   return (
     <div
       lang={d.language}
@@ -106,84 +229,17 @@ export function Portfolio(props: Props) {
         ) : route.kind === "work" ? (
           <T.WorkPage ctx={ctx} art={route.art} />
         ) : (
-          route.page.blocks
-            .filter((b) => b.visible)
-            .map((b, i) => {
-              const grid = d.theme.grid !== "template" && (b.type === "featured" || b.type === "galleryGrid");
-              const gallery = ctx.galleries.find((g) => g.id === b.galleryId);
-              const content =
-                b.type === "spacer" ? <div aria-hidden="true" style={{ height: "calc(4rem * var(--sy))" }} /> :
-                commissionBlock(b, ctx) ??
-                (grid ? (
-                  <GridBlock
-                    ctx={ctx}
-                    b={b}
-                    mode={d.theme.grid as "uniform" | "masonry"}
-                    works={b.type === "featured" ? ctx.featured : gallery ? ctx.works(gallery) : []}
-                  />
-                ) : (
-                  T.block(b, ctx, i)
-                ));
-              const backdrop = b.bgArtId ? ctx.arts.get(b.bgArtId) : undefined;
-              if (!content && !editing) return null;
-              const chosen = selected === b.id;
-              return (
-                <div
-                  key={b.id}
-                  data-block={b.id}
-                  className={cn(
-                    "pf-block relative",
-                    backdrop && "isolate overflow-hidden",
-                    b.background === "tint" && T.tint,
-                    b.background === "paper" && T.paper,
-                    editing && "group/block cursor-pointer",
-                  )}
-                  style={{ "--sy": Number(spaceScale[b.spacing]) * d.theme.sectionScale } as CSSProperties}
-                  onClick={
-                    selectBlock
-                      ? (e) => {
-                          e.stopPropagation();
-                          selectBlock(b.id);
-                        }
-                      : undefined
-                  }
-                >
-                  {backdrop && (
-                    <div aria-hidden="true" className="absolute inset-0 -z-10">
-                      <img src={ctx.src(backdrop, "master")} alt="" className="h-full w-full object-cover" loading="lazy" />
-                      <div className="absolute inset-0 bg-[color-mix(in_oklab,var(--pf-overlay)_82%,transparent)]" />
-                    </div>
-                  )}
-                  {content ?? (
-                    <div className="mx-auto my-6 max-w-[640px] rounded-[1.1rem] border border-dashed border-current/30 px-6 py-8 text-center text-[13px] opacity-60">
-                      {props.emptyLabel}
-                    </div>
-                  )}
-                  {editing && (
-                    <>
-                      <span
-                        className={cn(
-                          "pointer-events-none absolute inset-0 z-30 transition-all",
-                          chosen
-                            ? "ring-[3px] ring-coral ring-inset"
-                            : "ring-transparent group-hover/block:ring-2 group-hover/block:ring-inset group-hover/block:ring-ink/25",
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "pointer-events-none absolute left-4 top-1.5 z-30 rounded-full px-2.5 py-0.5 font-body text-[11px] font-bold uppercase tracking-[0.1em] text-white transition-opacity",
-                          chosen
-                            ? "bg-coral"
-                            : "bg-ink/60 opacity-0 group-hover/block:opacity-100",
-                        )}
-                      >
-                        {blockLabel?.(b) ?? b.type}
-                      </span>
-                    </>
-                  )}
-                </div>
-              );
-            })
+          <>
+            {route.page.creative && (
+              <CreativePage
+                ctx={ctx}
+                page={route.page}
+                chapter={route.chapter}
+              />
+            )}
+            {!route.chapter &&
+              blocks.filter((b) => b.visible && !b.parentId).map(renderBlock)}
+          </>
         )}
       </T.Shell>
     </div>

@@ -28,6 +28,7 @@ export function Report({ handle, l, name }: { handle: string; l: Lang; name: str
           {handle && (
             <p className="mt-2 inline-block rounded-full bg-ink/[0.06] px-2.5 py-1 font-mono text-[12px] text-ink/60">{handle}</p>
           )}
+          <a className="mt-3 block text-sm underline" href="/legal/copyright">{l==="en"?"Copyright notices and appeals":"Denúncias de direitos autorais e recursos"}</a>
           {done ? (
             <p role="status" className="u-pop mt-6 flex items-center gap-2 rounded-xl bg-mint/40 px-3 py-3 text-[13px]">
               <Check className="h-4 w-4 shrink-0" /> {t(l, "received")}

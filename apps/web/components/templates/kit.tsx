@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import {
   contactHref,
   safeLink,
-  type Art,
+  type Art, type Chapter,
   type Block,
   type Draft,
   type Template,
@@ -12,7 +12,7 @@ import { t, type Lang } from "../../lib/copy";
 export type Gallery = Draft["galleries"][number];
 export type Page = Draft["pages"][number];
 export type Route =
-  | { kind: "page"; page: Page }
+  | { kind: "page"; page: Page; chapter?: Chapter }
   | { kind: "gallery"; gallery: Gallery }
   | { kind: "work"; art: Art };
 
@@ -71,6 +71,11 @@ export function readerPageNumber(raw: string | string[] | undefined) {
 }
 
 export function matchRoute(d: Draft, path: string[]): Route | undefined {
+  if (path.length === 3 && path[1] === "chapters") {
+    const page = d.pages.find((p) => p.slug === path[0] && p.creative?.kind === "comic");
+    const chapter = page?.creative?.chapters.find((h) => h.id === path[2]);
+    return page && chapter ? { kind: "page", page, chapter } : undefined;
+  }
   if (path.length === 2 && path[0] === "galleries") {
     const gallery = d.galleries.find((g) => g.slug === path[1] && g.visible);
     return gallery && { kind: "gallery", gallery };

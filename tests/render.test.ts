@@ -1,3 +1,4 @@
+import { newCreative, cloneSection, blockSchema } from "@studio/shared";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createElement } from "react";
@@ -100,4 +101,68 @@ test("commission examples link to visible galleries and survive gallery deletion
   assert.ok(draftSchema.safeParse(draft).success);
   draft.commissions.types[0].galleryId = crypto.randomUUID();
   assert.ok(!draftSchema.safeParse(draft).success);
+});
+
+test("creative layouts reject cycles and render a bounded anonymous chapter", () => {
+  const d = initialDraft("River", "en");
+  const series = newCreative("comic");
+  series.visible = true;
+  const chapter = {
+    id: crypto.randomUUID(),
+    title: "The crossing",
+    date: null,
+    visible: true,
+    cover: null,
+    artIds: [] as string[],
+  };
+  for (let i = 0; i < 12; i++) {
+    const id = crypto.randomUUID();
+    chapter.artIds.push(id);
+    d.artworks.push({
+      id,
+      assetId: crypto.randomUUID(),
+      title: "Panel " + i,
+      alt: "Panel " + i,
+      description: "",
+      featured: false,
+    });
+  }
+  series.chapters.push(chapter);
+  const p = d.pages[0];
+  p.creative = series;
+  const root = newBlock("columns"),
+    nested = { ...newBlock("columns"), parentId: root.id },
+    leaf = { ...newBlock("image"), parentId: nested.id };
+  p.blocks = [root, nested, leaf];
+  assert(draftSchema.safeParse(d).success);
+  assert.equal(cloneSection([root, nested, leaf])[0].parentId, undefined);
+  root.parentId = nested.id;
+  assert(!draftSchema.safeParse(d).success);
+  delete root.parentId;
+  const extra = { ...newBlock("image"), parentId: leaf.id };
+  p.blocks.push(extra);
+  assert(!draftSchema.safeParse(d).success);
+  p.blocks.pop();
+  const html = renderToStaticMarkup(
+    createElement(Portfolio, {
+      draft: publishable(d),
+      site: "test",
+      base: "/site/river",
+      path: [p.slug, "chapters", chapter.id],
+    }),
+  );
+  assert.match(html, /The crossing/);
+  assert.match(html, /Page by page/);
+  assert.match(html, /Right to left/);
+  assert.match(html, /Panel 7/);
+  assert.doesNotMatch(html, /Panel 8/);
+  const video = { ...newBlock("videoEmbed"), url: "https://youtu.be/abcdefghijk" };
+  assert(blockSchema.safeParse(video).success);
+  assert(!blockSchema.safeParse({ ...video, url: "https://other.example/abcdefghijk" }).success);
+  p.blocks = [video];
+  const home = renderToStaticMarkup(
+    createElement(Portfolio, { draft: publishable(d), site: "test", base: "/site/river" }),
+  );
+  assert.match(home, /Load YouTube player/);
+  assert.doesNotMatch(home, /<iframe/);
 });

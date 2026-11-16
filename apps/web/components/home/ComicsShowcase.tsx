@@ -14,7 +14,7 @@ export default function ComicsShowcase(props: Common) {
         <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.05fr]">
           <div className="order-2 lg:order-1">
             <Eyebrow tone="paper">
-              {tr("Comics & characters · planned")}
+              {tr("Comics & characters")}
             </Eyebrow>
             <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.02] tracking-[-0.03em] sm:text-[44px]">
               {tr("For stories that take")}

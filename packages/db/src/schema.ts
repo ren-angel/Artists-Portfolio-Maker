@@ -4,7 +4,7 @@ import {
   text,
   boolean,
   integer,
-  timestamp,
+  timestamp, numeric, date,
   jsonb,
   primaryKey,
   bigint,
@@ -36,6 +36,10 @@ export const sites = pgTable("sites", {
   home: uuid().notNull(),
   social: jsonb().$type<string[]>().notNull(),
   discoverable: boolean().notNull().default(false),
+  directoryOptIn: boolean("directory_opt_in").notNull().default(false),
+  publishedName: text("published_name").notNull().default(""),
+  discoveryCategory: text("discovery_category").notNull().default(""),
+  discoveryTags: text("discovery_tags").notNull().default(""),
   indexable: boolean().notNull().default(true),
   publishedId: uuid("published_id"),
   createdAt: time("created_at").notNull().defaultNow(),
@@ -180,3 +184,97 @@ export const events = pgTable("events", {
   event: text().notNull(),
   createdAt: time("created_at").notNull().defaultNow(),
 });
+
+const pageKey = () => ({ siteId: siteId(), pageId: uuid("page_id").notNull() });
+export const creativePages = pgTable(
+  "creative_pages",
+  {
+    ...pageKey(),
+    kind: text().notNull(),
+    visible: boolean().notNull(),
+    featured: boolean().notNull(),
+    description: text().notNull(),
+    status: text().notNull(),
+    tags: jsonb().$type<string[]>().notNull(),
+    fields: jsonb().$type<{ label: string; text: string }[]>().notNull(),
+    cover: uuid(),
+    link: text().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.siteId, t.pageId] })],
+);
+export const creativeArtworks = pgTable(
+  "creative_artworks",
+  { ...pageKey(), artId: uuid("art_id").notNull(), position: integer().notNull() },
+  (t) => [primaryKey({ columns: [t.siteId, t.pageId, t.position] })],
+);
+export const creativeRelations = pgTable(
+  "creative_relations",
+  { ...pageKey(), target: uuid().notNull(), position: integer().notNull() },
+  (t) => [primaryKey({ columns: [t.siteId, t.pageId, t.target] })],
+);
+export const comicChapters = pgTable(
+  "comic_chapters",
+  {
+    ...pageKey(),
+    id: uuid().notNull(),
+    title: text().notNull(),
+    position: integer().notNull(),
+    visible: boolean().notNull(),
+    publicationDate: date("publication_date"),
+    cover: uuid(),
+  },
+  (t) => [primaryKey({ columns: [t.siteId, t.pageId, t.id] })],
+);
+export const comicPages = pgTable(
+  "comic_pages",
+  {
+    ...pageKey(),
+    chapterId: uuid("chapter_id").notNull(),
+    position: integer().notNull(),
+    artId: uuid("art_id").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.siteId, t.pageId, t.chapterId, t.position] })],
+);
+export const digitalProducts = pgTable(
+  "digital_products",
+  {
+    ...pageKey(),
+    price: numeric().notNull(),
+    currency: text().notNull(),
+    checkout: text().notNull(),
+    available: boolean().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.siteId, t.pageId] })],
+);
+export const productAssets = pgTable(
+  "product_assets",
+  {
+    ...pageKey(),
+    id: uuid().notNull().defaultRandom(),
+    bytes: integer().notNull(),
+    name: text().notNull(),
+    grantDigest: text("grant_digest").unique(),
+    grantExpires: time("grant_expires"),
+  },
+  (t) => [primaryKey({ columns: [t.siteId, t.pageId] })],
+);
+export const pageHistory = pgTable(
+  "page_history",
+  {
+    ...pageKey(),
+    version: integer().notNull(),
+    snapshot: jsonb().$type<Draft["pages"][number]>().notNull(),
+    createdAt: time("created_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.siteId, t.pageId, t.version] })],
+);
+export const savedSections = pgTable(
+  "saved_sections",
+  {
+    siteId: siteId(),
+    id: uuid().notNull().defaultRandom(),
+    name: text().notNull(),
+    blocks: jsonb().$type<Draft["pages"][number]["blocks"]>().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.siteId, t.id] })],
+);

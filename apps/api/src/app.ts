@@ -4,6 +4,9 @@ import rateLimit from "@fastify/rate-limit";
 import { ZodError } from "zod";
 import { connect, sql } from "@studio/db";
 import { authRoutes } from "./auth.ts";
+import { productRoutes } from "./products.ts";
+import { directoryRoutes } from "./directory.ts";
+import { editorRoutes } from "./editor-tools.ts";
 import { siteRoutes } from "./sites.ts";
 import { mediaRoutes } from "./uploads.ts";
 import { storage } from "./storage.ts";
@@ -90,7 +93,11 @@ export async function createApp(
   );
   authRoutes(app, db, env, { beforeDelete: (id) => endAll(db, billing, id) });
   siteRoutes(app, db, env);
-  mediaRoutes(app, db, env, storage(env));
+  editorRoutes(app, db, env);
+  directoryRoutes(app, db, env);
+  const store = storage(env);
+  mediaRoutes(app, db, env, store);
+  productRoutes(app, db, env, store);
   billingRoutes(app, db, env, billing);
   domainRoutes(app, db, env, network);
   analyticsRoutes(app, db, env);
@@ -101,7 +108,7 @@ export async function createApp(
       // Parse the columns required by the current draft and commercial routes.
       // LIMIT 0 checks compatibility even on an empty portfolio database.
       await db.execute(sql`select s.discoverable,a.details,b.period_end
-        from sites s, artworks a, subscriptions b limit 0`);
+        from sites s, artworks a, subscriptions b, creative_pages c, product_assets f limit 0`);
       return { ok: true, billing: billing.name, live: billing.live };
     } catch {
       return reply.code(503).send({ ok: false });

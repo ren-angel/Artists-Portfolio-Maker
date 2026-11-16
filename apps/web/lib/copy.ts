@@ -1,8 +1,15 @@
+import { creativeLabels } from "@studio/shared";
 export type Lang = "en" | "pt-BR";
 const phrases = {
-  mail_failed: [
-    "Email delivery failed. Please try again.",
-    "Falha ao enviar o e-mail. Tente novamente.",
+  ...creativeLabels,
+  mail_failed: ["Email delivery failed. Please try again.", "Falha ao enviar o e-mail. Tente novamente."],
+  section_limit: ["Saved section limit reached.", "Limite de seções salvas atingido."],
+  publish_product_first: ["Publish an available product before issuing a download.", "Publique um produto disponível antes de gerar o download."],
+  chapter_limit: ["Chapter limit reached.", "Limite de capítulos atingido."],
+  creative_disabled: ["Creative tools are disabled.", "Ferramentas criativas desativadas."],
+  restore_conflict: [
+    "This version conflicts with the current page address, layout, or homepage. Resolve the conflict and retry.",
+    "Esta versão conflita com o endereço, layout ou página inicial atual. Resolva o conflito e tente novamente.",
   ],
   palette: ["Palette", "Paleta"],
   original: ["Template colors", "Cores do modelo"],
@@ -352,7 +359,7 @@ const phrases = {
   blush: ["Blush", "Rosado"],
   sage: ["Sage", "Sálvia"],
   midnight: ["Midnight", "Meia-noite"],
-} satisfies Record<string, [string, string]>;
+} satisfies Record<string, readonly [string, string]>;
 export type Key = keyof typeof phrases;
 export const t = (lang: Lang, key: Key) => phrases[key][lang === "en" ? 0 : 1];
 export const message = (lang: Lang, code: string) =>

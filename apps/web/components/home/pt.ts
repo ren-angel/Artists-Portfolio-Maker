@@ -347,5 +347,5 @@ export const portuguese: Readonly<Record<string, string>> = {
   "CTA": "Chamada",
   "Commissions · Artist and Studio": "Encomendas · Artista e Estúdio",
   "Explore commission pages": "Explorar páginas de encomendas",
-  "Comics & characters · planned": "Quadrinhos e personagens · planejado",
+  "Comics & characters": "Quadrinhos e personagens",
 };

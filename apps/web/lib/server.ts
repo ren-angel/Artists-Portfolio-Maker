@@ -15,11 +15,11 @@ export async function language(): Promise<Lang> {
     ? "en"
     : "pt-BR";
 }
-export const published = cache(async (handle: string) => {
+export const published = cache(async (handle: string, chapter = "index", series = "") => {
   const r = await fetch(
     (process.env.API_INTERNAL_ORIGIN || "http://127.0.0.1:4000") +
       "/public/" +
-      encodeURIComponent(handle),
+      encodeURIComponent(handle) + (chapter ? "?"+new URLSearchParams({chapter,series}) : ""),
     { cache: "no-store" },
   );
   if (r.status === 404 || r.status === 400) notFound();

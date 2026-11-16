@@ -15,7 +15,7 @@ import {
   Type,
   X,
 } from "lucide-react";
-import type { Block, Draft } from "@studio/shared";
+import { containerChoices, type Block, type Draft } from "@studio/shared";
 import { t } from "../../../lib/copy";
 import { paletteOf } from "../../Portfolio";
 import { Sparkle } from "../../home/bits";
@@ -131,6 +131,35 @@ export function Properties({
                   </Field>
                 )}
 
+                {[
+                  "comicSeries",
+                  "latestChapters",
+                  "characterCards",
+                  "characterProfile",
+                  "characterGallery",
+                  "relationships",
+                  "projectShowcase",
+                  "projectTimeline",
+                  "projectAssociation",
+                  "productCards",
+                ].includes(block.type) && (
+                  <Field label={tr("Source page", "Página de origem")}>
+                    <select
+                      className={inputClass}
+                      value={block.pageId ?? ""}
+                      onChange={(e) => patch({ pageId: e.target.value || undefined })}
+                    >
+                      <option value="">{tr("Automatic", "Automática")}</option>
+                      {d.pages
+                        .filter((p) => p.creative)
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.title}
+                          </option>
+                        ))}
+                    </select>
+                  </Field>
+                )}
                 {block.type === "spacer" && (
                   <Field label={t(l, "spacing")}>
                     <select value={block.spacing} className={inputClass} onChange={e => patch({ spacing: e.target.value as Block["spacing"] })}>
@@ -291,26 +320,42 @@ export function Properties({
 
                 {takesLink(block.type) && (
                   <div className="space-y-2">
-                  <Field label={tr("Destination", "Destino")}>
-                    <select className={inputClass} value={block.url === "portfolio:commissions" ? block.url : "external"}
-                      onChange={e => patch({ url: e.target.value === "external" ? "" : e.target.value }, "url")}>
-                      <option value="external">{tr("Web address", "Endereço da web")}</option>
-                      <option value="portfolio:commissions">{tr("Commissions page", "Página de encomendas")}</option>
-                    </select>
-                  </Field>
-                  {block.url === "portfolio:commissions" ? <p className="text-[11px] text-ink/60">
-                    {tr("Links to a navigation page with a visible commission status or price list.", "Abre uma página do menu com status ou tabela de preços de encomendas visível.")}
-                  </p> : <Field label={block.type === "hero" ? t(l, "buttonLink") : t(l, "link")}>
-                    <input
-                      type="url"
-                      inputMode="url"
-                      value={block.url}
-                      maxLength={500}
-                      placeholder="https://"
-                      onChange={(e) => patch({ url: e.target.value }, "url")}
-                      className={cn(inputClass, "font-mono text-[11px]")}
-                    />
-                  </Field>}
+                    <Field label={tr("Destination", "Destino")}>
+                      <select
+                        className={inputClass}
+                        value={block.url === "portfolio:commissions" ? block.url : "external"}
+                        onChange={(e) =>
+                          patch({ url: e.target.value === "external" ? "" : e.target.value }, "url")
+                        }
+                      >
+                        <option value="external">{tr("Web address", "Endereço da web")}</option>
+                        {!["videoEmbed", "downloadLink", "profileLink"].includes(block.type) && (
+                          <option value="portfolio:commissions">
+                            {tr("Commissions page", "Página de encomendas")}
+                          </option>
+                        )}
+                      </select>
+                    </Field>
+                    {block.url === "portfolio:commissions" ? (
+                      <p className="text-[11px] text-ink/60">
+                        {tr(
+                          "Links to a navigation page with a visible commission status or price list.",
+                          "Abre uma página do menu com status ou tabela de preços de encomendas visível.",
+                        )}
+                      </p>
+                    ) : (
+                      <Field label={block.type === "hero" ? t(l, "buttonLink") : t(l, "link")}>
+                        <input
+                          type="url"
+                          inputMode="url"
+                          value={block.url}
+                          maxLength={500}
+                          placeholder="https://"
+                          onChange={(e) => patch({ url: e.target.value }, "url")}
+                          className={cn(inputClass, "font-mono text-[11px]")}
+                        />
+                      </Field>
+                    )}
                   </div>
                 )}
 
@@ -343,7 +388,89 @@ export function Properties({
               </>
             ) : (
               <div className="space-y-3 rounded-lg border border-ink/10 bg-paper/60 p-2.5">
-                <button type="button" onClick={() => patch({ visible: !block.visible })} className="flex w-full items-center justify-between">
+                {page.blocks.some((p) => p.type === "columns" && p.id !== block.id) && (
+                  <Field label={tr("Container", "Contêiner")}>
+                    <select
+                      className={inputClass}
+                      value={block.parentId ?? ""}
+                      onChange={(e) => patch({ parentId: e.target.value || undefined })}
+                    >
+                      <option value="">{tr("Page", "Página")}</option>
+                      {containerChoices(page.blocks, block).map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.heading || blockName(l, p.type) + " " + (page.blocks.indexOf(p) + 1)}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                )}
+                {block.type === "columns" && (
+                  <>
+                    <Field label={tr("Desktop columns", "Colunas no desktop")}>
+                      <select
+                        className={inputClass}
+                        value={block.columns ?? 2}
+                        onChange={(e) => patch({ columns: Number(e.target.value) as 2 | 3 })}
+                      >
+                        <option>2</option>
+                        <option>3</option>
+                      </select>
+                    </Field>
+                    <Field label={tr("Tablet columns", "Colunas no tablet")}>
+                      <select
+                        className={inputClass}
+                        value={block.tabletColumns ?? 1}
+                        onChange={(e) => patch({ tabletColumns: Number(e.target.value) as 1 | 2 })}
+                      >
+                        <option>1</option>
+                        <option>2</option>
+                      </select>
+                    </Field>
+                  </>
+                )}
+                <Field label={tr("Decoration", "Decoração")}>
+                  <select
+                    className={inputClass}
+                    value={block.decoration ?? ""}
+                    onChange={(e) =>
+                      patch({ decoration: (e.target.value as Block["decoration"]) || undefined })
+                    }
+                  >
+                    {[
+                      ["", "None", "Nenhuma"],
+                      ["gradient", "Gradient", "Gradiente"],
+                      ["dots", "Dot pattern", "Pontilhado"],
+                      ["frame", "Image frame", "Moldura"],
+                      ["soft", "Rounded mask", "Máscara arredondada"],
+                      ["reveal", "Fade in", "Aparecimento suave"],
+                    ].map(([v, en, pt]) => (
+                      <option key={v} value={v}>
+                        {tr(en, pt)}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label={tr("Section typeface", "Fonte da seção")}>
+                  <select
+                    className={inputClass}
+                    value={block.typography ?? ""}
+                    onChange={(e) =>
+                      patch({ typography: (e.target.value as Block["typography"]) || undefined })
+                    }
+                  >
+                    <option value="">{tr("Theme", "Tema")}</option>
+                    {(["serif", "sans", "mono"] as const).map((v) => (
+                      <option key={v} value={v}>
+                        {t(l, v)}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <button
+                  type="button"
+                  onClick={() => patch({ visible: !block.visible })}
+                  className="flex w-full items-center justify-between"
+                >
                   <span className="text-[10.5px] text-ink/60">{t(l, "visibleOnSite")}</span>
                   <span className={cn("flex items-center gap-1 text-[10px]", block.visible ? "text-[#3d9b78]" : "text-coral")}>
                     {block.visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}

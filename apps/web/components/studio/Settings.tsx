@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, type ReactNode } from "react";
 import { AlertTriangle, Check, Download, Globe, LifeBuoy, Lock, Shield, User } from "lucide-react";
-import type { Draft, Visibility } from "@studio/shared";
+import { artCategories, type DirectoryProfile, type Draft, type Visibility } from "@studio/shared";
 import { t, message, type Lang } from "../../lib/copy";
 import { api } from "../../lib/client";
 import type { Artist, Update } from "../../lib/use-draft";
@@ -63,10 +63,12 @@ export function Settings({
     [busy, setBusy] = useState(false),
     [note, setNote] = useState(""),
     [error, setError] = useState("");
+  const [profile,setProfile]=useState<DirectoryProfile|null>(null);
   const [visibility, setVisibility] = useState<Visibility | null>(null);
   useEffect(() => {
     if (section !== "privacy") return;
     let active = true;
+    api<DirectoryProfile>("/sites/"+site+"/directory").then(p=>{if(active)setProfile(p)},e=>{if(active)setError(e.message)});
     api<Visibility>("/sites/" + site + "/visibility").then(v => { if (active) setVisibility(v); },
       e => { if (active) setError(e.message); });
     return () => { active = false; };
@@ -129,20 +131,108 @@ export function Settings({
             </p>
           )}
 
-          {section === "privacy" && <section>
-            <h2 className="font-display text-[16px] font-semibold">{tr("Privacy & discovery", "Privacidade e descoberta")}</h2>
-            {!visibility && !error && <p role="status">{t(l, "loading")}</p>}
-            {visibility && ([
-              ["discoverable", tr("Show my work in Discover", "Exibir minhas obras na descoberta"), tr("Include artwork from your published portfolio in the public exhibition.", "Inclui obras do portfólio publicado na exposição pública.")],
-              ["indexable", tr("Search engine indexing", "Indexação em buscadores"), tr("Allow search engines to list your published pages.", "Permite que buscadores listem suas páginas publicadas.")],
-            ] as const).map(([key, title, body]) => <Row key={key} title={title} body={body}>
-              <input aria-label={title} type="checkbox" role="switch" checked={visibility[key]} disabled={busy}
-                onChange={e => {
-                  const next = { ...visibility, [key]: e.target.checked };
-                  void run(async () => setVisibility(await api<Visibility>("/sites/" + site + "/visibility", "PUT", next)), tr("Saved.", "Salvo."));
-                }} />
-            </Row>)}
-          </section>}
+          {section === "privacy" && (
+            <section>
+              <h2 className="font-display text-[16px] font-semibold">
+                {tr("Privacy & discovery", "Privacidade e descoberta")}
+              </h2>
+              {profile && (
+                <form
+                  className="my-3 space-y-2 rounded-xl border border-ink/10 p-3"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void run(
+                      async () => setProfile(await api("/sites/" + site + "/directory", "PUT", profile)),
+                      tr("Saved.", "Salvo."),
+                    );
+                  }}
+                >
+                  <label className="block">
+                    <input
+                      type="checkbox"
+                      checked={profile.listed}
+                      onChange={(e) => setProfile({ ...profile, listed: e.target.checked })}
+                    />{" "}
+                    {tr(
+                      "List my published portfolio in the artist directory",
+                      "Listar meu portfólio publicado no diretório de artistas",
+                    )}
+                  </label>
+                  <label>
+                    {tr("Art category", "Categoria de arte")}
+                    <select
+                      className={inputCls}
+                      value={profile.category}
+                      onChange={(e) =>
+                        setProfile({ ...profile, category: e.target.value as DirectoryProfile["category"] })
+                      }
+                    >
+                      <option value="">—</option>
+                      {Object.entries(artCategories).map(([k, v]) => (
+                        <option key={k} value={k}>
+                          {v[l === "en" ? 0 : 1]}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    {tr("Public tags", "Tags públicas")}
+                    <input
+                      className={inputCls}
+                      maxLength={240}
+                      value={profile.tags}
+                      onChange={(e) => setProfile({ ...profile, tags: e.target.value })}
+                    />
+                  </label>
+                  <button disabled={busy} className={pill}>
+                    {t(l, "save")}
+                  </button>
+                </form>
+              )}
+              {!visibility && !error && <p role="status">{t(l, "loading")}</p>}
+              {visibility &&
+                (
+                  [
+                    [
+                      "discoverable",
+                      tr("Show my work in Discover", "Exibir minhas obras na descoberta"),
+                      tr(
+                        "Include artwork from your published portfolio in the public exhibition.",
+                        "Inclui obras do portfólio publicado na exposição pública.",
+                      ),
+                    ],
+                    [
+                      "indexable",
+                      tr("Search engine indexing", "Indexação em buscadores"),
+                      tr(
+                        "Allow search engines to list your published pages.",
+                        "Permite que buscadores listem suas páginas publicadas.",
+                      ),
+                    ],
+                  ] as const
+                ).map(([key, title, body]) => (
+                  <Row key={key} title={title} body={body}>
+                    <input
+                      aria-label={title}
+                      type="checkbox"
+                      role="switch"
+                      checked={visibility[key]}
+                      disabled={busy}
+                      onChange={(e) => {
+                        const next = { ...visibility, [key]: e.target.checked };
+                        void run(
+                          async () =>
+                            setVisibility(
+                              await api<Visibility>("/sites/" + site + "/visibility", "PUT", next),
+                            ),
+                          tr("Saved.", "Salvo."),
+                        );
+                      }}
+                    />
+                  </Row>
+                ))}
+            </section>
+          )}
           {section === "profile" && (
             <div>
               <h2 className="font-display text-[16px] font-semibold tracking-tight">{tr("Public profile", "Perfil público")}</h2>

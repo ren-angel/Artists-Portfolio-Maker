@@ -7,7 +7,9 @@ import { api } from "../lib/client";
 import { upload } from "../lib/upload";
 import { useCallback } from "react";
 import { useDraft, type Artist, type Entitlement, type SiteData } from "../lib/use-draft";
-import { Editor, type EditorProps } from "./studio/editor/Editor";
+import dynamic from "next/dynamic";
+import type { EditorProps } from "./studio/editor/Editor";
+const Editor = dynamic(()=>import("./studio/editor/Editor").then(m=>m.Editor));
 import { PublishDialog } from "./studio/editor/PublishDialog";
 import { DashLayout, type Tab } from "./studio/DashLayout";
 import { Overview } from "./studio/Overview";
@@ -152,6 +154,8 @@ function Workspace({
     onUpload: uploadFiles,
     onPreview: preview,
     features: ent.features,
+    creativeEnabled: data.creativeEnabled,
+    flush,
     onExit: (next) => {
       go(next ?? "overview");
     },
@@ -269,6 +273,7 @@ function Workspace({
       )}
       {tab === "pages" && (
         <Pages
+          privateDownloads={ent.features.privateDownloads} site={data.id} flush={flush} creativeEnabled={!!data.creativeEnabled} chapterLimit={limits.pages*(data.chaptersPerPage??2)}
           d={d}
           update={update}
           l={l}

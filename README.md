@@ -79,3 +79,9 @@ Free, Artist and Studio plans are defined in `packages/shared/src/plans.ts`. Loc
 - [Implementation checkpoint and Phase 2 handoff](docs/CHECKPOINT.md)
 - [Recovery and verified commands](docs/RECOVERY-STATUS.md)
 - [Phase 2 audit](docs/PHASE2-AUDIT.md) and [full-page design comparisons](docs/DESIGN-COMPLETENESS-AUDIT.md)
+
+## Creative pages and products (Phase 3)
+
+Open **Studio → Pages** to create a comic series, character, project or digital listing. Select which pages and chapters to include, then publish. The visual editor's **Pages** panel provides history and reusable sections. Under **Settings → Privacy & discovery**, artists can list a published portfolio with its category and tags.
+
+Set `CREATIVE_TOOLS=on` to enable new specialist page and section authoring in production after applying migrations. External checkout uses the artist's own store. The Phase 3 guide covers chapter limits, private downloads, provider status and rollout. [Phase 3 guide](docs/PHASE3.md)

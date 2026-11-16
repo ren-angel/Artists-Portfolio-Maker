@@ -23,6 +23,8 @@ export function config(source = process.env) {
       MAIL_DRIVER: z.enum(["file", "resend"]).default("file"),
       MAIL_FROM: z.string().optional(),
       RESEND_API_KEY: z.string().optional(),
+      CREATIVE_TOOLS: z.enum(["on","off"]).default(source.NODE_ENV === "production" ? "off" : "on"),
+      CHAPTERS_PER_PLAN_PAGE: n(2),
       MAX_SITES: n(defaults.sites),
       MAX_PAGES: n(defaults.pages),
       MAX_ARTWORKS: n(defaults.artworks),

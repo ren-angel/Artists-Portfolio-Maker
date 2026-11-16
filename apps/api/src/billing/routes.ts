@@ -38,7 +38,7 @@ export function billingRoutes(app: FastifyInstance, db: Database, env: Config, p
       sql`select s.id,(select count(*)::int from pages p where p.site_id=s.id) as pages from sites s where owner_id=${u.id} order by created_at limit 1`,
     );
     const used = site ? await db.transaction((tx) => usage(tx, site.id)) : { art: 0, bytes: 0 };
-    const subscriptions = await rows(
+    const subscriptions = await rows<Record<string,unknown>>(
       db,
       sql`select id,plan,cycle,method,amount,currency,status,period_end as "periodEnd",grace_until as "graceUntil",
         cancel_requested_at as "cancelRequestedAt",starts_at::text as "startsAt",replaces,created_at as "createdAt"
@@ -52,7 +52,7 @@ export function billingRoutes(app: FastifyInstance, db: Database, env: Config, p
     return {
       ...e,
       usage: { artworks: Number(used.art), storage: Number(used.bytes), pages: Math.max(0, (site?.pages ?? 1) - 1) },
-      subscriptions,
+      subscriptions: subscriptions.map(s => ({...s, periodEnd:s.periodEnd ? new Date(String(s.periodEnd)).toISOString() : null})),
       payments,
       provider: provider.name,
       live: provider.live,

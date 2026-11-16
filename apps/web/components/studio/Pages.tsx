@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
 import { Eye, EyeOff, GripVertical, Home, MoreHorizontal, Pencil, Plus, Rocket, Trash2 } from "lucide-react";
-import { newBlock, type Draft } from "@studio/shared";
+import { pageStarters, newBlock, newCreative, cleanPageReferences, type Creative, type Draft } from "@studio/shared";
+import { ProductFile } from "./ProductFile";
+import { CreativeFields } from "./CreativeFields";
 import { t, type Lang } from "../../lib/copy";
 import type { Limits, Update } from "../../lib/use-draft";
 import { reorder } from "../../lib/reorder";
@@ -17,13 +19,13 @@ export function Pages({
   d,
   update,
   l,
-  limits,
+  limits, creativeEnabled, chapterLimit, site,flush,privateDownloads,
   onEdit,
 }: {
   d: Draft;
   update: Update;
   l: Lang;
-  limits: Limits;
+  privateDownloads:boolean;site:string;flush:()=>Promise<void>;limits: Limits; creativeEnabled:boolean; chapterLimit:number;
   onEdit: (pageId: string) => void;
 }) {
   const tr = (en: string, pt: string) => (l === "en" ? en : pt);
@@ -32,10 +34,27 @@ export function Pages({
     [drag, setDrag] = useState<number | null>(null);
   const full = d.pages.length - 1 >= limits.pages;
   const patch = (id: string, changes: Partial<Draft["pages"][number]>) => update((x) => Object.assign(x.pages.find((p) => p.id === id)!, changes));
+  const [kind, setKind] = useState<Creative["kind"] | "page">("page");
+  const [starter, setStarter] = useState<keyof typeof pageStarters | "">("");
+  const starterLabels = {
+    comic: tr("Comic artist", "Quadrinista"),
+    character: tr("Character designer", "Designer de personagens"),
+    illustration: tr("Illustrator", "Ilustrador"),
+    photography: tr("Photographer", "Fotógrafo"),
+    sculpture: tr("3D artist", "Artista 3D"),
+    general: tr("General creative", "Criativo geral"),
+  };
+  const kinds = {
+    page: t(l, "newPage"),
+    comic: tr("Comic series", "Série de quadrinhos"),
+    character: tr("Character", "Personagem"),
+    project: tr("Creative project", "Projeto criativo"),
+    product: tr("Digital product", "Produto digital"),
+  };
   const add = () => {
     const id = crypto.randomUUID();
     update((x) =>
-      x.pages.push({ id, slug: "page-" + id.slice(0, 6), title: t(l, "newPage"), inNav: true, blocks: [{ ...newBlock("heading"), heading: t(l, "newPage") }] }),
+      x.pages.push({ id, slug: kind+"-"+id.slice(0,8), title:kinds[kind], inNav:true, ...(kind!=="page" && {creative:newCreative(kind)}), blocks:starter?pageStarters[starter].map(type=>newBlock(type)):kind==="page"?[{ ...newBlock("heading"), heading: t(l, "newPage") }]:[] }),
     );
     setEditing(id);
   };
@@ -49,9 +68,10 @@ export function Pages({
           "Todas as páginas do seu portfólio. Reordene para mudar a navegação e edite qualquer página no editor visual.",
         )}
         actions={
+          <>{creativeEnabled && <select className={field+" max-w-44"} aria-label={tr("Starter sections","Seções iniciais")} value={starter} onChange={e=>setStarter(e.target.value as typeof starter)}><option value="">{tr("Default sections","Seções padrão")}</option>{Object.entries(starterLabels).map(([v,label])=><option key={v} value={v}>{label}</option>)}</select>}{creativeEnabled && <select aria-label={tr("Page type","Tipo de página")} className={field+" max-w-44"} value={kind} onChange={e=>setKind(e.target.value as typeof kind)}>{Object.entries(kinds).map(([id,name])=><option key={id} value={id}>{name}</option>)}</select>}
           <button type="button" onClick={add} disabled={full} className={inkPill}>
             <Plus className="h-3.5 w-3.5" /> {t(l, "addPage")}
-          </button>
+          </button></>
         }
       />
 
@@ -104,7 +124,7 @@ export function Pages({
 
                 <div className="min-w-0">
                   <p className="flex items-center gap-1.5 truncate text-[13.5px] font-medium">
-                    {page.title}
+                    {page.title}{page.creative && <button className="rounded-full border border-ink/15 px-2 py-1 text-xs" onClick={()=>setEditing(editing===page.id?"":page.id)}>{kinds[page.creative.kind]}</button>}
                     {home && <Home className="h-3 w-3 shrink-0 text-coral" aria-label={t(l, "homePage")} />}
                   </p>
                   <p className="mt-0.5 text-[10.5px] text-ink/35 lg:hidden">
@@ -145,7 +165,7 @@ export function Pages({
                       <div className="u-pop absolute right-0 top-9 z-20 w-56 rounded-[1.1rem] border border-ink/10 bg-ivory p-1.5 shadow-[0_24px_48px_-24px_hsl(var(--ink)/0.45)]">
                         {[
                           { icon: Pencil, text: tr("Rename & address", "Nome e endereço"), run: () => setEditing(editing === page.id ? "" : page.id) },
-                          { icon: Home, text: t(l, "homePage"), run: () => update((x) => void (x.home = page.id)), off: home },
+                          { icon: Home, text: t(l, "homePage"), run: () => update((x) => void (x.home = page.id)), off: home || page.creative?.visible === false },
                           {
                             icon: page.inNav ? EyeOff : Eye,
                             text: page.inNav ? tr("Hide from navigation", "Ocultar da navegação") : tr("Show in navigation", "Mostrar na navegação"),
@@ -156,7 +176,7 @@ export function Pages({
                             text: t(l, "remove"),
                             off: home,
                             run: () => {
-                              if (confirm(t(l, "deleteAsk"))) update((x) => void (x.pages = x.pages.filter((p) => p.id !== page.id)));
+                              if (confirm(t(l, "deleteAsk"))) update((x) => { x.pages = x.pages.filter((p) => p.id !== page.id); cleanPageReferences(x); });
                             },
                           },
                         ].map((item) => (
@@ -178,6 +198,8 @@ export function Pages({
                   )}
                 </div>
               </div>
+              {editing === page.id && page.creative?.kind==="product" && <ProductFile entitled={privateDownloads} site={site} page={page.id} flush={flush} l={l}/>}
+              {editing === page.id && page.creative && <CreativeFields d={d} page={page} update={update} tr={tr} chapterLimit={chapterLimit}/>}
               {editing === page.id && (
                 <div className="u-pop grid gap-3 border-t border-dashed border-ink/10 bg-paper/50 px-4 py-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
                   <label className="block">

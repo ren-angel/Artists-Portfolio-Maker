@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Eye, Undo2, Redo2, PanelLeft, Rocket, SlidersHorizontal } from "lucide-react";
-import { newBlock, type Block, type Draft, type Features } from "@studio/shared";
+import { containerChoices, cleanPageReferences, newBlock, type Block, type Draft, type Features } from "@studio/shared";
 import type { Limits, Update } from "../../../lib/use-draft";
 import { t, type Lang } from "../../../lib/copy";
 import { reorder } from "../../../lib/reorder";
@@ -38,6 +38,7 @@ export type EditorProps = {
   onPreview: (pageId: string) => void;
   onExit: (tab?: "galleries" | "library" | "pages" | "commissions" | "billing") => void;
   features: Features;
+  creativeEnabled?: boolean; flush:()=>Promise<void>;
   /** Page to open first; defaults to the home page. */
   startPage?: string;
 };
@@ -57,14 +58,7 @@ const snap = (d: Draft): Snapshot =>
   });
 function restore(x: Draft, s: Snapshot) {
   Object.assign(x, structuredClone(s));
-  const art = new Set(x.artworks.map((a) => a.id));
-  const galleries = new Set(x.galleries.map((g) => g.id));
-  for (const p of x.pages)
-    for (const b of p.blocks) {
-      if (b.artId && !art.has(b.artId)) b.artId = null;
-      if (b.bgArtId && !art.has(b.bgArtId)) b.bgArtId = null;
-      if (b.galleryId && !galleries.has(b.galleryId)) b.galleryId = null;
-    }
+  cleanPageReferences(x);
 }
 
 export function Editor(props: EditorProps) {
@@ -150,6 +144,8 @@ export function Editor(props: EditorProps) {
   const addBlock = (type: Block["type"], init: Partial<Block> = {}) => {
     const added = { ...newBlock(type), ...init };
     editPage((p) => {
+      if (block?.type==="columns" && containerChoices([...p.blocks,added],added).some(parent=>parent.id===block.id)) added.parentId=block.id;
+      else if (block?.parentId) added.parentId=block.parentId;
       const at = p.blocks.findIndex((k) => k.id === selected);
       p.blocks.splice(at < 0 ? p.blocks.length : at + 1, 0, added);
     });
@@ -178,6 +174,7 @@ export function Editor(props: EditorProps) {
   const remove = (id: string) => {
     if (!confirm(t(l, "deleteAsk"))) return;
     editPage((p) => {
+      for (const b of p.blocks) if (b.parentId === id) b.parentId = p.blocks.find(k=>k.id===id)?.parentId;
       p.blocks = p.blocks.filter((k) => k.id !== id);
     });
     setSelected(null);
@@ -218,6 +215,7 @@ export function Editor(props: EditorProps) {
   const properties = (
     <Properties
       {...props}
+      update={edit}
       block={block}
       page={page}
       mode={mode}

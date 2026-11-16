@@ -16,10 +16,11 @@ import {
   Plus,
   Type,
 } from "lucide-react";
-import type { Block, Draft } from "@studio/shared";
+import { containerChoices, creativeBlockTypes, type Block, type Draft } from "@studio/shared";
 import { t } from "../../../lib/copy";
 import { blockName, library, takesArt, takesGallery } from "./blocks";
 import { Lock } from "lucide-react";
+import { RevisionPanel } from "./RevisionPanel";
 import { ThemePanel } from "./ThemePanel";
 import { cn } from "../../home/types";
 import type { EditorProps } from "./Editor";
@@ -96,6 +97,7 @@ export function LeftRail(
           </div>
 
           <div className="flex-1 overflow-y-auto p-2.5">
+            {tab === "pages" && props.creativeEnabled && <RevisionPanel key={page.id} {...props} page={page} block={block}/>}
             {tab === "pages" && (
               <div className="space-y-1">
                 {d.pages.map((p) => (
@@ -128,7 +130,7 @@ export function LeftRail(
 
             {tab === "blocks" && (
               <div className="grid grid-cols-2 gap-1.5">
-                {library.map((b) => (
+                {library.filter(b=>props.creativeEnabled || !creativeBlockTypes.some(t=>t===b.type)).map((b) => (
                   <button
                     key={b.type}
                     type="button"
@@ -242,6 +244,7 @@ export function LeftRail(
                 {page.blocks.map((b, i) => (
                   <div
                     key={b.id}
+                    style={{marginInlineStart:b.parentId?"0.75rem":undefined}}
                     draggable
                     onDragStart={(e) => {
                       setDrag(i);
@@ -250,7 +253,19 @@ export function LeftRail(
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => {
                       e.preventDefault();
-                      if (drag !== null) props.onMove(drag, i);
+                      if (drag !== null) {
+                        const moving = page.blocks[drag];
+                        if (
+                          b.type === "columns" &&
+                          containerChoices(page.blocks, moving).some((parent) => parent.id === b.id)
+                        ) {
+                          props.edit((x) => {
+                            x.pages
+                              .find((p) => p.id === page.id)!
+                              .blocks.find((k) => k.id === moving.id)!.parentId = b.id;
+                          });
+                        } else props.onMove(drag, i);
+                      }
                       setDrag(null);
                     }}
                     onDragEnd={() => setDrag(null)}

@@ -1,3 +1,5 @@
+import sharp from "sharp";
+import { newCreative,type Creative } from "@studio/shared";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp } from "node:fs/promises";
@@ -302,6 +304,179 @@ test("terms acceptance is recorded, support and export work, deletion stops char
     assert.equal(del.statusCode, 200, del.body);
     const sub = await h.db.execute(sql`select provider_ended,cancel_requested_at is not null as asked,user_id from subscriptions where id in (select id from subscriptions where user_id is null order by updated_at desc limit 1)`);
     assert.equal(sub.rows[0].provider_ended, true, "provider charges stopped before deletion");
+  } finally {
+    await h.close();
+  }
+});
+
+test("creative pages round-trip, publish privately selected art, restore drafts and withdraw directory listings", async () => {
+  const h = await harness();
+  try {
+    const a = await h.artist(),
+      other = await h.artist(),
+      path = "/sites/" + a.site;
+    const ids = Array.from({ length: 3 }, () => crypto.randomUUID());
+    for (const id of ids) {
+      await h.db.execute(
+        sql`insert into assets(site_id,id,bytes,width,height,source_bytes,source_width,source_height) values(${a.site},${id},10,2,2,10,2,2)`,
+      );
+      await h.db.execute(
+        sql`insert into artworks(site_id,id,asset_id,title,alt,description,position,featured) values(${a.site},${id},${id},'Panel','','',1,false)`,
+      );
+    }
+    const [series, character, project, secret] = ["comic", "character", "project", "character"].map(
+      (kind, i) => ({
+        id: crypto.randomUUID(),
+        title: "Feature " + i,
+        slug: "feature-" + i,
+        inNav: true,
+        blocks: [],
+        creative: newCreative(kind as Creative["kind"]),
+      }),
+    );
+    const chapter = {
+      id: crypto.randomUUID(),
+      title: "Chapter one",
+      date: "2026-09-01",
+      visible: true,
+      cover: null,
+      artIds: [ids[1], ids[0]],
+    };
+    series.creative.visible = character.creative.visible = project.creative.visible = true;
+    series.creative.chapters = [
+      chapter,
+      { ...chapter, id: crypto.randomUUID(), title: "Secret chapter", visible: false, artIds: [ids[2]] },
+    ];
+    character.creative.related = [project.id, secret.id];
+    character.creative.artIds = [ids[0]];
+    project.creative.fields = [{ label: "Collaborator", text: "Ari" }];
+    const nested = { ...newBlock("columns"), heading: "Two panels" };
+    const child = { ...newBlock("characterCards"), pageId: character.id, parentId: nested.id };
+    await h.publish(a, (d) => {
+      d.pages.push(series, character, project, secret);
+      d.pages[0].blocks.push(nested, child);
+    });
+    const publicDraft = async () => (await h.request("GET", "/public/" + a.handle)).json().draft as Draft;
+    const live = await publicDraft();
+    assert.deepEqual(live.pages.find((p) => p.id === series.id)?.creative?.chapters, [chapter]);
+    assert.deepEqual(live.pages.find((p) => p.id === character.id)?.creative?.related, [project.id]);
+    assert(!live.pages.some((p) => p.id === secret.id));
+    assert.deepEqual(live.artworks.map((a) => a.id).sort(), ids.slice(0, 2).sort());
+    assert.equal((await h.request("GET", "/media/" + a.site + "/" + ids[2] + "/master")).statusCode, 401);
+    const draft = (await h.request("GET", path, undefined, a.cookie)).json();
+    const section = await h.request(
+      "POST",
+      path + "/sections",
+      { page: draft.draft.home, block: nested.id, name: "Panels" },
+      a.cookie,
+    );
+    assert.equal(section.statusCode, 200, section.body);
+    const sectionPath = path + "/sections/" + section.json().id;
+    assert.equal((await h.request("GET", sectionPath, undefined, other.cookie)).statusCode, 404);
+    assert.equal((await h.request("GET", sectionPath, undefined, a.cookie)).json().blocks.length, 2);
+    (draft.draft as Draft).pages.find((p) => p.id === series.id)!.title = "New draft";
+    const save = await h.request("PUT", path, draft, a.cookie);
+    assert.equal(save.statusCode, 200, save.body);
+    assert.equal((await publicDraft()).pages.find((p) => p.id === series.id)?.title, series.title);
+    const history = path + "/pages/" + series.id + "/history";
+    const rev = (await h.request("GET", history, undefined, a.cookie)).json()[0].version;
+    assert.equal((await h.request("GET", history + "/" + rev, undefined, other.cookie)).statusCode, 404);
+    const prior = (await h.request("GET", history + "/" + rev, undefined, a.cookie)).json().snapshot;
+    assert.equal(prior.title, series.title);
+    draft.draft.pages[draft.draft.pages.findIndex((p: typeof series) => p.id === series.id)] = prior;
+    assert.equal(
+      (await h.request("PUT", path, { version: save.json().version, draft: draft.draft }, a.cookie))
+        .statusCode,
+      200,
+    );
+    assert.equal((await h.request("PUT", path, draft, a.cookie)).statusCode, 409);
+    const search = "/discover/artists?q=" + a.handle + "&category=comics";
+    assert.equal((await h.request("GET", search)).json().artists.length, 0);
+    const profile = { listed: true, category: "comics", tags: "gouache" };
+    assert.equal((await h.request("PUT", path + "/directory", profile, other.cookie)).statusCode, 404);
+    assert.equal((await h.request("PUT", path + "/directory", profile, a.cookie)).statusCode, 200);
+    assert.equal((await h.request("GET", search)).json().artists[0].name, "Platform");
+    assert.equal((await h.request("GET", search.replace("comics", "design"))).json().artists.length, 0);
+    await h.request("PUT", path + "/directory", { ...profile, listed: false }, a.cookie);
+    assert.equal((await h.request("GET", search)).json().artists.length, 0);
+    await h.request("PUT", path + "/directory", profile, a.cookie);
+    await h.request("POST", path + "/unpublish", { version: save.json().version + 1 }, a.cookie);
+    assert.equal((await h.request("GET", search)).json().artists.length, 0);
+  } finally {
+    await h.close();
+  }
+});
+
+test("external product checkout and expiring seller-authorized downloads have independent payment and asset lifetimes", async () => {
+  const h = await harness();
+  try {
+    const a = await h.artist("artist"),
+      other = await h.artist();
+    const product = {
+      id: crypto.randomUUID(),
+      slug: "wallpaper",
+      inNav: true,
+      title: "Desert",
+      blocks: [],
+      creative: newCreative("product"),
+    };
+    product.creative.visible = true;
+    product.creative.sale = {
+      available: true,
+      price: 23.5,
+      currency: "EUR",
+      checkout: "https://artist.itch.io/desert",
+    };
+    await h.publish(a, (d) => d.pages.push(product));
+    const file = "/sites/" + a.site + "/products/" + product.id + "/file";
+    const png = await sharp({ create: { width: 16, height: 16, channels: 3, background: "#143856" } })
+      .png()
+      .toBuffer();
+    const binary = { "content-type": "application/octet-stream" };
+    assert.equal((await h.request("PUT", file, png, other.cookie, binary)).statusCode, 404);
+    assert.equal((await h.request("PUT", file, Buffer.from("invalid"), a.cookie, binary)).statusCode, 415);
+    const upload = await h.request("PUT", file, png, a.cookie, binary);
+    assert.equal(upload.statusCode, 200, upload.body);
+    const live = (await h.request("GET", "/public/" + a.handle)).json();
+    assert.equal(live.draft.pages.at(-1).creative.sale.checkout, product.creative.sale.checkout);
+    assert(!JSON.stringify(live).includes(upload.json().file.name));
+    const grant = async () => {
+      const r = await h.request("POST", file + "/grant", {}, a.cookie);
+      assert.equal(r.statusCode, 200, r.body);
+      return new URL(r.json().url).pathname.replace(/^\/api/, "");
+    };
+    assert.equal((await h.request("POST", file + "/grant", {}, other.cookie)).statusCode, 404);
+    const first = await grant(),
+      second = await grant();
+    assert.equal((await h.request("GET", first)).statusCode, 404);
+    const download = await h.request("GET", second);
+    assert.equal(download.statusCode, 200, download.body);
+    assert.match(String(download.headers["content-disposition"]), /attachment/);
+    assert.equal(download.headers["cache-control"], "private, no-store");
+    await h.db.execute(sql`update product_assets set grant_expires=now() where site_id=${a.site}`);
+    assert.equal((await h.request("GET", second)).statusCode, 404);
+    await h.publish(a, (d) => {
+      d.description = "Another draft edit";
+    });
+    const next = await grant();
+    const asset = (await h.db.execute(sql`select id from product_assets where site_id=${a.site}`)).rows[0];
+    assert.equal((await h.request("GET", "/media/" + a.site + "/" + asset.id + "/master")).statusCode, 401);
+    await h.publish(a, (d) => {
+      d.pages.find((p) => p.id === product.id)!.creative!.visible = false;
+    });
+    assert.equal((await h.request("GET", next)).statusCode, 404);
+    await h.publish(a, (d) => {
+      d.pages = d.pages.filter((p) => p.id !== product.id);
+    });
+    assert.equal(
+      (await h.db.execute(sql`select id from product_assets where site_id=${a.site}`)).rows.length,
+      0,
+    );
+    assert.equal(
+      (await h.db.execute(sql`select from garbage where object_key=${"products/" + a.site + "/" + asset.id}`))
+        .rows.length,
+      1,
+    );
   } finally {
     await h.close();
   }

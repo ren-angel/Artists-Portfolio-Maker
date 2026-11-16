@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Draft, Features, PlanId } from "@studio/shared";
 import { api } from "./client";
 export type SiteData = {
+  creativeEnabled?:boolean; chaptersPerPage?:number;
   id: string;
   handle: string;
   version: number;

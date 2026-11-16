@@ -13,6 +13,7 @@ import {
   plans,
   type PlanId,
 } from "@studio/shared";
+import { checkCreativeChanges, recordPageChanges } from "./creative.ts";
 import { account } from "./auth.ts";
 import type { Config } from "./config.ts";
 import { assert } from "./errors.ts";
@@ -73,6 +74,8 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
         version: s.version,
         published: s.published_id,
         publishedAt: rev?.publishedAt ?? null,
+        creativeEnabled: env.CREATIVE_TOOLS === "on",
+        chaptersPerPage: env.CHAPTERS_PER_PLAN_PAGE,
         storageUsed: Number((await usage(tx, s.id)).bytes),
         draft: await readDraft(tx, s),
       };
@@ -109,6 +112,9 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
         400,
         "invalid_asset",
       );
+      const previous = await readDraft(tx, s);
+      checkCreativeChanges(previous,draft,env.CREATIVE_TOOLS === "on",limits.pages * env.CHAPTERS_PER_PLAN_PAGE);
+      await recordPageChanges(tx,s.id,version,previous,draft);
       await writeDraft(tx, s.id, draft);
       await prune(tx, s.id);
       await tx.execute(
@@ -142,7 +148,7 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
           );
         }
         await tx.execute(
-          sql`update sites set published_id=${published},version=version+1,updated_at=now() where id=${s.id}`,
+          sql`update sites set published_name=${published ? s.title : ""},published_id=${published},version=version+1,updated_at=now() where id=${s.id}`,
         );
         await tx.execute(
           sql`delete from revisions where site_id=${s.id} and id is distinct from ${published}`,
@@ -184,6 +190,7 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
   });
   app.get("/public/:handle", async (req) => {
     const h = handle.parse((req.params as { handle: string }).handle);
+    const view=z.object({chapter:z.union([z.uuid(),z.literal("index")]).optional(),series:z.string().max(50).optional()}).parse(req.query);
     const record = await first<{
       id: string;
       revision: string;
@@ -202,11 +209,22 @@ export function siteRoutes(app: FastifyInstance, db: Database, env: Config) {
     const features = plans[record.plan].features;
     // Entitlements are re-applied on every read, so a lapsed plan reverts
     // the public site to free features without republishing or data loss.
+    const snapshot = draftSchema.parse(record.draft);
+    // Series indexes need only a thumbnail. Keep panel metadata for the requested
+    // chapter and any work already referenced elsewhere on this portfolio.
+    if (view.chapter)
+      for (const p of snapshot.pages)
+        for (const h of p.creative?.chapters ?? []) {
+          if (p.slug !== view.series || h.id !== view.chapter) {
+            h.cover ??= h.artIds[0] ?? null;
+            h.artIds = [];
+          }
+        }
     return {
       id: record.id,
       revision: record.revision,
       indexable: record.indexable,
-      draft: entitle(draftSchema.parse(record.draft), features),
+      draft: view.chapter ? publishable(snapshot,record.plan) : entitle(snapshot,features),
       branding: !features.removeBranding,
       domain: features.customDomain ? record.domain : null,
     };

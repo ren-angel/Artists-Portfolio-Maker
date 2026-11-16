@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
-import { sql, first, rows, type Database } from "@studio/db";
+import { sql, first, rows, type Database, type Tx } from "@studio/db";
 import type { Config } from "./config.ts";
 import { account } from "./auth.ts";
 import { assert } from "./errors.ts";
@@ -19,8 +19,8 @@ export function adminRoutes(app: FastifyInstance, db: Database, env: Config, pro
     assert(await first(db, sql`select 1 from admins where user_id=${u.id}`), 404, "not_found");
     return u;
   }
-  const audit = (adminId: string, action: string, target: string | null, detail: object = {}) =>
-    db.execute(sql`insert into admin_audit(admin_id,action,target,detail) values(${adminId},${action},${target},${JSON.stringify(detail)}::jsonb)`);
+  const audit = (adminId: string, action: string, target: string | null, detail: object = {}, executor:Database|Tx=db) =>
+    executor.execute(sql`insert into admin_audit(admin_id,action,target,detail) values(${adminId},${action},${target},${JSON.stringify(detail)}::jsonb)`);
 
   app.get("/admin/overview", async (req) => {
     await admin(req);
@@ -60,14 +60,16 @@ export function adminRoutes(app: FastifyInstance, db: Database, env: Config, pro
     const { id } = z.object({ id: z.uuid() }).parse(req.params);
     const { restricted, reason } = z.object({ restricted: z.boolean(), reason: z.string().trim().max(500).default("") }).parse(req.body);
     assert(id !== a.id, 400, "cannot_restrict_self");
+    await db.transaction(async tx=>{
     const r = await first(
-      db,
+      tx,
       sql`update users set restricted_at=${restricted ? sql`now()` : null},restriction_reason=${restricted ? reason : null} where id=${id} returning id`,
     );
     assert(r, 404, "not_found");
     // Restriction ends sessions so the account must sign in again.
-    if (restricted) await db.execute(sql`delete from sessions where user_id=${id}`);
-    await audit(a.id, restricted ? "restrict_user" : "unrestrict_user", id, { reason });
+    if (restricted) await tx.execute(sql`delete from sessions where user_id=${id}`);
+    await audit(a.id, restricted ? "restrict_user" : "unrestrict_user", id, { reason },tx);
+    });
     return { ok: true };
   });
 
@@ -115,8 +117,14 @@ export function adminRoutes(app: FastifyInstance, db: Database, env: Config, pro
     const a = await admin(req);
     const { id } = z.object({ id: z.uuid() }).parse(req.params);
     const { status } = z.object({ status: z.enum(["open", "reviewed", "actioned", "dismissed"]) }).parse(req.body);
-    assert(await first(db, sql`update reports set status=${status} where id=${id} returning id`), 404, "not_found");
-    await audit(a.id, "report_" + status, id);
+    await db.transaction(async (tx) => {
+      assert(
+        await first(tx, sql`update reports set status=${status} where id=${id} returning id`),
+        404,
+        "not_found",
+      );
+      await audit(a.id, "report_" + status, id, {}, tx);
+    });
     return { ok: true };
   });
 

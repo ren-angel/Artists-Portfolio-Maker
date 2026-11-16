@@ -1,6 +1,6 @@
 "use client";
 import { type Common, translator } from "../home/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, Eye } from "lucide-react";
 import MButton from "../home/MButton";
 import { Sparkle, Sticker } from "../home/bits";
@@ -9,6 +9,8 @@ import { cn } from "../home/types";
 
 export default function TemplateExplorer(props: Common) {
   const tr = translator(props);
+  const [interactive, setInteractive] = useState(false);
+  useEffect(() => setInteractive(true), []);
   const [active, setActive] = useState(TEMPLATES[0].id);
   const tpl = TEMPLATES.find((t) => t.id === active) ?? TEMPLATES[0];
 
@@ -19,6 +21,7 @@ export default function TemplateExplorer(props: Common) {
           <button
             key={t.id}
             type="button"
+            disabled={!interactive}
             aria-pressed={active === t.id}
             onClick={() => setActive(t.id)}
             className={cn(

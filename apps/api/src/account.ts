@@ -62,6 +62,19 @@ export function accountRoutes(app: FastifyInstance, db: Database, env: Config) {
         list.map(async (s) => ({
           handle: s.handle,
           draft: await readDraft(tx, s),
+          directory: await first(
+            tx,
+            sql`select directory_opt_in listed,discovery_category category,discovery_tags tags from sites where id=${s.id}`,
+          ),
+          savedSections: await rows(tx, sql`select name,blocks from saved_sections where site_id=${s.id}`),
+          pageHistory: await rows(
+            tx,
+            sql`select page_id,version,snapshot from page_history where site_id=${s.id} order by page_id,version`,
+          ),
+          privateFiles: await rows(
+            tx,
+            sql`select page_id,name,bytes from product_assets where site_id=${s.id}`,
+          ),
           media: (await rows<{ id: string }>(tx, sql`select id from assets where site_id=${s.id}`)).map(
             (a) => env.APP_ORIGIN + "/api/media/" + s.id + "/" + a.id + "/master",
           ),

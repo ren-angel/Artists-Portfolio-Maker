@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { plans, type Features, type PlanId } from "./plans.ts";
+import { creativeSchema, creativeBlockTypes, youtubeVideoId } from "./creative.ts";
+export * from "./creative.ts";
 export * from "./plans.ts";
 export * from "./legal.ts";
 
@@ -10,6 +12,7 @@ export const templateNames = [
   "story",
 ] as const;
 export const blockTypes = [
+  ...creativeBlockTypes,
   "hero",
   "heading",
   "richText",
@@ -97,27 +100,43 @@ export const themeSchema = z.object({
   footerSocial: z.boolean().default(true),
 });
 export type Theme = z.infer<typeof themeSchema>;
-export const blockSchema = z.object({
-  version: z.literal(1),
-  id,
-  type: z.enum(blockTypes),
-  heading: z.string().max(160),
-  text: z.string().max(10000),
-  visible: z.boolean(),
-  layout: z.enum(["left", "center", "right"]),
-  background: z.enum(["none", "tint", "paper"]),
-  spacing: z.enum(["compact", "normal", "roomy"]),
-  artId: id.nullable(),
-  galleryId: id.nullable(),
-  url: z.union([safeLink, z.literal(""), z.literal("portfolio:commissions")]),
-  /** Studio plan: an artwork shown behind the section. */
-  bgArtId: id.nullable().default(null),
-});
+export const blockSchema = z
+  .object({
+    version: z.literal(1),
+    id,
+    type: z.enum(blockTypes),
+    heading: z.string().max(160),
+    text: z.string().max(10000),
+    visible: z.boolean(),
+    layout: z.enum(["left", "center", "right"]),
+    background: z.enum(["none", "tint", "paper"]),
+    spacing: z.enum(["compact", "normal", "roomy"]),
+    artId: id.nullable(),
+    galleryId: id.nullable(),
+    url: z.union([safeLink, z.literal(""), z.literal("portfolio:commissions")]),
+    pageId: id.optional(),
+    parentId: id.optional(),
+    columns: z.union([z.literal(2), z.literal(3)]).optional(),
+    tabletColumns: z.union([z.literal(1), z.literal(2)]).optional(),
+    decoration: z.enum(["gradient", "dots", "frame", "soft", "reveal"]).optional(),
+    typography: z.enum(["serif", "sans", "mono"]).optional(),
+    /** Studio plan: an artwork shown behind the section. */
+    bgArtId: id.nullable().default(null),
+  })
+  .superRefine((b, ctx) => {
+    if (!b.url) return;
+    if (
+      (b.type === "videoEmbed" && !youtubeVideoId(b.url)) ||
+      (["profileLink", "downloadLink"].includes(b.type) && !safeLink.safeParse(b.url).success)
+    )
+      ctx.addIssue({ code: "custom", message: "invalid_link" });
+  });
 export const pageSchema = z.object({
   id,
   title: short,
   slug,
   inNav: z.boolean(),
+  creative: creativeSchema.optional(),
   blocks: z.array(blockSchema).max(60),
 });
 export const gallerySchema = z.object({
@@ -133,6 +152,7 @@ export const artworkDetailKeys = ["year", "medium", "dimensions", "edition", "av
 export const artSchema = z.object({
   id,
   assetId: id,
+  width:z.int().positive().optional(),height:z.int().positive().optional(),
   title: short,
   description: z.string().max(2000),
   alt: z.string().max(500),
@@ -215,7 +235,32 @@ export const draftSchema = z
         (g.cover && !art.has(g.cover))
       )
         issue("invalid_gallery_reference");
+    const pageIds = new Set(d.pages.map(p => p.id));
     for (const p of d.pages) {
+      const c = p.creative;
+      if (c) {
+        if (!c.visible && p.id === d.home) issue("hidden_home");
+        for (const collection of [c, ...c.chapters])
+          if (
+            collection.artIds.some((id) => !art.has(id)) ||
+            (collection.cover && !art.has(collection.cover))
+          )
+            issue("invalid_creative_art");
+        if (c.related.some((id) => !pageIds.has(id) || id === p.id)) issue("invalid_related_page");
+      }
+      const byId = new Map(p.blocks.map((b) => [b.id, b]));
+      for (const b of p.blocks) {
+        if (b.pageId && !pageIds.has(b.pageId)) issue("invalid_page_reference");
+        let node = b;
+        for (let level = 0; node.parentId; level++) {
+          const parent = byId.get(node.parentId);
+          if (level >= 2 || parent?.type !== "columns") {
+            issue("invalid_container");
+            break;
+          }
+          node = parent;
+        }
+      }
       if (!unique(p.blocks.map((b) => b.id))) issue("duplicate_block");
       for (const b of p.blocks)
         if (
@@ -322,15 +367,33 @@ export function publishable(draft: Draft, plan: PlanId = "free"): Draft {
   const used = new Set(
     galleries.flatMap((g) => (g.cover ? [...g.artIds, g.cover] : g.artIds)),
   );
-  const pages = draft.pages.map((p) => ({
+  const included = draft.pages.filter((p) => !p.creative || p.creative.visible);
+  const pageIds = new Set(included.map((p) => p.id));
+  for (const p of included) {
+    const c = p.creative;
+    if (!c) continue;
+    if (c.sale && !c.sale.available) c.sale.checkout = "";
+    c.chapters = c.chapters.filter((h) => h.visible);
+    c.related = c.related.filter((id) => pageIds.has(id));
+    for (const item of [c, ...c.chapters]) {
+      if (item.cover) used.add(item.cover);
+      item.artIds.forEach((id) => used.add(id));
+    }
+  }
+  const pages = included.map((p) => ({
     ...p,
     blocks: p.blocks
-      .filter((b) => b.visible && (!b.galleryId || allowed.has(b.galleryId)))
+      .filter((b) =>
+        blockVisible(
+          b,
+          p.blocks,
+          (b) => (!b.pageId || pageIds.has(b.pageId)) && (!b.galleryId || allowed.has(b.galleryId)),
+        ),
+      )
       .map((b) => {
         if (b.artId) used.add(b.artId);
         if (b.bgArtId) used.add(b.bgArtId);
-        if (b.type === "featured")
-          for (const art of draft.artworks) if (art.featured) used.add(art.id);
+        if (b.type === "featured") for (const art of draft.artworks) if (art.featured) used.add(art.id);
         if (b.type === "commissionPrices")
           for (const c of draft.commissions.types) if (c.artId && c.visible) used.add(c.artId);
         return b;
@@ -346,6 +409,34 @@ export function publishable(draft: Draft, plan: PlanId = "free"): Draft {
       types: draft.commissions.types.filter(c => c.visible).map((c) => ({ ...c, galleryId: c.galleryId && allowed.has(c.galleryId) ? c.galleryId : null, artId: c.artId && used.has(c.artId) ? c.artId : null })),
     },
   });
+}
+export function blockVisible(block: Block, blocks: Block[], allowed: (block: Block) => boolean): boolean {
+  if (!block.visible || !allowed(block)) return false;
+  if (!block.parentId) return true;
+  const parent = blocks.find((b) => b.id === block.parentId);
+  return !!parent && blockVisible(parent, blocks, allowed);
+}
+export function cleanPageReferences(d: Draft) {
+  const arts = new Set(d.artworks.map((a) => a.id));
+  const galleries = new Set(d.galleries.map((g) => g.id));
+  const pages = new Set(d.pages.map((p) => p.id));
+  for (const p of d.pages) {
+    if (p.creative) {
+      p.creative.related = p.creative.related.filter((id) => pages.has(id));
+      for (const item of [p.creative, ...p.creative.chapters]) {
+        item.artIds = item.artIds.filter((id) => arts.has(id));
+        if (item.cover && !arts.has(item.cover)) item.cover = null;
+      }
+    }
+    const containers = new Set(p.blocks.filter((b) => b.type === "columns").map((b) => b.id));
+    for (const b of p.blocks) {
+      if (b.parentId && !containers.has(b.parentId)) delete b.parentId;
+      if (b.artId && !arts.has(b.artId)) b.artId = null;
+      if (b.bgArtId && !arts.has(b.bgArtId)) b.bgArtId = null;
+      if (b.galleryId && !galleries.has(b.galleryId)) b.galleryId = null;
+      if (b.pageId && !pages.has(b.pageId)) delete b.pageId;
+    }
+  }
 }
 export function removeGallery(draft: Draft, id: string) {
   draft.galleries = draft.galleries.filter(g => g.id !== id);
@@ -365,3 +456,48 @@ export function tenantFromHost(host: string, domain: string): string | null {
 export const visibilitySchema = z.object({ discoverable: z.boolean(), indexable: z.boolean() });
 export type Visibility = z.infer<typeof visibilitySchema>;
 export type DiscoveryWork = { handle: string; artist: string; title: string; artId: string; alt: string; thumbnail: string };
+
+export function sectionTree(blocks: Block[], root: string) {
+  const ids = new Set([root]);
+  for (let depth = 0; depth < 2; depth++)
+    for (const b of blocks) if (b.parentId && ids.has(b.parentId)) ids.add(b.id);
+  return blocks.filter((b) => ids.has(b.id)).map((b) => (b.id === root ? { ...b, parentId: undefined } : b));
+}
+
+export function cloneSection(blocks: Block[]) {
+  const ids = new Map(blocks.map((b) => [b.id, crypto.randomUUID()]));
+  return blocks.map((b) => ({
+    ...b,
+    id: ids.get(b.id)!,
+    parentId: b.parentId ? ids.get(b.parentId) : undefined,
+  }));
+}
+
+/** A placement is valid when the resulting tree fits the same two-level limit as the draft schema. */
+export function containerChoices(blocks: Block[], block: Block) {
+  const subtree = sectionTree(blocks, block.id);
+  const descendants = new Set(subtree.map((b) => b.id));
+  const depth = (node: Block, inBlocks: Block[]) => {
+    let level = 0;
+    while (node.parentId && level <= 2) {
+      const parent = inBlocks.find((b) => b.id === node.parentId);
+      if (!parent) break;
+      node = parent;
+      level++;
+    }
+    return level;
+  };
+  const height = Math.max(0, ...subtree.map((b) => depth(b, subtree)));
+  return blocks.filter(
+    (b) => b.type === "columns" && !descendants.has(b.id) && depth(b, blocks) + 1 + height <= 2,
+  );
+}
+
+export const pageStarters = {
+  comic: ["comicSeries", "latestChapters"],
+  character: ["characterCards", "characterGallery"],
+  illustration: ["featured", "processSteps"],
+  photography: ["carousel", "galleryPreview"],
+  sculpture: ["projectShowcase", "comparison"],
+  general: ["hero", "featured", "about"],
+} as const satisfies Record<string, readonly Block["type"][]>;

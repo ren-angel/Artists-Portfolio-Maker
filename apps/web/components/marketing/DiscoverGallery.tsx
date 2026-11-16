@@ -1,4 +1,5 @@
 "use client";
+import { ArtistDirectory } from "./ArtistDirectory";
 import PublishedWorks from "./PublishedWorks";
 import { type Common, translator } from "../home/types";
 import { useMemo, useState } from "react";
@@ -50,6 +51,7 @@ export default function DiscoverGallery(props: Common) {
         </p>
       </div>
 
+      <ArtistDirectory key={"artists"+query.trim()} query={query.trim()} lang={props.lang}/>
       <PublishedWorks key={query.trim()} query={query.trim()} lang={props.lang} />
       <h2 className="mt-12 font-display text-[24px] font-semibold">{tr("Demo portfolios")}</h2>
       <div className="no-scrollbar -mx-1 mt-6 flex gap-2 overflow-x-auto pb-2">

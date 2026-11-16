@@ -1,4 +1,4 @@
-import type { Block } from "@studio/shared";
+import { creativeBlockTypes, type Block } from "@studio/shared";
 import { t, type Key, type Lang } from "../../../lib/copy";
 
 const key = (type: Block["type"]): Key => (type === "hero" ? "heroBlock" : type);
@@ -6,7 +6,7 @@ export const blockName = (l: Lang, type: Block["type"]) => t(l, key(type));
 
 /** Library order and hints follow Design/src/data/muralia.js BLOCK_LIBRARY,
     limited to the section types the shared renderer supports. */
-export const library: { type: Block["type"]; hint: [string, string] }[] = [
+export const library: { type: Block["type"]; hint: readonly [string, string] }[] = [
   { type: "hero", hint: ["Big opening statement", "Abertura de impacto"] },
   { type: "richText", hint: ["Paragraph with emphasis", "Parágrafo com ênfase"] },
   { type: "heading", hint: ["A section title", "Um título de seção"] },
@@ -24,11 +24,12 @@ export const library: { type: Block["type"]; hint: [string, string] }[] = [
   { type: "commissionStatus", hint: ["Open, closed or waitlist", "Abertas, fechadas ou espera"] },
   { type: "commissionPrices", hint: ["Types and prices", "Tipos e valores"] },
   { type: "commissionTerms", hint: ["Rules and terms", "Regras e termos"] },
+  ...creativeBlockTypes.map(type=>({type,hint:["",""] as const})),
 ];
 
 export const takesArt = (type: Block["type"]) => ["hero", "image", "about"].includes(type);
-export const takesGallery = (type: Block["type"]) => ["galleryGrid", "galleryPreview"].includes(type);
+export const takesGallery = (type: Block["type"]) => ["galleryGrid", "galleryPreview","comparison","carousel","processSteps","collections"].includes(type);
 export const takesText = (type: Block["type"]) =>
   ["hero", "richText", "about", "contact", "image", "cta", "featured", "heading", "galleryGrid"].includes(type);
-export const takesLink = (type: Block["type"]) => ["cta", "contact", "hero", "about"].includes(type);
+export const takesLink = (type: Block["type"]) => ["cta", "contact", "hero", "about","profileLink","downloadLink","videoEmbed"].includes(type);
 export const isCommission = (type: Block["type"]) => type.startsWith("commission") || type === "contactLinks";
