@@ -396,5 +396,5 @@ export function Studio({ l, name, domain, origin }: { l: Lang; name: string; dom
         </div>
       </div>
     );
-  return <CreateSite template={studioIntent(location.search).template} l={l} brand={name} domain={domain} user={user} error={error} saving={saving} onCreate={create} />;
+  return <CreateSite l={l} brand={name} domain={domain} user={user} error={error} saving={saving} onCreate={create} />;
 }

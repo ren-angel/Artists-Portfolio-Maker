@@ -2,32 +2,28 @@ import { type Common, translator } from "./types";
 import { ArrowUpRight, Star } from "lucide-react";
 
 import { Eyebrow, Sparkle, Sticker } from "../../../shared/ui/bits";
-import { ART } from "./data";
+import { placeholderArt } from "../../../shared/lib/placeholder";
 
 const TILES = [
   {
-    image: ART.lunaFanart,
     title: "Lantern Hour",
     meta: "Illustration · 2026",
     span: "sm:col-span-2 sm:row-span-2",
     tall: true,
   },
   {
-    image: ART.theoGate,
     title: "The Gate at Dawn",
     meta: "Concept art · 2026",
     span: "",
     tall: false,
   },
   {
-    image: ART.ninaArch,
     title: "Concrete Curve",
     meta: "Photography · 2025",
     span: "",
     tall: false,
   },
   {
-    image: ART.mikaComic,
     title: "Night Ferry",
     meta: "Comic · Chapter 3",
     span: "sm:col-span-2",
@@ -102,7 +98,7 @@ export default function GalleryShowcase(props: Common) {
                 className={`group relative overflow-hidden rounded-xl border border-ink/10 bg-ivory ${tile.span}`}
               >
                 <img
-                  src={tile.image}
+                  src={placeholderArt(props.lang)}
                   alt={tile.title}
                   className="h-full w-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.06]"
                 />

@@ -1,6 +1,5 @@
 import { type Common, translator } from "./types";
 import MiniSite from "./MiniSite";
-import { ART } from "./data";
 import { Sparkle, Sticker, Tape } from "../../../shared/ui/bits";
 
 /** Layered stack of miniature artist sites, the hero's visual anchor. */
@@ -29,7 +28,7 @@ export default function HeroCollage(props: Common) {
       {/* main card */}
       <div className="pointer-events-none absolute right-0 top-0 w-[62%]">
         <div className="animate-float-slow [transform:rotate(-3.5deg)]">
-          <MiniSite {...props} theme="creative" art={ART.lunaFanart} />
+          <MiniSite {...props} theme="creative" />
         </div>
         <Tape className="absolute -left-6 -top-3 [transform:rotate(-5deg)]">
           {tr("luna's universe")}
@@ -39,7 +38,7 @@ export default function HeroCollage(props: Common) {
       {/* secondary cards */}
       <div className="pointer-events-none absolute bottom-[7%] left-0 w-[47%]">
         <div className="animate-float [transform:rotate(4deg)]">
-          <MiniSite {...props} theme="showcase" art={ART.theoGate} />
+          <MiniSite {...props} theme="showcase" />
         </div>
         <Sticker tone="mint" className="mt-3 [transform:rotate(-3deg)]">
           {tr("84 artworks ✦")}
@@ -48,7 +47,7 @@ export default function HeroCollage(props: Common) {
 
       <div className="pointer-events-none absolute bottom-[20%] right-[1%] w-[31%]">
         <div className="animate-float-slow [transform:rotate(-7deg)]">
-          <MiniSite {...props} theme="story" art={ART.mikaComic} />
+          <MiniSite {...props} theme="story" />
         </div>
       </div>
     </div>

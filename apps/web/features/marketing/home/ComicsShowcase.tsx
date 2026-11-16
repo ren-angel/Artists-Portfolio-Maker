@@ -3,7 +3,8 @@ import { ArrowRight, BookOpen } from "lucide-react";
 
 import MButton from "./MButton";
 import { Eyebrow, Sparkle, Sticker } from "../../../shared/ui/bits";
-import { ART, CHAPTERS, CHARACTERS } from "./data";
+import { CHAPTERS, CHARACTERS } from "./data";
+import { placeholderArt } from "../../../shared/lib/placeholder";
 
 export default function ComicsShowcase(props: Common) {
   const tr = translator(props);
@@ -59,7 +60,7 @@ export default function ComicsShowcase(props: Common) {
             <div className="flex gap-4">
               <div className="relative w-[62%] rotate-[-2deg] overflow-hidden rounded-xl border border-paper/15 shadow-[0_30px_60px_-30px_#000]">
                 <img
-                  src={ART.mikaComic}
+                  src={placeholderArt(props.lang)}
                   alt="Comic page from Night Ferry"
                   className="w-full object-cover"
                 />
@@ -67,7 +68,7 @@ export default function ComicsShowcase(props: Common) {
               <div className="flex w-[38%] flex-col gap-4 pt-8">
                 <div className="overflow-hidden rounded-xl border border-paper/15 bg-paper/[0.06] p-2">
                   <img
-                    src={CHARACTERS[0].image}
+                    src={placeholderArt(props.lang)}
                     alt="Character design sheet"
                     className="aspect-[3/4] w-full rounded-lg object-cover"
                   />

@@ -7,6 +7,7 @@ import { ArrowUpRight, Search } from "lucide-react";
 import { TEMPLATES, ARTISTS, CATEGORIES, WORKS } from "./home/data";
 import { Sparkle, Sticker } from "../../shared/ui/bits";
 import { cn } from "./home/types";
+import { placeholderArt } from "../../shared/lib/placeholder";
 
 const ROUTE_BY_ARTIST: Record<string,string> = {
   luna: "/demo/creative",
@@ -101,7 +102,7 @@ export default function DiscoverGallery(props: Common) {
             >
               <div className="relative overflow-hidden">
                 <img
-                  src={w.image}
+                  src={placeholderArt(props.lang)}
                   alt={w.title}
                   className={cn(
                     "w-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.04]",

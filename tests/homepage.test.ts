@@ -7,8 +7,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import Hero from "../apps/web/features/marketing/home/Hero.tsx";
 import TemplatesSection from "../apps/web/features/marketing/home/TemplatesSection.tsx";
 import PlansSection from "../apps/web/features/marketing/home/PlansSection.tsx";
-import { ART } from "../apps/web/features/marketing/home/data.ts";
 import type { Common } from "../apps/web/features/marketing/home/types.ts";
+import { placeholderArt } from "../apps/web/shared/lib/placeholder.ts";
 
 for (const lang of ["en", "pt-BR"] as const) {
   test(`marketing in ${lang} preserves production links, local artwork and configured branding`, () => {
@@ -30,12 +30,12 @@ for (const lang of ["en", "pt-BR"] as const) {
     for (const template of ["gallery", "creative", "showcase", "story"]) {
       assert.ok(templates.includes(`href="/demo/${template}"`));
     }
-    for (const asset of Object.values(ART)) {
-      assert.ok(
-        existsSync(new URL("../apps/web/public" + asset, import.meta.url)),
-        asset,
-      );
-    }
+    const placeholder = placeholderArt(lang);
+    assert.ok(templates.includes(placeholder));
+    assert.ok(
+      existsSync(new URL("../apps/web/public" + placeholder, import.meta.url)),
+      placeholder,
+    );
     const catalog = {
       provider: "mock", live: false, plans: planIds.map(id => ({
         ...sharedPlans[id], limits: id === "free" ? { ...sharedPlans.free.limits, storage: 37 * 1024 ** 2 } : sharedPlans[id].limits,

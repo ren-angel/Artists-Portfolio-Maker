@@ -24,7 +24,7 @@ test("mobile artist creates, customizes, uploads, verifies, publishes and visits
   await page.getByRole("button", { name: /Continue/ }).click();
   await page
     .getByLabel("Upload artworks")
-    .setInputFiles("apps/web/public/prints/creative.webp");
+    .setInputFiles("tests/fixtures/placeholder.webp");
   await page.locator(".art-cards button").first().click();
   await page.getByLabel("Featured artworks").check();
   await page

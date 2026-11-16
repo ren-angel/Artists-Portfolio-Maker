@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, Check, ExternalLink, Plus, Rocket, Sparkles } fr
 import { removeGallery, templateNames, type Draft } from "@studio/shared";
 import { t, message, type Lang } from "../../shared/lib/copy";
 import type { Artist, Limits, SiteData, Update } from "../studio/use-draft";
-import { templatePreview } from "../../entities/portfolio/demo";
+import { placeholderArt } from "../../shared/lib/placeholder";
 import { templateAccent } from "../../entities/portfolio/templates/kit";
 import { designs, fonts } from "../../entities/portfolio/Portfolio";
 import { Eyebrow, Sparkle } from "../../shared/ui/bits";
@@ -140,7 +140,6 @@ function Browser({ address, live, children }: { address: string; live?: boolean;
 
 /** Step one: the site's name and permanent address. */
 export function CreateSite({
-  template = "gallery",
   l,
   brand,
   domain,
@@ -155,7 +154,6 @@ export function CreateSite({
   user: Artist | null;
   error: string;
   saving: boolean;
-  template?: Draft["theme"]["template"];
   onCreate: (e: FormEvent<HTMLFormElement>) => void;
 }) {
   const tr = (en: string, pt: string) => (l === "en" ? en : pt);
@@ -177,7 +175,7 @@ export function CreateSite({
               <span className="text-[6.5px] uppercase tracking-[0.18em] opacity-50">{tr("work · about", "obras · sobre")}</span>
             </div>
             <div className="mt-3 overflow-hidden rounded-lg">
-              <img src={templatePreview[template]} alt="" className="h-[132px] w-full object-cover" />
+              <img src={placeholderArt(l)} alt="" className="h-[132px] w-full object-cover" />
             </div>
             <p className="mt-3 font-editorial text-[18px] leading-tight">
               {first || tr("Your", "Seu")} <span className="italic opacity-80">{tr("portfolio", "portfólio")}</span>
@@ -331,7 +329,7 @@ export function Setup({
                 )}
               >
                 <div className="overflow-hidden rounded-lg">
-                  <img src={templatePreview[v]} alt="" className="h-[92px] w-full object-cover" />
+                  <img src={placeholderArt(l)} alt="" className="h-[92px] w-full object-cover" />
                 </div>
                 <div className="flex items-center justify-between px-1.5 py-2">
                   <span className="text-[13px] font-medium capitalize">{v}</span>

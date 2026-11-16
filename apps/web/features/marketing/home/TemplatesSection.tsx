@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 
 import { TEMPLATES } from "./data";
 import { Eyebrow } from "../../../shared/ui/bits";
+import { placeholderArt } from "../../../shared/lib/placeholder";
 
 export default function TemplatesSection(props: Common) {
   const tr = translator(props);
@@ -40,7 +41,7 @@ export default function TemplatesSection(props: Common) {
             >
               <div className="relative overflow-hidden rounded-[1.1rem] aspect-[16/11]">
                 <img
-                  src={tpl.preview}
+                  src={placeholderArt(props.lang)}
                   alt={tr("Template") + " " + tpl.name}
                   className="h-full w-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.05]"
                 />

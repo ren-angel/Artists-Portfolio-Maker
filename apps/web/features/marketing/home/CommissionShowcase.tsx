@@ -4,6 +4,7 @@ import { ArrowRight, Check } from "lucide-react";
 import MButton from "./MButton";
 import { Eyebrow, Sparkle, Tape } from "../../../shared/ui/bits";
 import { COMMISSION_TYPES } from "./data";
+import { placeholderArt } from "../../../shared/lib/placeholder";
 
 export default function CommissionShowcase(props: Common) {
   const tr = translator(props);
@@ -76,7 +77,7 @@ export default function CommissionShowcase(props: Common) {
                   >
                     <div className="relative h-[86px] overflow-hidden">
                       <img
-                        src={type.image}
+                        src={placeholderArt(props.lang)}
                         alt={tr(type.name)}
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />

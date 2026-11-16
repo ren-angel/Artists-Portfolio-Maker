@@ -4,6 +4,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { ArrowRight, Check, MailCheck } from "lucide-react";
 import { api } from "../../shared/lib/client";
 import { t, message, type Lang } from "../../shared/lib/copy";
+import { placeholderArt } from "../../shared/lib/placeholder";
 import { Language } from "../../shared/ui/Language";
 import Logo from "../../shared/ui/Logo";
 import { Sparkle, Squiggle, Sticker } from "../../shared/ui/bits";
@@ -16,13 +17,6 @@ import { buttonClasses, Field, inputClasses } from "../../shared/ui/Field";
 export const modes = ["login", "register", "forgot", "reset", "verify"] as const;
 type Mode = (typeof modes)[number];
 
-const ART: Record<Mode, string> = {
-  login: "/home/mikaWatercolor.webp",
-  register: "/home/lunaFanart.webp",
-  forgot: "/home/ninaStill.webp",
-  reset: "/home/theoIslands.webp",
-  verify: "/home/lunaHero.webp",
-};
 type Text = [string, string];
 const COPY: Record<Mode, { title: [Text, Text]; subtitle: Text; quote: Text }> = {
   login: {
@@ -99,7 +93,7 @@ function Shell({ l, name, mode, footer, children }: { l: Lang; name: string; mod
       </div>
 
       <div className="relative hidden overflow-hidden bg-ink lg:block" aria-hidden="true">
-        <img src={ART[mode]} alt="" className="absolute inset-0 h-full w-full object-cover opacity-95" />
+        <img src={placeholderArt(l)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-95" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-br from-coral/25 via-transparent to-lilac/30" />
         <div className="absolute inset-x-10 top-10 flex justify-end">

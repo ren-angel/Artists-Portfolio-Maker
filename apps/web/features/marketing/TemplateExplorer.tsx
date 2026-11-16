@@ -6,6 +6,7 @@ import MButton from "./home/MButton";
 import { Sparkle, Sticker } from "../../shared/ui/bits";
 import { TEMPLATES } from "./home/data";
 import { cn } from "./home/types";
+import { placeholderArt } from "../../shared/lib/placeholder";
 
 export default function TemplateExplorer(props: Common) {
   const tr = translator(props);
@@ -63,7 +64,7 @@ export default function TemplateExplorer(props: Common) {
             </span>
           </div>
           <div className="relative overflow-hidden rounded-[1.1rem]">
-            <img src={tpl.preview} alt={tpl.name + " · " + tr("Demo preview")} className="aspect-[16/11] w-full object-cover" />
+            <img src={placeholderArt(props.lang)} alt={tpl.name + " · " + tr("Demo preview")} className="aspect-[16/11] w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-ink/15" />
             <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 py-3">
               <span className="font-display text-[13px] font-semibold tracking-tight text-paper">
@@ -151,7 +152,7 @@ export default function TemplateExplorer(props: Common) {
           >
             <div className="overflow-hidden rounded-[0.9rem]">
               <img
-                src={t.preview}
+                src={placeholderArt(props.lang)}
                 alt={t.name}
                 className="aspect-[4/3] w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />

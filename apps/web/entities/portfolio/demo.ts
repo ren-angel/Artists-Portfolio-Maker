@@ -1,13 +1,14 @@
 import { commissionSchema, initialDraft, newBlock, type Block, type Draft, type Template } from "@studio/shared";
 import { templateAccent } from "./templates/kit";
 import type { Lang } from "../../shared/lib/copy";
+import { placeholderArt } from "../../shared/lib/placeholder";
 
 /* Fictional demonstration portfolios mirroring the Design/ template routes.
    They use the original illustrations bundled under public/home and stable
    identifiers so gallery and artwork links resolve between requests. */
 
 type Text = [en: string, pt: string];
-type Work = { file: string; title: Text; description?: Text; featured?: boolean };
+type Work = { title: Text; description?: Text; featured?: boolean };
 type Spec = {
   title: string;
   description: Text;
@@ -28,10 +29,10 @@ const specs: Record<Template, Spec> = {
     description: L("Photographer & visual artist · São Paulo", "Fotógrafa e artista visual · São Paulo"),
     home: L("Work", "Obras"),
     works: [
-      { file: "ninaStem", title: L("Dried Grass, 4pm", "Capim seco, 16h"), featured: true, description: L("Photographed in the studio at the end of the day, on the one day the light stayed long enough to arrange itself. Printed by the artist on cotton rag, in an edition of twelve.", "Fotografada no estúdio no fim do dia, no único dia em que a luz ficou tempo suficiente para se organizar. Impressa pela artista em papel algodão, em edição de doze.") },
-      { file: "ninaArch", title: L("Concrete Curve"), featured: true },
-      { file: "ninaStill", title: L("Linen & Stone", "Linho e pedra"), featured: true },
-      { file: "ceramics", title: L("Little Kiln", "Pequeno forno"), featured: true },
+      { title: L("Dried Grass, 4pm", "Capim seco, 16h"), featured: true, description: L("Photographed in the studio at the end of the day, on the one day the light stayed long enough to arrange itself. Printed by the artist on cotton rag, in an edition of twelve.", "Fotografada no estúdio no fim do dia, no único dia em que a luz ficou tempo suficiente para se organizar. Impressa pela artista em papel algodão, em edição de doze.") },
+      { title: L("Concrete Curve"), featured: true },
+      { title: L("Linen & Stone", "Linho e pedra"), featured: true },
+      { title: L("Little Kiln", "Pequeno forno"), featured: true },
     ],
     galleries: [
       { title: L("Still life", "Natureza-morta"), description: L("Objects arranged until they feel inevitable.", "Objetos arranjados até parecerem inevitáveis."), works: [0, 2, 3] },
@@ -55,11 +56,11 @@ const specs: Record<Template, Spec> = {
     description: L("commissions open", "encomendas abertas"),
     home: L("work", "obras"),
     works: [
-      { file: "lunaFanart", title: L("Starlight Girl", "Garota estelar") },
-      { file: "poster", title: L("Paper Sun", "Sol de papel"), featured: true },
-      { file: "lunaSheet", title: L("Moss Spirit Sheet", "Ficha do espírito Musgo"), featured: true },
-      { file: "lunaHero", title: L("Self portrait, 2am", "Autorretrato, 2h"), featured: true },
-      { file: "mikaWatercolor", title: L("Lantern Study", "Estudo de lanterna"), featured: true },
+      { title: L("Starlight Girl", "Garota estelar") },
+      { title: L("Paper Sun", "Sol de papel"), featured: true },
+      { title: L("Moss Spirit Sheet", "Ficha do espírito Musgo"), featured: true },
+      { title: L("Self portrait, 2am", "Autorretrato, 2h"), featured: true },
+      { title: L("Lantern Study", "Estudo de lanterna"), featured: true },
     ],
     galleries: [
       { title: L("Fanart"), description: L("Characters from stories I love.", "Personagens de histórias que eu amo."), works: [0, 3] },
@@ -84,10 +85,10 @@ const specs: Record<Template, Spec> = {
     description: L("Selected work 2019 — 2026", "Trabalhos selecionados 2019 — 2026"),
     home: L("Work", "Trabalhos"),
     works: [
-      { file: "theoGate", title: L("The Gate at Dawn", "O portão ao amanhecer"), featured: true, description: L("A pilgrimage site at the edge of a valley that floods with fog every morning.", "Um santuário na borda de um vale que se enche de neblina toda manhã.") },
-      { file: "theoIslands", title: L("Islands Above the Cloud Sea", "Ilhas sobre o mar de nuvens"), featured: true, description: L("Six floating settlements, one failing engine, and the rope bridges between them.", "Seis vilarejos flutuantes, um motor falhando e as pontes de corda entre eles.") },
-      { file: "theoDragon", title: L("Snowfall Tower", "Torre da nevasca"), featured: true, description: L("The opening shot for a game that never shipped — and the piece that started everything.", "A cena de abertura de um jogo que nunca saiu — e a peça que começou tudo.") },
-      { file: "theoChar", title: L("The Wanderer", "O andarilho") },
+      { title: L("The Gate at Dawn", "O portão ao amanhecer"), featured: true, description: L("A pilgrimage site at the edge of a valley that floods with fog every morning.", "Um santuário na borda de um vale que se enche de neblina toda manhã.") },
+      { title: L("Islands Above the Cloud Sea", "Ilhas sobre o mar de nuvens"), featured: true, description: L("Six floating settlements, one failing engine, and the rope bridges between them.", "Seis vilarejos flutuantes, um motor falhando e as pontes de corda entre eles.") },
+      { title: L("Snowfall Tower", "Torre da nevasca"), featured: true, description: L("The opening shot for a game that never shipped — and the piece that started everything.", "A cena de abertura de um jogo que nunca saiu — e a peça que começou tudo.") },
+      { title: L("The Wanderer", "O andarilho") },
     ],
     galleries: [
       { title: L("Environment design · Personal", "Ambientes · Pessoal"), description: L("A place that looks like it has stood for centuries.", "Um lugar que parece estar de pé há séculos."), works: [0, 3] },
@@ -110,10 +111,10 @@ const specs: Record<Template, Spec> = {
     description: L("An ongoing comic · 4 chapters", "Uma HQ em andamento · 4 capítulos"),
     home: L("The comic", "A HQ"),
     works: [
-      { file: "mikaComic", title: L("Night Ferry, chapter one", "Balsa noturna, capítulo um"), featured: true },
-      { file: "mikaWatercolor", title: L("The visitor", "O visitante"), featured: true },
-      { file: "mikaChar", title: L("Ren, the lantern keeper", "Ren, o guardião da lanterna"), featured: true },
-      { file: "lunaSheet", title: L("Moss, something in the woods", "Musgo, algo na floresta") },
+      { title: L("Night Ferry, chapter one", "Balsa noturna, capítulo um"), featured: true },
+      { title: L("The visitor", "O visitante"), featured: true },
+      { title: L("Ren, the lantern keeper", "Ren, o guardião da lanterna"), featured: true },
+      { title: L("Moss, something in the woods", "Musgo, algo na floresta") },
     ],
     galleries: [
       { title: L("The town that keeps the lights on", "A cidade que mantém as luzes acesas"), description: L("Mar 2026"), works: [0, 1, 2] },
@@ -135,10 +136,10 @@ const specs: Record<Template, Spec> = {
   },
 };
 
-/** Bundled image for each demonstration asset identifier. */
-export function demoImages(template: Template) {
+/** Placeholder image for each demonstration asset identifier. */
+export function demoImages(template: Template, lang: Lang) {
   return Object.fromEntries(
-    specs[template].works.map((w, i) => [id(1000 + i), "/home/" + w.file + ".webp"]),
+    specs[template].works.map((_, i) => [id(1000 + i), placeholderArt(lang)]),
   );
 }
 
@@ -209,14 +210,3 @@ export function demo(template: Template, lang: Lang): Draft {
     })),
   };
 }
-
-/** Cover artwork for each template, as used on the marketing pages. */
-export const templatePreview: Record<Template, string> = {
-  gallery: "/home/ninaStem.webp",
-  creative: "/home/lunaFanart.webp",
-  showcase: "/home/theoGate.webp",
-  story: "/home/mikaComic.webp",
-};
-
-/** Kept for the seed script. */
-export const print = (template: Template) => "/prints/" + template + ".webp";

@@ -1,6 +1,7 @@
 import { type Common, translator } from "./types";
 import { Sparkle } from "../../../shared/ui/bits";
 import { cn } from "./types";
+import { placeholderArt } from "../../../shared/lib/placeholder";
 
 const THEMES = {
   creative: {
@@ -28,11 +29,10 @@ const THEMES = {
 /** A miniature artist website, used decoratively across the marketing site. */
 export default function MiniSite({
   theme = "creative",
-  art,
   className,
   lang,
   domain,
-}: Common & { theme?: keyof typeof THEMES; art: string; className?: string }) {
+}: Common & { theme?: keyof typeof THEMES; className?: string }) {
   const tr = translator({ lang, domain });
   const t = THEMES[theme];
   return (
@@ -71,7 +71,7 @@ export default function MiniSite({
               </span>
             </div>
             <div className="mt-2 overflow-hidden rounded-[9px]">
-              <img src={art} alt="" className="h-[112px] w-full object-cover" />
+              <img src={placeholderArt(lang)} alt="" className="h-[112px] w-full object-cover" />
             </div>
             <div className="mt-2 flex items-center justify-between">
               <span className="rounded-full bg-[#FF7868] px-2 py-[3px] text-[6.5px] font-bold uppercase tracking-[0.12em] text-white">
@@ -91,7 +91,7 @@ export default function MiniSite({
               {tr("work · about")}
             </p>
             <div className="mt-2.5 overflow-hidden">
-              <img src={art} alt="" className="h-[118px] w-full object-cover" />
+              <img src={placeholderArt(lang)} alt="" className="h-[118px] w-full object-cover" />
             </div>
             <div className="mt-1.5 flex justify-between text-[6px] uppercase tracking-[0.18em] opacity-45">
               <span>{tr("Dried grass, 2026")}</span>
@@ -109,7 +109,7 @@ export default function MiniSite({
               <span className="h-1 w-1 rounded-full bg-[#E0A45C]" />
             </div>
             <div className="relative mt-2 overflow-hidden rounded-[6px]">
-              <img src={art} alt="" className="h-[124px] w-full object-cover" />
+              <img src={placeholderArt(lang)} alt="" className="h-[124px] w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
               <div className="absolute inset-x-2 bottom-1.5">
                 <p className="font-showcase text-[8px] font-bold uppercase tracking-[0.14em] text-white">
@@ -130,7 +130,7 @@ export default function MiniSite({
             </p>
             <div className="mx-auto mt-1 h-px w-7 bg-current opacity-25" />
             <div className="mt-2 rounded-[3px] border border-current/20 bg-[#FFFBF3] p-[3px]">
-              <img src={art} alt="" className="h-[96px] w-full object-cover" />
+              <img src={placeholderArt(lang)} alt="" className="h-[96px] w-full object-cover" />
             </div>
             <p className="mt-1.5 text-center font-story text-[7.5px] italic opacity-70">
               {tr("chapter one, the town that keeps the lights on")}

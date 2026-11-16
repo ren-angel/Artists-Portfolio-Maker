@@ -46,7 +46,7 @@ export default async function Demo({ params, searchParams }: Props & {searchPara
           readerPage={readerPageNumber((await searchParams).page)}
           draft={draft}
           brand={brand()}
-          demoImages={demoImages(selected)}
+          demoImages={demoImages(selected, l)}
         />
       </main>
     </div>

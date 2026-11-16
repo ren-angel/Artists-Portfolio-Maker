@@ -44,7 +44,7 @@ test("artist publishes a comic from Pages and a mobile reader resumes the right-
     })
   ).json();
   const path = "/api/sites/" + id;
-  const data = await readFile("apps/web/public/prints/creative.webp");
+  const data = await readFile("tests/fixtures/placeholder.webp");
   for (const title of ["Arrival", "Departure"]) {
     const { id } = await (
       await http.post(path + "/uploads", {

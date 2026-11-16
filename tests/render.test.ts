@@ -63,7 +63,7 @@ test("all four public portfolios server-render a semantic page, gallery links an
 test("Story reading mode stays in the selected gallery and stops at its last page", () => {
   const draft = demo("story", "en");
   const gallery = draft.galleries[1];
-  const props = { draft, site: "", base: "/demo/story", path: ["galleries", gallery.slug], demoImages: demoImages("story") };
+  const props = { draft, site: "", base: "/demo/story", path: ["galleries", gallery.slug], demoImages: demoImages("story", "en") };
   const middle = renderToStaticMarkup(createElement(Portfolio, { ...props, readerPage: 2 }));
   assert.ok(middle.includes(`href="/demo/story/galleries/${gallery.slug}?page=3"`));
   assert.match(middle, /2 \/ 3/);

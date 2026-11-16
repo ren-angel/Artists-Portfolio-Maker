@@ -83,5 +83,5 @@ export async function proxy(req: NextRequest) {
   return result;
 }
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|prints/).*)"],
+  matcher: ["/((?!_next/static|_next/image|placeholders/).*)"],
 };

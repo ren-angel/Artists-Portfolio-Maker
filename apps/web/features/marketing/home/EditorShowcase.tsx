@@ -17,7 +17,7 @@ import {
 
 import MButton from "./MButton";
 import { Eyebrow, Sparkle } from "../../../shared/ui/bits";
-import { ART } from "./data";
+import { placeholderArt } from "../../../shared/lib/placeholder";
 
 const FEATURES = [
   {
@@ -170,7 +170,7 @@ export default function EditorShowcase(props: Common) {
                       <div className="relative px-3 pb-3">
                         <div className="relative rounded-md ring-2 ring-coral ring-offset-2 ring-offset-[#FFF4EF]">
                           <img
-                            src={ART.lunaFanart}
+                            src={placeholderArt(props.lang)}
                             alt="Selected artwork block in the editor"
                             className="h-[168px] w-full rounded-md object-cover"
                           />

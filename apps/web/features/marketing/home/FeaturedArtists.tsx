@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { ARTISTS } from "./data";
 import { Eyebrow, Sparkle, Sticker } from "../../../shared/ui/bits";
 import { cn } from "./types";
+import { placeholderArt } from "../../../shared/lib/placeholder";
 
 const LAYOUT = [
   "lg:col-span-5 lg:mt-0",
@@ -48,7 +49,7 @@ export default function FeaturedArtists(props: Common) {
           >
             <div className="relative aspect-[4/5] overflow-hidden">
               <img
-                src={artist.art}
+                src={placeholderArt(props.lang)}
                 alt={tr("Artwork by") + " " + artist.name}
                 className="h-full w-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.04]"
               />

@@ -2,6 +2,7 @@ import { createApp } from "../apps/api/src/app.ts";
 import { config } from "../apps/api/src/platform/config.ts";
 import { connect, sql, first } from "@studio/db";
 import { readFile } from "node:fs/promises";
+import sharp from "sharp";
 import { templateNames, type Draft } from "@studio/shared";
 const env = config();
 if (env.NODE_ENV === "production") throw Error("Seed is development-only");
@@ -43,12 +44,13 @@ try {
       language: "en",
     });
     const base = "/sites/" + s.id;
-    const image = await readFile(
-      new URL(
-        "../apps/web/public/prints/" + template + ".webp",
-        import.meta.url,
+    const image = await sharp(
+      await readFile(
+        new URL("../apps/web/public/placeholders/art-en.svg", import.meta.url),
       ),
-    );
+    )
+      .webp()
+      .toBuffer();
     const up = await post(base + "/uploads", { bytes: image.length });
     const uploadUrl = base + "/uploads/" + up.id;
     const put = await app.inject({
@@ -58,7 +60,7 @@ try {
       payload: image,
     });
     if (put.statusCode !== 200) throw Error("Demo upload failed");
-    await post(uploadUrl + "/finish", { title: "Print study" });
+    await post(uploadUrl + "/finish", { title: "Placeholder" });
     const state = (
       await app.inject({ method: "GET", url: base, headers })
     ).json() as { draft: Draft; version: number };

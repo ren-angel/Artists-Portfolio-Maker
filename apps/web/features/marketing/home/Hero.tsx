@@ -3,7 +3,6 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import MButton from "./MButton";
 import MiniSite from "./MiniSite";
 import HeroCollage from "./HeroCollage";
-import { ART } from "./data";
 import { Sparkle, Squiggle } from "../../../shared/ui/bits";
 
 const PROOF = ["Free to start", "No code, ever", "Built for Brazilian artists"];
@@ -85,25 +84,21 @@ export default function Hero(props: Common) {
           <MiniSite
             {...props}
             theme="creative"
-            art={ART.lunaFanart}
             className="w-[190px] shrink-0"
           />
           <MiniSite
             {...props}
             theme="showcase"
-            art={ART.theoGate}
             className="w-[190px] shrink-0"
           />
           <MiniSite
             {...props}
             theme="gallery"
-            art={ART.ninaStem}
             className="w-[190px] shrink-0"
           />
           <MiniSite
             {...props}
             theme="story"
-            art={ART.mikaComic}
             className="w-[190px] shrink-0"
           />
         </div>

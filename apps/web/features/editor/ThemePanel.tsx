@@ -1,7 +1,7 @@
 "use client";
 import { templateNames, type Draft, type Features } from "@studio/shared";
 import { t, type Lang } from "../../shared/lib/copy";
-import { templatePreview } from "../../entities/portfolio/demo";
+import { placeholderArt } from "../../shared/lib/placeholder";
 import { templateAccent } from "../../entities/portfolio/templates/kit";
 import { designs, fonts, presets } from "../../entities/portfolio/Portfolio";
 import { AppearanceOptions, PlanBadge } from "../theme/AppearanceOptions";
@@ -63,7 +63,7 @@ export function ThemePanel({
               d.theme.template === v ? "border-ink/50 ring-2 ring-coral/60" : "border-ink/10 hover:border-ink/35",
             )}
           >
-            <img src={templatePreview[v]} alt="" className="aspect-[4/3] w-full object-cover" />
+            <img src={placeholderArt(l)} alt="" className="aspect-[4/3] w-full object-cover" />
             <span className="block px-1.5 py-1 text-[10px] font-medium capitalize">{v}</span>
           </button>
         ))}

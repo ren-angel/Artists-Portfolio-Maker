@@ -3,16 +3,7 @@ import { ArrowRight } from "lucide-react";
 import MButton from "./MButton";
 
 import { Sparkle, Squiggle } from "../../../shared/ui/bits";
-import { ART } from "./data";
-
-const STRIP = [
-  ART.lunaFanart,
-  ART.theoIslands,
-  ART.ninaStill,
-  ART.mikaWatercolor,
-  ART.poster,
-  ART.mikaChar,
-];
+import { placeholderArt } from "../../../shared/lib/placeholder";
 
 export default function FinalCta(props: Common) {
   const tr = translator(props);
@@ -66,13 +57,13 @@ export default function FinalCta(props: Common) {
       </div>
 
       <div className="relative flex h-28 items-end gap-2 overflow-hidden px-4 sm:h-32">
-        {STRIP.map((src, i) => (
+        {Array.from({ length: 6 }, (_, i) => (
           <div
-            key={src + i}
+            key={i}
             className="relative h-full flex-1 overflow-hidden rounded-t-xl border border-ink/15"
             style={{ transform: `translateY(${i % 2 === 0 ? 10 : 24}px)` }}
           >
-            <img src={src} alt="" className="h-full w-full object-cover" />
+            <img src={placeholderArt(props.lang)} alt="" className="h-full w-full object-cover" />
           </div>
         ))}
       </div>

@@ -1,23 +1,3 @@
-// Curated demonstration artwork for the public marketing pages.
-export const ART = {
-  theoDragon: "/home/theoDragon.webp",
-  clay3d: "/home/clay3d.webp",
-  ceramics: "/home/ceramics.webp",
-  lunaFanart: "/home/lunaFanart.webp",
-  lunaHero: "/home/lunaHero.webp",
-  lunaSheet: "/home/lunaSheet.webp",
-  mikaChar: "/home/mikaChar.webp",
-  mikaComic: "/home/mikaComic.webp",
-  mikaWatercolor: "/home/mikaWatercolor.webp",
-  ninaArch: "/home/ninaArch.webp",
-  ninaStem: "/home/ninaStem.webp",
-  ninaStill: "/home/ninaStill.webp",
-  poster: "/home/poster.webp",
-  theoChar: "/home/theoChar.webp",
-  theoGate: "/home/theoGate.webp",
-  theoIslands: "/home/theoIslands.webp",
-};
-
 export const TEMPLATES = [
   {
     id: "gallery",
@@ -30,7 +10,6 @@ export const TEMPLATES = [
     bestFor: ["Photography", "Fine art", "Editorial"],
     palette: ["#FFFDF8", "#272438", "#D9D2C5"],
     mood: "Minimal · editorial",
-    preview: ART.ninaStem,
     href: "/demo/gallery",
     accent: "bg-ink",
   },
@@ -45,7 +24,6 @@ export const TEMPLATES = [
     bestFor: ["Illustration", "Fanart", "Character design"],
     palette: ["#FFF4EF", "#FF7868", "#B6A0F6"],
     mood: "Playful · expressive",
-    preview: ART.lunaFanart,
     href: "/demo/creative",
     accent: "bg-coral",
   },
@@ -60,7 +38,6 @@ export const TEMPLATES = [
     bestFor: ["Concept art", "3D", "Game art"],
     palette: ["#141320", "#F2EDE4", "#E0A45C"],
     mood: "Dramatic · premium",
-    preview: ART.theoGate,
     href: "/demo/showcase",
     accent: "bg-[#141320]",
   },
@@ -75,7 +52,6 @@ export const TEMPLATES = [
     bestFor: ["Comics", "Original characters", "Storytelling"],
     palette: ["#F8F0E3", "#6B5442", "#C9A87C"],
     mood: "Dreamy · intimate",
-    preview: ART.mikaComic,
     href: "/demo/story",
     accent: "bg-[#6B5442]",
   },
@@ -92,7 +68,6 @@ export const ARTISTS = [
     bio: "Draws cheerful characters with too many accessories. Fanart by night, original worlds by day.",
     template: "creative",
     accent: "bg-coral",
-    art: ART.lunaFanart,
     works: 84,
   },
   {
@@ -105,7 +80,6 @@ export const ARTISTS = [
     bio: "Painting impossible places for games and film. Currently building a world of floating cities.",
     template: "showcase",
     accent: "bg-[#141320]",
-    art: ART.theoGate,
     works: 42,
   },
   {
@@ -118,7 +92,6 @@ export const ARTISTS = [
     bio: "Making quiet comics about small towns, lanterns and the people who wander through them.",
     template: "story",
     accent: "bg-[#6B5442]",
-    art: ART.mikaComic,
     works: 61,
   },
   {
@@ -131,7 +104,6 @@ export const ARTISTS = [
     bio: "Photographs the space between objects. Natural light, analogue film, quiet compositions.",
     template: "gallery",
     accent: "bg-ink",
-    art: ART.ninaStem,
     works: 96,
   },
 ];
@@ -148,27 +120,27 @@ export const CATEGORIES = [
 ];
 
 export const WORKS = [
-  { id: "w1", title: "Lantern Hour", artist: "Luna Mori", artistId: "luna", category: "Illustration", image: ART.lunaFanart, tall: true },
-  { id: "w2", title: "The Gate at Dawn", artist: "Theo Vale", artistId: "theo", category: "Concept Art", image: ART.theoGate, tall: false },
-  { id: "w3", title: "Dried Grass, 4pm", artist: "Nina Flores", artistId: "nina", category: "Photography", image: ART.ninaStem, tall: true },
-  { id: "w4", title: "Night Ferry", artist: "Mika Sora", artistId: "mika", category: "Comics", image: ART.mikaComic, tall: false },
-  { id: "w5", title: "Moss Spirit Sheet", artist: "Luna Mori", artistId: "luna", category: "Character Design", image: ART.lunaSheet, tall: false },
-  { id: "w6", title: "Islands Above the Cloud Sea", artist: "Theo Vale", artistId: "theo", category: "Concept Art", image: ART.theoIslands, tall: true },
-  { id: "w7", title: "Concrete Curve", artist: "Nina Flores", artistId: "nina", category: "Photography", image: ART.ninaArch, tall: false },
-  { id: "w8", title: "Little Kiln", artist: "June Park", artistId: "june", category: "Traditional Art", image: ART.ceramics, tall: true },
-  { id: "w9", title: "Paper Sun", artist: "Luna Mori", artistId: "luna", category: "Illustration", image: ART.poster, tall: false },
-  { id: "w10", title: "The Wanderer", artist: "Theo Vale", artistId: "theo", category: "Character Design", image: ART.theoChar, tall: true },
-  { id: "w11", title: "Soft Clay Friend", artist: "Ito Ren", artistId: "ito", category: "3D", image: ART.clay3d, tall: false },
-  { id: "w12", title: "Linen & Stone", artist: "Nina Flores", artistId: "nina", category: "Photography", image: ART.ninaStill, tall: false },
-  { id: "w13", title: "Star Clip", artist: "Mika Sora", artistId: "mika", category: "Illustration", image: ART.mikaChar, tall: true },
-  { id: "w14", title: "Snowfall Tower", artist: "Theo Vale", artistId: "theo", category: "Concept Art", image: ART.theoDragon, tall: false },
+  { id: "w1", title: "Lantern Hour", artist: "Luna Mori", artistId: "luna", category: "Illustration", tall: true },
+  { id: "w2", title: "The Gate at Dawn", artist: "Theo Vale", artistId: "theo", category: "Concept Art", tall: false },
+  { id: "w3", title: "Dried Grass, 4pm", artist: "Nina Flores", artistId: "nina", category: "Photography", tall: true },
+  { id: "w4", title: "Night Ferry", artist: "Mika Sora", artistId: "mika", category: "Comics", tall: false },
+  { id: "w5", title: "Moss Spirit Sheet", artist: "Luna Mori", artistId: "luna", category: "Character Design", tall: false },
+  { id: "w6", title: "Islands Above the Cloud Sea", artist: "Theo Vale", artistId: "theo", category: "Concept Art", tall: true },
+  { id: "w7", title: "Concrete Curve", artist: "Nina Flores", artistId: "nina", category: "Photography", tall: false },
+  { id: "w8", title: "Little Kiln", artist: "June Park", artistId: "june", category: "Traditional Art", tall: true },
+  { id: "w9", title: "Paper Sun", artist: "Luna Mori", artistId: "luna", category: "Illustration", tall: false },
+  { id: "w10", title: "The Wanderer", artist: "Theo Vale", artistId: "theo", category: "Character Design", tall: true },
+  { id: "w11", title: "Soft Clay Friend", artist: "Ito Ren", artistId: "ito", category: "3D", tall: false },
+  { id: "w12", title: "Linen & Stone", artist: "Nina Flores", artistId: "nina", category: "Photography", tall: false },
+  { id: "w13", title: "Star Clip", artist: "Mika Sora", artistId: "mika", category: "Illustration", tall: true },
+  { id: "w14", title: "Snowfall Tower", artist: "Theo Vale", artistId: "theo", category: "Concept Art", tall: false },
 ];
 
 export const COMMISSION_TYPES = [
-  { id: "headshot", name: "Headshot", price: "R$ 180", image: ART.lunaHero },
-  { id: "bust", name: "Bust", price: "R$ 260", image: ART.lunaFanart },
-  { id: "half", name: "Half-body", price: "R$ 380", image: ART.mikaWatercolor },
-  { id: "full", name: "Full-body", price: "R$ 520", image: ART.theoChar },
+  { id: "headshot", name: "Headshot", price: "R$ 180" },
+  { id: "bust", name: "Bust", price: "R$ 260" },
+  { id: "half", name: "Half-body", price: "R$ 380" },
+  { id: "full", name: "Full-body", price: "R$ 520" },
 ];
 
 export const CHAPTERS = [
@@ -182,4 +154,4 @@ export const CHAPTERS = [
   { id: "c3", number: "03", title: "Lanterns for the lost", pages: 20 },
 ];
 
-export const CHARACTERS = [{ name: "Moss", image: ART.lunaSheet }];
+export const CHARACTERS = [{ name: "Moss" }];

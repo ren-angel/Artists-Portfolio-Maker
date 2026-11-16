@@ -1,7 +1,7 @@
 import { type Common, translator } from "./home/types";
 import { Sparkle } from "../../shared/ui/bits";
-import { ART } from "./home/data";
 import { cn } from "./home/types";
+import { placeholderArt } from "../../shared/lib/placeholder";
 
 const BLOCKS = [
   { name: "Hero", tone: "bg-coral/20" },
@@ -47,17 +47,16 @@ export function GalleryMock(props: Common) {
   return (
     <div className="rounded-[1.3rem] border border-ink/12 bg-ivory p-3">
       <div className="grid grid-cols-3 gap-2">
-        {[ART.lunaFanart, ART.theoGate, ART.ninaArch, ART.poster, ART.mikaWatercolor, ART.theoChar].map(
-          (src, i) => (
+        {Array.from({ length: 6 }, (_, i) => (
             <div
-              key={src + i}
+              key={i}
               className={cn(
                 "overflow-hidden rounded-lg",
                 i === 0 ? "col-span-2 row-span-2" : ""
               )}
             >
               <img
-                src={src}
+                src={placeholderArt(props.lang)}
                 alt=""
                 className={cn("w-full object-cover", i === 0 ? "h-full" : "h-[74px]")}
               />

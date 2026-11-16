@@ -3,7 +3,7 @@ import { Check, LayoutTemplate, Palette, Type } from "lucide-react";
 import { templateNames, type Draft, type Features } from "@studio/shared";
 import { t, type Lang } from "../../shared/lib/copy";
 import type { Update } from "../studio/use-draft";
-import { templatePreview } from "../../entities/portfolio/demo";
+import { placeholderArt } from "../../shared/lib/placeholder";
 import { templateAccent } from "../../entities/portfolio/templates/kit";
 import { designs, fonts, presets } from "../../entities/portfolio/Portfolio";
 import { AppearanceOptions, PlanBadge } from "./AppearanceOptions";
@@ -230,7 +230,7 @@ export function ThemePage({
                 }
                 className={cn("rounded-lg border p-1.5 text-left transition-all", d.theme.template === v ? "border-ink bg-paper" : "border-ink/10 hover:border-ink/35")}
               >
-                <img src={templatePreview[v]} alt="" className="h-12 w-full rounded object-cover" />
+                <img src={placeholderArt(l)} alt="" className="h-12 w-full rounded object-cover" />
                 <span className="mt-1 block px-0.5 text-[10.5px] font-medium">{name(v)}</span>
               </button>
             ))}
