@@ -1,9 +1,9 @@
-import SiteHeader from "../../components/home/SiteHeader";
-import SiteFooter from "../../components/home/SiteFooter";
-import { PricingPage } from "../../components/billing/PricingPage";
-import "../../components/home/home.css";
-import { brand, language } from "../../lib/server";
-import { catalog } from "../../lib/catalog";
+import SiteHeader from "../../features/marketing/home/SiteHeader";
+import SiteFooter from "../../features/marketing/home/SiteFooter";
+import { PricingPage } from "../../features/billing/PricingPage";
+import "../../features/marketing/home/home.css";
+import { brand, language } from "../../shared/lib/server";
+import { catalog } from "../../features/billing/catalog";
 
 export async function generateMetadata() {
   const l = await language();

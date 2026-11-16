@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { publicOrigin } from "../lib/server";
+import { publicOrigin } from "../shared/lib/server";
 export const dynamic = "force-dynamic";
 export default async function robots() {
   const h = (await headers()).get("x-portfolio-host");

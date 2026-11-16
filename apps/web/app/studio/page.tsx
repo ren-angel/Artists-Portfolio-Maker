@@ -1,6 +1,6 @@
-import { Studio } from "../../components/Studio";
-import { brand, language } from "../../lib/server";
-import "../../components/ui/ui.css";
+import { Studio } from "../../features/studio/Studio";
+import { brand, language } from "../../shared/lib/server";
+import "../../shared/ui/ui.css";
 export const metadata = { robots: { index: false, follow: false } };
 export default async function StudioPage() {
   return (

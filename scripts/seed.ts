@@ -1,5 +1,5 @@
 import { createApp } from "../apps/api/src/app.ts";
-import { config } from "../apps/api/src/config.ts";
+import { config } from "../apps/api/src/platform/config.ts";
 import { connect, sql, first } from "@studio/db";
 import { readFile } from "node:fs/promises";
 import { templateNames, type Draft } from "@studio/shared";

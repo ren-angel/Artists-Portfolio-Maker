@@ -5,8 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { HTTPMethods } from "fastify";
 import { createApp } from "../apps/api/src/app.ts";
-import { config } from "../apps/api/src/config.ts";
-import { mock } from "../apps/api/src/billing/mock.ts";
+import { config } from "../apps/api/src/platform/config.ts";
+import { mock } from "../apps/api/src/modules/billing/infrastructure/mock.ts";
 import { connect, sql, first } from "@studio/db";
 
 /* Billing lifecycle against PostgreSQL with the mock provider. No money moves

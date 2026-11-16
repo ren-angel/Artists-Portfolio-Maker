@@ -1,4 +1,4 @@
-import { checkCreativeChanges } from "../apps/api/src/creative.ts";
+import { checkCreativeChanges } from "../apps/api/src/modules/portfolio/domain/rules.ts";
 import { newCreative } from "@studio/shared";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -17,8 +17,8 @@ import {
   verifyPassword,
   digest,
   token,
-} from "../apps/api/src/security.ts";
-import { optimize } from "../apps/api/src/images.ts";
+} from "../apps/api/src/platform/crypto.ts";
+import { optimize } from "../apps/api/src/modules/media/infrastructure/image-processor.ts";
 import sharp from "sharp";
 test("handle boundaries reserve infrastructure and reject nested or unrelated hosts", () => {
   for (const s of [
@@ -151,7 +151,7 @@ test("real raster decoder rejects fake content, strips metadata and produces a h
 });
 
 test("environment defaults support local testing and reject incomplete production configuration", async () => {
-  const { config } = await import("../apps/api/src/config.ts");
+  const { config } = await import("../apps/api/src/platform/config.ts");
   const base = {
     DATABASE_URL: "postgresql://test@localhost/test",
     APP_ORIGIN: "http://localhost:3000",
@@ -187,4 +187,17 @@ test("creative quotas allow retained chapters after a downgrade and the rollout 
   const old = structuredClone(d);
   d.pages[0].blocks.push(newBlock("latestChapters"));
   assert.throws(() => checkCreativeChanges(old, d, false, 2), /creative_disabled/);
+});
+
+test("image processing accepts only JPEG, PNG and WebP decoders", async () => {
+  const make = (format: "png" | "jpeg" | "webp" | "tiff" | "gif" | "avif") =>
+    sharp({ create: { width: 40, height: 30, channels: 3, background: "#f80" } }).toFormat(format).toBuffer();
+  for (const format of ["png", "jpeg", "webp"] as const) {
+    const r = await optimize(await make(format));
+    assert.equal(r.width, 40, format);
+  }
+  for (const format of ["tiff", "gif", "avif"] as const)
+    await assert.rejects(optimize(await make(format)), (e: Error) => e.message === "invalid_image", format);
+  const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>');
+  await assert.rejects(optimize(svg), (e: Error) => e.message === "invalid_image");
 });

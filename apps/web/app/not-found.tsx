@@ -1,7 +1,7 @@
-import { language } from "../lib/server";
-import { t } from "../lib/copy";
-import { Status } from "../components/ui/Status";
-import "../components/ui/ui.css";
+import { language } from "../shared/lib/server";
+import { t } from "../shared/lib/copy";
+import { Status } from "../shared/ui/Status";
+import "../shared/ui/ui.css";
 export default async function Missing() {
   const l = await language();
   return (

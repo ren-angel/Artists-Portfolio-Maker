@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
 import { createApp } from "../apps/api/src/app.ts";
-import { config } from "../apps/api/src/config.ts";
+import { config } from "../apps/api/src/platform/config.ts";
 import type { Draft } from "@studio/shared";
 import type { HTTPMethods } from "fastify";
 test("real API stores an isolated draft, verifies an upload, atomically publishes, resets sessions and deletes data", async () => {

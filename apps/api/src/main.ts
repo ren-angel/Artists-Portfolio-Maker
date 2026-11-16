@@ -1,4 +1,4 @@
-import { config } from "./config.ts";
+import { config } from "./platform/config.ts";
 import { createApp } from "./app.ts";
 const env = config();
 const app = await createApp(env);

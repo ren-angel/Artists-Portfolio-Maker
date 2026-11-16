@@ -1,6 +1,6 @@
 import { after, NextResponse } from "next/server";
 import { contactHref } from "@studio/shared";
-import { published, recordHit, visit } from "../../../../../../lib/server";
+import { published, recordHit, visit } from "../../../../../../shared/lib/server";
 
 /* Counts a click on a commission contact button, then redirects. The target
    comes from the artist's published snapshot by index, never from the URL,

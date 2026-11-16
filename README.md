@@ -42,6 +42,7 @@ For MinIO, set a development-only `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD`, t
 | `TEST_DATABASE_URL` | Separate disposable database for integration tests |
 | `APP_ORIGIN`, `PLATFORM_DOMAIN`, `PLATFORM_NAME` | Exact authenticated web origin, bare routing domain and configurable display name |
 | `API_INTERNAL_ORIGIN`, `HOST`, `PORT` | Private API upstream, bind address and port. Supply upstream during Next build and runtime. |
+| `TRUST_PROXY`, `INTERNAL_TOKEN` | Trusted proxy addresses for per-client rate limits, and the web ↔ API shared secret. Required in production. |
 | `LOCAL_DATA_DIR` | Absolute private directory shared by API, maintenance and local test commands |
 | `STORAGE_DRIVER`, `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Local files or private S3-compatible storage. R2 uses its account endpoint and region auto. |
 | `MAIL_DRIVER`, `MAIL_FROM`, `RESEND_API_KEY` | Development files or Resend transactional delivery |
@@ -64,7 +65,7 @@ pnpm exec playwright install chromium
 pnpm e2e
 ```
 
-`pnpm test:unit` runs the model, image, password and renderer tests without a database. `pnpm test` also runs the real API integration test and requires the test database.
+`pnpm test:unit` runs the model, image, password, renderer, domain-rule and architecture-boundary tests without a database. `pnpm test` runs every file in `tests/*.test.ts`, including the real API integration, billing, platform and security tests, and requires the test database. `pnpm e2e` includes screenshot regression tests (`tests/browser/visual.spec.ts`) for the homepage, pricing and templates; update baselines intentionally with `pnpm e2e tests/browser/visual.spec.ts --update-snapshots`. Run browser tests against their own disposable database, data directory and ports so development data is never touched.
 
 ## Plans and billing (Phase 2)
 
@@ -72,6 +73,9 @@ Free, Artist and Studio plans are defined in `packages/shared/src/plans.ts`. Loc
 
 ## Project documentation
 
+- [Production deployment TODO](docs/PRODUCTION-DEPLOYMENT-TODO.md) — prioritized launch checklist
+- [Feature status](docs/FEATURE-STATUS.md) and [latest test report](docs/TEST-REPORT.md)
+- [Domain-driven architecture](docs/DDD-ARCHITECTURE.md) — bounded contexts, layers and how to add features
 - [Architecture and tenant boundaries](docs/ARCHITECTURE.md)
 - [Visual implementation guide](docs/VISUAL-GUIDE.md)
 - [Deployment and maintenance](docs/DEPLOYMENT.md)
@@ -82,6 +86,6 @@ Free, Artist and Studio plans are defined in `packages/shared/src/plans.ts`. Loc
 
 ## Creative pages and products (Phase 3)
 
-Open **Studio → Pages** to create a comic series, character, project or digital listing. Select which pages and chapters to include, then publish. The visual editor's **Pages** panel provides history and reusable sections. Under **Settings → Privacy & discovery**, artists can list a published portfolio with its category and tags.
+Open **Studio → Create → Comics, Characters, Projects or Shop** (or **Pages**) to create a comic series, character, project or digital listing. Select which pages and chapters to include, then publish. The visual editor's **Pages** panel provides history and reusable sections. Under **Settings → Privacy & discovery**, artists can list a published portfolio with its category and tags.
 
 Set `CREATIVE_TOOLS=on` to enable new specialist page and section authoring in production after applying migrations. External checkout uses the artist's own store. The Phase 3 guide covers chapter limits, private downloads, provider status and rollout. [Phase 3 guide](docs/PHASE3.md)

@@ -15,15 +15,14 @@
     "e2e": "node --env-file-if-exists=.env node_modules/@playwright/test/cli.js test",
     "migrate": "node --env-file-if-exists=.env --import tsx packages/db/src/migrate.ts",
     "seed": "node --env-file-if-exists=.env --import tsx scripts/seed.ts",
-    "cleanup": "node --env-file-if-exists=.env --import tsx apps/api/src/cleanup.ts",
-    "test:unit": "node --import ./tests/register.mjs --test tests/homepage.test.ts tests/model.test.ts tests/render.test.ts tests/plans.test.ts tests/asaas.test.ts",
+    "cleanup": "node --env-file-if-exists=.env --import tsx apps/api/src/jobs/maintenance.ts",
+    "test:unit": "node --import ./tests/register.mjs --test tests/homepage.test.ts tests/model.test.ts tests/render.test.ts tests/plans.test.ts tests/asaas.test.ts tests/domain.test.ts tests/architecture.test.ts",
     "test:sql": "node --env-file-if-exists=.env scripts/test-sql.mjs",
     "db:test:migrate": "node --env-file-if-exists=.env --import tsx scripts/migrate-test.ts",
     "admin": "node --env-file-if-exists=.env --import tsx scripts/admin.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
-    "@studio/api": "workspace:*",
     "@studio/db": "workspace:*",
     "@studio/shared": "workspace:*",
     "@types/node": "^24.10.0",
@@ -34,7 +33,7 @@
     "fastify": "^5.6.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.0"

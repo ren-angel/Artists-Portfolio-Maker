@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { tenantFromHost } from "@studio/shared";
+import { apiOrigin, internalHeaders } from "./shared/lib/internal-api";
 // Cache misses briefly. Successful lookups must reflect the current tenant,
 // subscription and certificate, including immediately after disconnection.
 const missingDomains = new Map<string, number>();
@@ -8,14 +9,11 @@ async function customDomain(host: string) {
   let handle: string | null = null;
   try {
     const r = await fetch(
-      (process.env.API_INTERNAL_ORIGIN || "http://127.0.0.1:4000") +
+      apiOrigin() +
         "/internal/domains/resolve?host=" +
         encodeURIComponent(host),
       {
-        headers: {
-          "x-internal-token":
-            process.env.INTERNAL_TOKEN || "local-development-internal-token",
-        },
+        headers: internalHeaders(),
         signal: AbortSignal.timeout(2000),
         cache: "no-store",
       },

@@ -1,12 +1,12 @@
-import { readerPageNumber } from "../../../../components/templates/kit";
+import { readerPageNumber } from "../../../../entities/portfolio/templates/kit";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { templateNames } from "@studio/shared";
-import { demo, demoImages } from "../../../../lib/demo";
-import { language, brand } from "../../../../lib/server";
-import { t } from "../../../../lib/copy";
-import { Portfolio, matchPage } from "../../../../components/Portfolio";
-import "../../../../components/ui/ui.css";
+import { demo, demoImages } from "../../../../entities/portfolio/demo";
+import { language, brand } from "../../../../shared/lib/server";
+import { t } from "../../../../shared/lib/copy";
+import { Portfolio, matchPage } from "../../../../entities/portfolio/Portfolio";
+import "../../../../shared/ui/ui.css";
 type Props = { params: Promise<{ template: string; path?: string[] }> };
 export async function generateMetadata({ params }: Props) {
   const { template } = await params;

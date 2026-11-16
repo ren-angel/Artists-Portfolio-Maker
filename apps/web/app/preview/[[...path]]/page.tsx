@@ -1,12 +1,13 @@
-import { readerPageNumber } from "../../../components/templates/kit";
+import { readerPageNumber } from "../../../entities/portfolio/templates/kit";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { draftSchema } from "@studio/shared";
-import { Portfolio, matchPage } from "../../../components/Portfolio";
+import { Portfolio, matchPage } from "../../../entities/portfolio/Portfolio";
 import { ArrowLeft } from "lucide-react";
-import { t } from "../../../lib/copy";
-import { brand } from "../../../lib/server";
-import "../../../components/ui/ui.css";
+import { t } from "../../../shared/lib/copy";
+import { brand } from "../../../shared/lib/server";
+import { apiOrigin, internalHeaders } from "../../../shared/lib/internal-api";
+import "../../../shared/ui/ui.css";
 export const metadata = { robots: { index: false, follow: false } };
 export default async function Preview({
   params, searchParams,
@@ -15,10 +16,10 @@ export default async function Preview({
   searchParams: Promise<{page?: string | string[]}>;
 }) {
   const cookie = await cookies();
-  const base = process.env.API_INTERNAL_ORIGIN || "http://127.0.0.1:4000";
+  const base = apiOrigin();
   const options = {
     cache: "no-store" as const,
-    headers: { cookie: cookie.toString() },
+    headers: { cookie: cookie.toString(), ...internalHeaders() },
   };
   const list = await fetch(base + "/sites", options);
   if (list.status === 401) redirect("/auth/login");

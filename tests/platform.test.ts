@@ -7,10 +7,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { HTTPMethods } from "fastify";
 import { createApp } from "../apps/api/src/app.ts";
-import { config } from "../apps/api/src/config.ts";
-import { mock } from "../apps/api/src/billing/mock.ts";
-import { normalizeHost, recheckDomains, type Network } from "../apps/api/src/domains.ts";
-import { referrerCategory } from "../apps/api/src/analytics.ts";
+import { config } from "../apps/api/src/platform/config.ts";
+import { mock } from "../apps/api/src/modules/billing/infrastructure/mock.ts";
+import { normalizeHost, recheckDomains, type Network } from "../apps/api/src/modules/domains/index.ts";
+import { referrerCategory } from "../apps/api/src/modules/analytics/index.ts";
 import { connect, sql } from "@studio/db";
 import { newBlock, type Draft } from "@studio/shared";
 

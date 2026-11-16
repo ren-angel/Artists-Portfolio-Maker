@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { t, type Lang } from "../lib/copy";
-import { Status } from "../components/ui/Status";
-import "../components/ui/ui.css";
+import { t, type Lang } from "../shared/lib/copy";
+import { Status } from "../shared/ui/Status";
+import "../shared/ui/ui.css";
 export default function ErrorPage({ reset }: { reset: () => void }) {
   const [lang, setLang] = useState<Lang>("pt-BR");
   useEffect(() => {

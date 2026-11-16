@@ -4,11 +4,11 @@ import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import Hero from "../apps/web/components/home/Hero.tsx";
-import TemplatesSection from "../apps/web/components/home/TemplatesSection.tsx";
-import PlansSection from "../apps/web/components/home/PlansSection.tsx";
-import { ART } from "../apps/web/components/home/data.ts";
-import type { Common } from "../apps/web/components/home/types.ts";
+import Hero from "../apps/web/features/marketing/home/Hero.tsx";
+import TemplatesSection from "../apps/web/features/marketing/home/TemplatesSection.tsx";
+import PlansSection from "../apps/web/features/marketing/home/PlansSection.tsx";
+import { ART } from "../apps/web/features/marketing/home/data.ts";
+import type { Common } from "../apps/web/features/marketing/home/types.ts";
 
 for (const lang of ["en", "pt-BR"] as const) {
   test(`marketing in ${lang} preserves production links, local artwork and configured branding`, () => {

@@ -1,5 +1,7 @@
 # Visual fidelity audit
 
+> Historical audit (13–14 November 2026). File paths refer to the layout before the DDD refactor; see the move table in [DDD-ARCHITECTURE.md](DDD-ARCHITECTURE.md).
+
 Reference: `Design/` (read-only). Comparisons used a local Vite harness that renders the original Design routes with stubbed router/image modules, and the production dev servers, both captured with Playwright + system Chrome at 1440×900 and 390×844 (tablet checked in the editor). Status key: Implemented · Visually verified (screenshot compared) · Functionally verified (scripted against the real API).
 
 | Screen | Design source | Production | Status | Remaining discrepancies |

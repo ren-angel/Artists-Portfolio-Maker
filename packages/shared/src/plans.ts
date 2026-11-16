@@ -78,8 +78,6 @@ export function priceBook(json?: string): PriceBook {
   return book;
 }
 
-export const isPlan = (v: unknown): v is PlanId => planIds.includes(v as PlanId);
-
 /** Limits for a plan; the free tier honours the deployment's MAX_* overrides. */
 export function limitsFor(plan: PlanId, freeOverride?: Partial<Limits>): Limits {
   return plan === "free" ? { ...plans.free.limits, ...freeOverride } : plans[plan].limits;
@@ -139,9 +137,6 @@ export function derive(s: SubscriptionFacts, payments: PaymentRecord[], now: Dat
     graceUntil: null,
   };
 }
-
-/** Statuses that grant the subscribed plan (time limits applied in SQL too). */
-export const grantingStatuses: SubscriptionStatus[] = ["active", "past_due", "canceling"];
 
 export function addCycle(date: Date, cycle: Cycle) {
   const d = new Date(date);

@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { legalDocuments } from "@studio/shared";
-import { brand, language } from "../../../lib/server";
-import { legal } from "../../../lib/legal";
-import { TakedownForm } from "../../../components/legal/TakedownForm";
-import Logo from "../../../components/home/Logo";
-import "../../../components/ui/ui.css";
+import { brand, language } from "../../../shared/lib/server";
+import { legal } from "../../../features/legal/legal";
+import { TakedownForm } from "../../../features/legal/TakedownForm";
+import Logo from "../../../shared/ui/Logo";
+import "../../../shared/ui/ui.css";
 
 type Props = { params: Promise<{ doc: string }> };
 export async function generateMetadata({ params }: Props) {

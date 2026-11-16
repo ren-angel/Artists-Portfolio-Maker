@@ -1,4 +1,4 @@
-import { readerPageNumber } from "../../../../components/templates/kit";
+import { readerPageNumber } from "../../../../entities/portfolio/templates/kit";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { after } from "next/server";
@@ -8,10 +8,10 @@ import {
   brand,
   recordHit,
   visit,
-} from "../../../../lib/server";
-import { Portfolio, matchPage } from "../../../../components/Portfolio";
-import { t } from "../../../../lib/copy";
-import "../../../../components/ui/ui.css";
+} from "../../../../shared/lib/server";
+import { Portfolio, matchPage } from "../../../../entities/portfolio/Portfolio";
+import { t } from "../../../../shared/lib/copy";
+import "../../../../shared/ui/ui.css";
 function loadPortfolio(handle: string, path: string[]) {
   if (path[0] === "works") return published(handle, "");
   if (path[1] === "chapters" && /^[0-9a-f-]{36}$/i.test(path[2] ?? ""))

@@ -2,15 +2,17 @@
 
 One Next.js application serves marketing, the authenticated studio, private preview and public portfolios. A single Fastify API owns mutations. PostgreSQL stores structured content, object metadata, authorization state and publications. The asset adapter stores image bytes. No Base44 SDKs, media URLs, infrastructure or routing are used at runtime.
 
+Code is organized by bounded context; see [DDD-ARCHITECTURE.md](DDD-ARCHITECTURE.md) for the module map, dependency rules and how to add features.
+
 | Module | Responsibility |
 | --- | --- |
 | apps/web/proxy.ts | Validate the actual Host against the configured platform domain, strip the incoming tenant marker and rewrite a single allowed artist subdomain. Keep private routes on the application host. |
-| apps/web/app/site and components/Portfolio.tsx | SSR pages, gallery detail, canonical and social metadata. The same portfolio component powers the editor, private previews and demo templates. The public route imports no studio client component. |
-| apps/web/components and lib/use-draft.ts | Onboarding, studio management and editor. The save loop serializes writes, coalesces edits and reports conflicts. |
-| packages/shared | Version-one content contract, allowlisted block styles, safe links, templates, quotas, host parsing and publication filtering. |
-| apps/api/src/auth.ts | Account lifecycle, password recovery, email confirmation, session revocation and profile. |
-| apps/api/src/sites.ts and drafts.ts | Ownership, normalized content, atomic save and publish, reporting. |
-| apps/api/src/uploads.ts, images.ts, storage.ts, cleanup.ts | Reserve capacity, accept bounded bytes, verify stored content, generate versions, authorize delivery and collect objects. |
+| apps/web/app/site and entities/portfolio | SSR pages, gallery detail, canonical and social metadata. The same Portfolio component powers the editor, private previews and demo templates. The public route imports no studio client component (enforced by tests/architecture.test.ts). |
+| apps/web/features (studio, editor, creative…) and features/studio/use-draft.ts | Onboarding, studio management and editor. The save loop serializes writes, coalesces edits and reports conflicts. |
+| packages/shared | Version-one content contract, allowlisted block styles, safe links, templates, plans, quotas, host parsing and publication filtering. |
+| apps/api/src/modules/identity | Account lifecycle, password recovery, email confirmation, session revocation and profile. |
+| apps/api/src/modules/portfolio and tenancy | Ownership, normalized content, atomic save and publish, public reads, reporting. |
+| apps/api/src/modules/media and jobs/maintenance.ts | Reserve capacity, accept bounded bytes, verify stored content, generate versions, authorize delivery and collect objects. |
 | packages/db | Drizzle table mappings, parameterized queries, versioned SQL and a transaction-locked checksum migration runner. |
 
 ## Data lifecycle
@@ -29,7 +31,7 @@ Database triggers enqueue removal of staging files and unused masters/previews. 
 
 Sessions are random opaque tokens, stored as SHA-256 digests with a 14-day expiration. Production cookies are host-only, HttpOnly, Secure and SameSite=Lax with a __Host- prefix. Passwords use asynchronous, salted scrypt with N=131072, r=8 and p=1. Verification and reset tokens expire after 30 minutes and are consumed transactionally. Password reset revokes existing sessions. Email links put tokens in the URL fragment, and the user explicitly submits them. No token goes in an API query string.
 
-Mutations require the configured application Origin and a custom request header. Browser clients use the same-origin API proxy. Fastify does not trust forwarded headers. Application errors emit stable codes. Structured failure logs exclude bodies, cookies, email tokens and SQL values. Public rendering uses React-escaped text and a small emphasis grammar. Block fields cannot inject markup, scripts or style declarations. A fresh nonce protects Next scripts. The public abuse form records reports with a rate limit.
+Mutations require the configured application Origin and a custom request header. Browser clients use the same-origin API proxy. Fastify trusts X-Forwarded-For only from the addresses in TRUST_PROXY (set it to the co-located web server in production so rate limits apply per client). Server-to-server calls from the web app carry the internal token and are exempt from per-address limits. Application errors emit stable codes. Structured failure logs exclude bodies, cookies, email tokens and SQL values. Public rendering uses React-escaped text and a small emphasis grammar. Block fields cannot inject markup, scripts or style declarations. A fresh nonce protects Next scripts. The public abuse form records reports with a rate limit.
 
 ## Creative content
 

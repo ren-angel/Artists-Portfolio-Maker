@@ -66,7 +66,7 @@ A browser returning from the invoice page calls `POST /billing/sync`. That also 
 
 `canceled` and `expired` are terminal. Buying again creates a new subscription.
 
-**The effective plan** is computed in SQL (`apps/api/src/plan.ts`) from subscription rows in `active`, `past_due` or `canceling` whose period (or grace) has not ended. Public pages, uploads, saves and publishing use this query. They never call the provider, so portfolios keep working during provider outages.
+**The effective plan** is computed in SQL (`apps/api/src/modules/entitlements/application/entitlements.ts`) from subscription rows in `active`, `past_due` or `canceling` whose period (or grace) has not ended. Public pages, uploads, saves and publishing use this query. They never call the provider, so portfolios keep working during provider outages.
 
 ## Plan changes
 

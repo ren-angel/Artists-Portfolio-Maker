@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { asaas } from "../apps/api/src/billing/asaas.ts";
+import { asaas } from "../apps/api/src/modules/billing/infrastructure/asaas.ts";
 
 /* Contract test for the Asaas client: request shapes, auth header, status
    mapping and webhook authentication. fetch is stubbed; nothing leaves the

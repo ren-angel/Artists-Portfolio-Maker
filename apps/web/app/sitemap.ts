@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { publicOrigin, published } from "../lib/server";
+import { publicOrigin, published } from "../shared/lib/server";
 export const dynamic = "force-dynamic";
 export default async function sitemap() {
   const handle = (await headers()).get("x-portfolio-host");

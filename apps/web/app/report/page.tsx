@@ -1,6 +1,6 @@
-import { Report } from "../../components/Report";
-import { brand, language } from "../../lib/server";
-import "../../components/ui/ui.css";
+import { Report } from "../../features/reporting/Report";
+import { brand, language } from "../../shared/lib/server";
+import "../../shared/ui/ui.css";
 export default async function ReportPage({
   searchParams,
 }: {

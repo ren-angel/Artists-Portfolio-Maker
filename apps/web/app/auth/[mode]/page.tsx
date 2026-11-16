@@ -1,8 +1,8 @@
-import { studioIntent } from "../../../lib/studio-intent";
+import { studioIntent } from "../../../shared/lib/studio-intent";
 import { notFound } from "next/navigation";
-import { language, brand } from "../../../lib/server";
-import { Auth } from "../../../components/Auth";
-import "../../../components/ui/ui.css";
+import { language, brand } from "../../../shared/lib/server";
+import { Auth } from "../../../features/identity/Auth";
+import "../../../shared/ui/ui.css";
 export const metadata = { robots: { index: false, follow: false } };
 export default async function AuthPage({
   params, searchParams,
