@@ -25,7 +25,7 @@ export const portuguese: Readonly<Record<string, string>> = {
   "Drag sections, retype headlines, swap an artwork, change a colour. Everything you touch looks designed, because the template does the hard part for you.":
     "Arraste seções, reescreva títulos, troque uma obra ou mude uma cor. O modelo cuida da composição enquanto você dá forma à sua página.",
   "Try the editor": "Conhecer o editor",
-  "lunamori.muralia.com / home": "lunamori.muralia.com / início",
+  "lunamori.doodallery.com / home": "lunamori.doodallery.com / início",
   Preview: "Prévia",
   Publish: "Publicar",
   "work · about · commissions": "obras · sobre · encomendas",
@@ -46,8 +46,8 @@ export const portuguese: Readonly<Record<string, string>> = {
   "Demo portfolios": "Portfólios de demonstração",
   "Four artists. Four completely": "Quatro artistas. Quatro mundos",
   "different worlds.": "completamente diferentes.",
-  "Same builder, wildly different results. Every portfolio below is a real Muralia template you can start from today.":
-    "A mesma ferramenta, resultados bem diferentes. Cada portfólio abaixo usa um modelo da Muralia que você pode escolher hoje.",
+  "Same builder, wildly different results. Every portfolio below is a real Doodallery template you can start from today.":
+    "A mesma ferramenta, resultados bem diferentes. Cada portfólio abaixo usa um modelo da Doodallery que você pode escolher hoje.",
   "Visit portfolio": "Visitar portfólio",
   works: "obras",
   "“Make a little corner of the internet your own.”":
@@ -118,8 +118,8 @@ export const portuguese: Readonly<Record<string, string>> = {
     "Valores propostos em reais · planos pagos em desenvolvimento",
   "Your art deserves its own little universe. A portfolio builder made by artists, for artists.":
     "Sua arte merece seu próprio universo. Um criador de portfólios feito por artistas, para artistas.",
-  "© 2026 Muralia · Made for artists everywhere":
-    "© 2026 Muralia · Para artistas de todos os lugares",
+  "© 2026 Doodallery · Made for artists everywhere":
+    "© 2026 Doodallery · Para artistas de todos os lugares",
   "Artwork and artists shown here are fictional demonstrations":
     "As obras e os artistas apresentados são demonstrações fictícias",
   "Sign in": "Entrar",
@@ -188,8 +188,8 @@ export const portuguese: Readonly<Record<string, string>> = {
   "Choose one of four art-directed templates. It already looks like a real artist's website, no blank canvas anxiety.":
     "Escolha um dos quatro modelos com direção de arte. Você já começa com um site de artista, sem o medo da tela em branco.",
   "Add your work": "Adicione suas obras",
-  "Drop in your artworks, sort them into galleries, and mark the pieces you're proudest of. Muralia handles the layout.":
-    "Envie suas obras, organize as galerias e destaque seus trabalhos favoritos. A Muralia cuida da composição.",
+  "Drop in your artworks, sort them into galleries, and mark the pieces you're proudest of. Doodallery handles the layout.":
+    "Envie suas obras, organize as galerias e destaque seus trabalhos favoritos. A Doodallery cuida da composição.",
   "Make it yours": "Deixe com a sua cara",
   "Change colours, fonts, corners and captions in the visual editor. Then publish to your own little address.":
     "Ajuste cores, fontes, espaços e legendas no editor visual. Depois publique no seu próprio endereço.",
@@ -214,8 +214,8 @@ export const portuguese: Readonly<Record<string, string>> = {
   "The town that keeps the lights on": "A cidade que mantém as luzes acesas",
   "A visitor with no shadow": "Uma visita sem sombra",
   "Lanterns for the lost": "Lanternas para os perdidos",
-  "I'd been meaning to build a proper portfolio for three years. Muralia took an evening, and it still looks like my work, not like a template.":
-    "Há três anos eu queria montar um portfólio de verdade. Com a Muralia, bastou uma noite e ficou com o meu jeito de desenhar.",
+  "I'd been meaning to build a proper portfolio for three years. Doodallery took an evening, and it still looks like my work, not like a template.":
+    "Há três anos eu queria montar um portfólio de verdade. Com a Doodallery, bastou uma noite e ficou com o meu jeito de desenhar.",
   "The commission page alone saved me. Clients arrive already knowing my prices and terms, so the conversation starts at yes.":
     "A página de encomendas me salvou. Os clientes já chegam sabendo os preços e as condições, e a conversa começa com um sim.",
   "It feels like a printed artbook that happens to live on the internet. My readers actually scroll through chapters now.":
@@ -228,14 +228,14 @@ export const portuguese: Readonly<Record<string, string>> = {
   "For comics, shops and big archives.":
     "Para quadrinhos, lojas e grandes acervos.",
   "All four templates": "Os quatro modelos",
-  "Muralia subdomain": "Subdomínio da Muralia",
+  "Doodallery subdomain": "Subdomínio da Doodallery",
   "Everything in Free": "Tudo do plano gratuito",
   "Up to 500 artworks": "Até 500 obras",
   "Unlimited pages": "Páginas ilimitadas",
   "10 GB storage": "10 GB de armazenamento",
   "Custom domain": "Domínio próprio",
   "Commission pages": "Páginas de encomendas",
-  "No Muralia badge": "Sem selo da Muralia",
+  "No Doodallery badge": "Sem selo da Doodallery",
   "Everything in Artist": "Tudo do plano Artist",
   "Unlimited artworks": "Obras ilimitadas",
   "50 GB storage": "50 GB de armazenamento",

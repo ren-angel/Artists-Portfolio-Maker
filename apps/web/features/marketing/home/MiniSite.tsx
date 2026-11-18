@@ -7,22 +7,22 @@ const THEMES = {
   creative: {
     shell: "bg-[#FFF4EF] text-[#272438] border-[#272438]/10",
     bar: "bg-white/60 border-[#272438]/10",
-    domain: "lunamori.muralia.com",
+    domain: "lunamori.doodallery.com",
   },
   gallery: {
     shell: "bg-[#FFFDF8] text-[#272438] border-[#272438]/10",
     bar: "bg-[#F6F2EA] border-[#272438]/10",
-    domain: "ninaflores.muralia.com",
+    domain: "ninaflores.doodallery.com",
   },
   showcase: {
     shell: "bg-[#141320] text-[#F2EDE4] border-white/10",
     bar: "bg-white/[0.06] border-white/10",
-    domain: "theovale.muralia.com",
+    domain: "theovale.doodallery.com",
   },
   story: {
     shell: "bg-[#F8F0E3] text-[#6B5442] border-[#6B5442]/20",
     bar: "bg-[#EFE3D2] border-[#6B5442]/20",
-    domain: "mikasora.muralia.com",
+    domain: "mikasora.doodallery.com",
   },
 };
 
@@ -55,7 +55,7 @@ export default function MiniSite({
           <span className="h-[4px] w-[4px] rounded-full bg-current opacity-25" />
         </span>
         <span className="ml-auto font-mono text-[7px] tracking-tight opacity-40">
-          {t.domain.replace("muralia.com", domain)}
+          {t.domain.replace("doodallery.com", domain)}
         </span>
       </div>
 

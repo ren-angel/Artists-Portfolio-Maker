@@ -98,7 +98,7 @@ export function context(
     base,
     demoImages,
     readerPage,
-    brand = "Muralia",
+    brand = "Doodallery",
     branding = true,
     track = false,
     selectBlock,

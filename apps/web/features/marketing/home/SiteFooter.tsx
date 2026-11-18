@@ -79,7 +79,7 @@ export default function SiteFooter({ lang, name }: Common) {
         </div>
 
         <div className="mt-14 flex flex-col gap-3 border-t border-paper/15 pt-6 text-[12px] text-paper/45 sm:flex-row sm:items-center sm:justify-between">
-          <p>{tr("© 2026 Muralia · Made for artists everywhere")}</p>
+          <p>{tr("© 2026 Doodallery · Made for artists everywhere")}</p>
           <p className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-mint" />
             {tr("Artwork and artists shown here are fictional demonstrations")}

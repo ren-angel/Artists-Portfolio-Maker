@@ -1,4 +1,3 @@
-import { Sparkle } from "./bits";
 import { cn } from "../lib/cn";
 
 export default function Logo({
@@ -13,13 +12,16 @@ export default function Logo({
   return (
     <a
       href="/"
-      className={cn("group inline-flex items-center gap-2.5", className)}
+      className={cn("group inline-flex items-center gap-2", className)}
       aria-label={name}
     >
-      <span className="relative grid h-9 w-9 place-items-center rounded-[0.9rem] bg-ink text-paper transition-transform duration-500 group-hover:-rotate-12">
-        <Sparkle size={15} />
-        <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-coral ring-2 ring-paper" />
-      </span>
+      <img
+        src="/brand/doodallery-icon.svg"
+        alt=""
+        width={40}
+        height={40}
+        className="h-10 w-10 shrink-0 transition-transform duration-500 group-hover:-rotate-12 motion-reduce:transition-none motion-reduce:group-hover:rotate-0"
+      />
       <span
         className={cn(
           "font-display text-[22px] font-semibold leading-none tracking-[-0.03em]",

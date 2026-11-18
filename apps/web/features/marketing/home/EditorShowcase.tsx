@@ -113,7 +113,7 @@ export default function EditorShowcase(props: Common) {
                   <span className="h-2 w-2 rounded-full bg-mint" />
                 </div>
                 <span className="text-[10px] font-medium text-ink/60">
-                  {tr("lunamori.muralia.com / home")}
+                  {tr("lunamori.doodallery.com / home")}
                 </span>
                 <div className="ml-auto hidden items-center gap-2 sm:flex">
                   <Undo2 className="h-3 w-3 text-ink/35" />

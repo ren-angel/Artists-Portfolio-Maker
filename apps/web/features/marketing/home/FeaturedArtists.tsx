@@ -32,7 +32,7 @@ export default function FeaturedArtists(props: Common) {
         </div>
         <p className="max-w-[300px] text-[14.5px] leading-relaxed text-ink/55">
           {tr(
-            "Same builder, wildly different results. Every portfolio below is a real Muralia template you can start from today.",
+            "Same builder, wildly different results. Every portfolio below is a real Doodallery template you can start from today.",
           )}
         </p>
       </div>

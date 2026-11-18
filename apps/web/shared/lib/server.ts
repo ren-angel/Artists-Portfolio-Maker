@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { draftSchema } from "@studio/shared";
 import type { Lang } from "./copy";
 import { apiOrigin, internalHeaders } from "./internal-api";
-export const brand = () => process.env.PLATFORM_NAME || "Artist Studio";
+export const brand = () => process.env.PLATFORM_NAME || "Doodallery";
 export async function language(): Promise<Lang> {
   const saved = (await cookies()).get("studio_lang")?.value;
   if (saved === "en" || saved === "pt-BR") return saved;

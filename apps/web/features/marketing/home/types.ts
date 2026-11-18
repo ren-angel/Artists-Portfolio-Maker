@@ -19,7 +19,7 @@ export function translator({
         ? source.replace(key, () => portuguese[key])
         : source;
     return value
-      .replaceAll("muralia.com", () => domain ?? "localhost")
-      .replaceAll("Muralia", () => name ?? "Muralia");
+      .replaceAll("doodallery.com", () => domain ?? "localhost")
+      .replaceAll("Doodallery", () => name ?? "Doodallery");
   };
 }

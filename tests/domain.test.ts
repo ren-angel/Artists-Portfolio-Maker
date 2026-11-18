@@ -93,9 +93,9 @@ test("domain DNS evaluation needs the TXT proof and a matching CNAME or A record
   assert.equal(evaluateDns({ txt: proof, cname: ["SITES.example.com."], a: [] }, claim, target).dnsOk, true);
   assert.equal(evaluateDns({ txt: proof, cname: [], a: ["203.0.113.7"] }, claim, target).error, "tls_pending");
   assert.equal(evaluateDns({ txt: proof, cname: [], a: ["203.0.113.7"] }, claim, {}).dnsOk, false);
-  const platform = { PLATFORM_DOMAIN: "muralia.app", APP_ORIGIN: "https://app.muralia.app" };
+  const platform = { PLATFORM_DOMAIN: "doodallery.app", APP_ORIGIN: "https://app.doodallery.app" };
   assert.equal(normalizeHost("https://Art.Example.org/path", platform), "art.example.org");
-  for (const bad of ["muralia.app", "x.muralia.app", "10.0.0.1", "printer.local", "localhost", "a..b.com"])
+  for (const bad of ["doodallery.app", "x.doodallery.app", "10.0.0.1", "printer.local", "localhost", "a..b.com"])
     fails(() => normalizeHost(bad, platform), "invalid_domain");
 });
 
@@ -105,8 +105,8 @@ test("analytics ignores automated traffic and stores only coarse facts", () => {
   assert.equal(isAutomated("Mozilla/5.0 (X11; Linux x86_64) Firefox/140.0"), false);
   assert.equal(countedPath("/works/abc/?utm=1#x"), "/works/abc");
   assert.equal(countedPath("///"), "/");
-  assert.equal(referrerCategory("www.instagram.com", ["muralia.app"]), "social");
-  assert.equal(referrerCategory("luna.muralia.app", ["muralia.app"]), "internal");
+  assert.equal(referrerCategory("www.instagram.com", ["doodallery.app"]), "social");
+  assert.equal(referrerCategory("luna.doodallery.app", ["doodallery.app"]), "internal");
   assert.deepEqual(reportWindow(false, 365), { max: 30, days: 30 });
   assert.deepEqual(reportWindow(true, 90), { max: 365, days: 90 });
 });

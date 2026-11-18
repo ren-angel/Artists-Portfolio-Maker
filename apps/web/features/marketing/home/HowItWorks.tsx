@@ -11,7 +11,7 @@ const STEPS = [
   {
     n: "02",
     title: "Add your work",
-    body: "Drop in your artworks, sort them into galleries, and mark the pieces you're proudest of. Muralia handles the layout.",
+    body: "Drop in your artworks, sort them into galleries, and mark the pieces you're proudest of. Doodallery handles the layout.",
     tone: "bg-lilac",
   },
   {

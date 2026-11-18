@@ -5,7 +5,7 @@ import { cn } from "./types";
 const QUOTES = [
   {
     quote:
-      "I'd been meaning to build a proper portfolio for three years. Muralia took an evening, and it still looks like my work, not like a template.",
+      "I'd been meaning to build a proper portfolio for three years. Doodallery took an evening, and it still looks like my work, not like a template.",
     name: "Luna Mori",
     role: "Illustrator · 84 works",
     tone: "bg-ivory",
