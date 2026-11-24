@@ -30,7 +30,6 @@ export function featureRows(l: Lang, p: CatalogPlan): [string, boolean][] {
     [tr("All four templates", "Os quatro modelos"), true],
     [tr("Platform subdomain", "Subdomínio da plataforma"), true],
     [tr("Custom domain", "Domínio próprio"), f.customDomain],
-    [tr("No platform branding", "Sem a marca da plataforma"), f.removeBranding],
     [tr("Commission page sections", "Seções de encomendas"), f.commissions],
     [
       f.appearance === "advanced"

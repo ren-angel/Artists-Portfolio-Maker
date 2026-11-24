@@ -20,7 +20,6 @@ export function CompareTable({ l, catalog }: { l: Lang; catalog: Catalog }) {
       basic: tr("Basic", "Básica"), more: tr("Expanded", "Ampliada"), advanced: tr("Advanced", "Avançada"),
     })[p.features.appearance]],
     [tr("Analytics", "Estatísticas"), p => p.features.analytics === "advanced" ? tr("Advanced", "Avançadas") : tr("Basic", "Básicas")],
-    [tr("Remove platform branding", "Remover marca da plataforma"), p => p.features.removeBranding],
   ];
   return (
     <div id="plan-comparison" role="region" aria-label={title} tabIndex={0}

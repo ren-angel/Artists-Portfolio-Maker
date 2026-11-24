@@ -95,7 +95,6 @@ export const themeSchema = z.object({
   grid: z.enum(["template", "uniform", "masonry"]).default("template"),
   sectionScale: z.number().min(0.65).max(1.5).default(1),
   paperTexture: z.boolean().default(false),
-  showBranding: z.boolean().default(false),
   footerText: z.string().max(200).default(""),
   footerSocial: z.boolean().default(true),
 });
@@ -319,7 +318,6 @@ export function initialDraft(
       grid: "template",
       sectionScale: 1,
       paperTexture: false,
-      showBranding: false,
       footerText: "",
       footerSocial: true,
     },

@@ -76,7 +76,6 @@ export function publicationService(db: Database, env: Config) {
         draft: view.chapter
           ? publishable(trimToChapter(snapshot, view.series, view.chapter), record.plan)
           : entitle(snapshot, features),
-        branding: !features.removeBranding,
         domain: features.customDomain ? record.domain : null,
       };
     },

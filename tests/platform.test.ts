@@ -142,7 +142,6 @@ test("custom domains require the plan, DNS proof and stay unique; only verified,
     assert.equal((await h.request("GET", "/domains/tls-ask?domain=unknown.example.org")).statusCode, 404);
     const pub = (await h.request("GET", "/public/" + a.handle)).json();
     assert.equal(pub.domain, host);
-    assert.equal(pub.branding, false);
 
     // If the TXT proof disappears, daily re-verification stops routing.
     h.network.txt.delete("_doodallery-verify." + host);
@@ -159,7 +158,6 @@ test("custom domains require the plan, DNS proof and stay unique; only verified,
     const after = (await h.request("GET", `/sites/${a.site}/domains`, undefined, a.cookie)).json();
     assert.equal(after.entitled, false);
     assert.equal(after.domains.length, 1);
-    assert.equal((await h.request("GET", "/public/" + a.handle)).json().branding, true);
   } finally {
     await h.close();
   }

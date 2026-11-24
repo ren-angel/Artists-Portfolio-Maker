@@ -119,11 +119,9 @@ function Footer({ ctx }: { ctx: Ctx }) {
             © {ctx.year} {ctx.d.title}
           </span>
           {ctx.d.theme.footerText && <span>{ctx.d.theme.footerText}</span>}
-          {ctx.branding && (
-            <span>
-              {ctx.tr("Made with", "Feito com")} {ctx.brand}
-            </span>
-          )}
+          <span>
+            {ctx.tr("Made with", "Feito com")} {ctx.brand}
+          </span>
         </div>
       </W>
     </footer>

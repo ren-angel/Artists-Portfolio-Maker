@@ -4,11 +4,11 @@
 
 `packages/shared/src/plans.ts` is the single source for plan limits and features. UI components only render what the API returns from `GET /billing/plans`. The server enforces every limit.
 
-| Plan | Pages | Artworks | Storage | Custom domain | No branding | Commission sections | Appearance | Analytics |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Free | 5 | 50 | 200 MB | - | - | - | basic | basic, 30 days |
-| Artist | 15 | 350 | 2 GB | ✓ | ✓ | ✓ | more | basic, 30 days |
-| Studio | 30 | 1,500 | 10 GB | ✓ | ✓ | ✓ | advanced | advanced, 365 days |
+| Plan | Pages | Artworks | Storage | Custom domain | Commission sections | Appearance | Analytics |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Free | 5 | 50 | 200 MB | - | - | basic | basic, 30 days |
+| Artist | 15 | 350 | 2 GB | ✓ | ✓ | more | basic, 30 days |
+| Studio | 30 | 1,500 | 10 GB | ✓ | ✓ | advanced | advanced, 365 days |
 
 The Free row honours the deployment's `MAX_*` variables. All plans allow one portfolio and the same per-file upload limit.
 
@@ -78,10 +78,10 @@ A browser returning from the invoice page calls `POST /billing/sync`. That also 
 ## Downgrade and grace policy
 
 - No artwork, page, gallery or text is deleted when a plan ends.
+- **Platform credit:** every public portfolio shows "Made with Doodallery" in its footer on every plan. No plan removes it.
 - **Over-limit content:** it stays published and editable. Uploads are blocked while artworks or storage exceed the plan. A draft save cannot add pages while the site is over its page limit, but can keep or reduce them.
 - **Plan-gated output:** commission sections, extra appearance options and section background images remain in the draft and are omitted from what is published and served. `entitle()` runs at publish time and again on every public read.
 - **Custom domains:** they stop routing as soon as the plan no longer includes them. The record is kept so it can be reactivated. The platform subdomain always works.
-- **Platform branding:** it returns on public pages.
 - **Grace:** 7 days after a paid period ends without a confirmed renewal (`GRACE_DAYS`).
 
 ## Test mode

@@ -57,7 +57,7 @@ export default async function PublicPage({
   searchParams,
 }: Props & { searchParams: Promise<{ page?: string | string[] }> }) {
   const { handle, path = [] } = await params;
-  const { draft, id, branding } = await loadPortfolio(handle, path);
+  const { draft, id } = await loadPortfolio(handle, path);
   if (!matchPage(draft, path)) notFound();
   // Count the view after the response is sent; prefetches are not visits.
   const v = await visit();
@@ -80,7 +80,6 @@ export default async function PublicPage({
         path={path}
         readerPage={readerPageNumber((await searchParams).page)}
         brand={brand()}
-        branding={branding}
         track
         base={(await headers()).get("x-portfolio-host") === handle ? "" : "/site/" + handle}
       />

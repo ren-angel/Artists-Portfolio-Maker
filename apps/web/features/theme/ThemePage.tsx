@@ -212,7 +212,7 @@ export function ThemePage({
             </span>
           </div>
           <div className="overflow-hidden rounded-[1.2rem] border border-ink/12 bg-ivory p-2.5">
-            <ScaledPortfolio branding={!features.removeBranding} draft={d} site={site} brand={brand} className="max-h-[620px] overflow-y-auto overflow-x-hidden rounded-[0.9rem]" />
+            <ScaledPortfolio draft={d} site={site} brand={brand} className="max-h-[620px] overflow-y-auto overflow-x-hidden rounded-[0.9rem]" />
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4" role="radiogroup" aria-label={t(l, "template_")}>
             {templateNames.map((v) => (

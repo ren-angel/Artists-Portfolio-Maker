@@ -47,7 +47,7 @@ for (const lang of ["en", "pt-BR"] as const) {
     assert.match(plans, /href="\/auth\/register"/);
     assert.match(plans, /<table/);
     assert.ok(plans.indexOf('<table') > plans.lastIndexOf('</article>'));
-    assert.equal(plans.match(/scope="row"/g)?.length, 12);
+    assert.equal(plans.match(/scope="row"/g)?.length, 11);
     assert.match(plans, /350/);
     assert.match(plans, /href="\/auth\/register\?plan=artist&amp;cycle=monthly"/);
     assert.doesNotMatch(plans, /Unlimited|Ilimitad|Coming soon|Em breve/);

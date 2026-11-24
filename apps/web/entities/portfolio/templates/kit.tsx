@@ -25,8 +25,6 @@ export type PortfolioProps = {
   /** Demonstration pages map asset IDs to bundled images. */
   demoImages?: Record<string, string>;
   brand?: string;
-  /** Platform credit in footers; removed on paid plans. */
-  branding?: boolean;
   /** Public pages route contact links through a counting redirect. */
   track?: boolean;
   selectBlock?: (id: string) => void;
@@ -41,7 +39,6 @@ export type Ctx = {
   editing: boolean;
   readerPage?: number;
   brand: string;
-  branding: boolean;
   year: number;
   arts: Map<string, Art>;
   galleries: Gallery[];
@@ -99,7 +96,6 @@ export function context(
     demoImages,
     readerPage,
     brand = "Doodallery",
-    branding = true,
     track = false,
     selectBlock,
   }: PortfolioProps,
@@ -124,7 +120,6 @@ export function context(
     editing: Boolean(selectBlock),
     readerPage,
     brand,
-    branding: branding || d.theme.showBranding,
     year: new Date().getFullYear(),
     arts,
     galleries,

@@ -104,11 +104,6 @@ export function AppearanceOptions({
         <input type="checkbox" checked={d.theme.paperTexture} onChange={e => set("paperTexture", e.target.checked)} />
         {tr("Paper texture", "Textura de papel")}<PlanBadge l={l} need="more" features={features} />
       </label>
-      <label className="flex items-center gap-2 text-[11.5px]">
-        <input type="checkbox" checked={!features.removeBranding || d.theme.showBranding}
-          disabled={!features.removeBranding} onChange={e => set("showBranding",e.target.checked)} />
-        {tr("Show platform credit", "Exibir crédito da plataforma")}<PlanBadge l={l} need="more" features={features} />
-      </label>
       <Seg {...common} k="shadow" need="more" label={tr("Shadows", "Sombras")} options={[["template", tpl], ["none", tr("None", "Nenhuma")], ["soft", tr("Soft", "Suave")], ["lifted", tr("Lifted", "Elevada")]]} />
       <Seg {...common} k="hover" need="more" label={tr("Hover effect", "Efeito ao passar")} options={[["template", tpl], ["none", tr("None", "Nenhum")], ["zoom", "Zoom"], ["lift", tr("Lift", "Elevar")]]} />
       <Seg

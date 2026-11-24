@@ -24,7 +24,7 @@ export default async function Preview({
   const list = await fetch(base + "/sites", options);
   if (list.status === 401) redirect("/auth/login");
   if (!list.ok) throw Error("Could not load preview");
-  const {sites, features} = await list.json();
+  const {sites} = await list.json();
   const site = sites[0];
   if (!site) redirect("/studio");
   const r = await fetch(base + "/sites/" + site.id, options);
@@ -51,7 +51,6 @@ export default async function Preview({
       <main>
         <Portfolio
           draft={draft}
-          branding={!features.removeBranding}
           site={site.id}
           path={path}
           readerPage={readerPageNumber((await searchParams).page)}

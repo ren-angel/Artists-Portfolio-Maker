@@ -28,7 +28,7 @@ The table has a rounded ivory frame, thin row rules, small display headings, cor
 | Storage | 200 MiB | 2 GiB | 10 GiB |
 | Maximum upload | 12 MiB | 12 MiB | 12 MiB |
 | Templates and platform address | All four, included | All four, included | All four, included |
-| Custom domain, commission sections, remove branding | No | Yes | Yes |
+| Custom domain, commission sections | No | Yes | Yes |
 | Appearance | Basic | Expanded | Advanced |
 | Analytics | Basic | Basic | Advanced |
 
@@ -52,7 +52,7 @@ Studio destinations use `/studio?tab=…`. The gallery detail screen is a select
 | `/dashboard/galleries/` | Cover cards, counts, visible/hidden badges, sorting and new gallery | **B** Galleries supports real covers, ordered collections, creation and empty states. |
 | `/dashboard/galleries/$galleryId` | Back, collection details, list of member works, selection, cover, ordering | **B** Gallery detail edits title/slug, description, visibility, membership, cover and sequence with drag and button controls. Uses real draft artwork and preview/public destinations. |
 | `/dashboard/pages` | Page rows, visibility, editor action, menu, ordering, add, three navigation tips | **B** Pages edits names/slugs, navigation visibility, home page and order, with per-plan capacity feedback. A page omitted from navigation remains accessible by its published address, as the UI explains. |
-| `/dashboard/theme` | Template/appearance controls, palette, typography, shape/space, sample composition | **A/B** Theme and the editor share appearance controls. Palette/type, shapes, spacing, texture, footer, branding, grids and section backgrounds use the draft and publication entitlements. Preview uses the real renderer. |
+| `/dashboard/theme` | Template/appearance controls, palette, typography, shape/space, sample composition | **A/B** Theme and the editor share appearance controls. Palette/type, shapes, spacing, texture, footer, grids and section backgrounds use the draft and publication entitlements. Preview uses the real renderer. |
 | `/editor` | Address/page selector, save indicator, undo/redo, device buttons, preview, publish; pages, blocks, galleries, media, theme and layers; canvas selection; Simple/Advanced inspector; publish review/success | **A/B** The six rails are present. Art/gallery selectors, reorder, visibility, spacer, appearance, block settings and publish review act on the draft. Device frames render the same portfolio. Small screens have panel sheets, undo, redo, page-specific preview and publish. **D** Publication requires verification and a successful API response. |
 | `/dashboard/commissions` | Status switch, note, turnaround/currency, illustrated type cards with edit and add, terms, preview | **A/B** Commissions restores image cards, price/range, availability, edit disclosures, add tile and private preview of the actual page. Artists can supply examples, visibility/order, terms, allow/deny lists and contact destinations. **C/D** The prototype's fictional slot counts and request queue have no records in Phase 2. Open/waitlist/closed describe the artist's chosen availability. |
 | `/dashboard/analytics` | Date ranges, KPIs, traffic chart/tooltips, artwork opens, galleries and traffic sources | **A/B** Analytics shows real daily aggregates, chart inspection by pointer/keyboard, page/gallery/artwork rankings and plan-gated referral, region, contact-click and comparison data. **D** Unique visitors and bounce rate cannot be inferred from these cookie-free counters. Empty periods have an empty state. |

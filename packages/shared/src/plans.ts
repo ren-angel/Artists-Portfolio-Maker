@@ -19,7 +19,6 @@ export type Limits = {
 export type Features = {
   privateDownloads:boolean;
   customDomain: boolean;
-  removeBranding: boolean;
   commissions: boolean;
   /** basic: template, palette, typeface, navigation. more: shape, shadow,
       hover, aspect, footer, extra type and palettes. advanced: grid styles
@@ -37,19 +36,19 @@ export const plans: Record<PlanId, Plan> = {
     id: "free",
     rank: 0,
     limits: { sites: 1, pages: 5, artworks: 50, storage: 200 * MB, upload: 12 * MB },
-    features: { privateDownloads:false, customDomain: false, removeBranding: false, commissions: false, appearance: "basic", analytics: "basic" },
+    features: { privateDownloads:false, customDomain: false, commissions: false, appearance: "basic", analytics: "basic" },
   },
   artist: {
     id: "artist",
     rank: 1,
     limits: { sites: 1, pages: 15, artworks: 350, storage: 2048 * MB, upload: 12 * MB },
-    features: { privateDownloads:true, customDomain: true, removeBranding: true, commissions: true, appearance: "more", analytics: "basic" },
+    features: { privateDownloads:true, customDomain: true, commissions: true, appearance: "more", analytics: "basic" },
   },
   studio: {
     id: "studio",
     rank: 2,
     limits: { sites: 1, pages: 30, artworks: 1500, storage: 10240 * MB, upload: 12 * MB },
-    features: { privateDownloads:true, customDomain: true, removeBranding: true, commissions: true, appearance: "advanced", analytics: "advanced" },
+    features: { privateDownloads:true, customDomain: true, commissions: true, appearance: "advanced", analytics: "advanced" },
   },
 };
 

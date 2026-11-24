@@ -235,7 +235,6 @@ export const portuguese: Readonly<Record<string, string>> = {
   "10 GB storage": "10 GB de armazenamento",
   "Custom domain": "Domínio próprio",
   "Commission pages": "Páginas de encomendas",
-  "No Doodallery badge": "Sem selo da Doodallery",
   "Everything in Artist": "Tudo do plano Artist",
   "Unlimited artworks": "Obras ilimitadas",
   "50 GB storage": "50 GB de armazenamento",
