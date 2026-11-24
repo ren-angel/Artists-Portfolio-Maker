@@ -26,7 +26,7 @@ const moduleOf = (path: string) => {
 };
 
 test("API domain layers have no framework, database or provider dependencies", () => {
-  const forbidden = /^(fastify|@fastify\/|@studio\/db|drizzle-orm|pg|@aws-sdk\/|sharp|node:fs|node:dns|node:tls)/;
+  const forbidden = /^(fastify|@fastify\/|@doodallery\/db|drizzle-orm|pg|@aws-sdk\/|sharp|node:fs|node:dns|node:tls)/;
   for (const file of files(modules).filter((f) => f.includes(sep + "domain" + sep))) {
     for (const spec of imports(file)) {
       assert.ok(!forbidden.test(spec), `${relative(root, file)} imports ${spec}`);
@@ -102,7 +102,7 @@ test("web code never imports API or database packages", () => {
   for (const file of files(web))
     for (const spec of imports(file))
       assert.ok(
-        !/^(@studio\/db|@studio\/api|fastify|pg|drizzle-orm)/.test(spec) && !spec.includes("apps/api"),
+        !/^(@doodallery\/db|@doodallery\/api|fastify|pg|drizzle-orm)/.test(spec) && !spec.includes("apps/api"),
         `${relative(root, file)} imports server-only ${spec}`,
       );
 });

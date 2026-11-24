@@ -1,4 +1,4 @@
-import { connect, sql } from "@studio/db";
+import { connect, sql } from "@doodallery/db";
 import { config } from "../platform/config.ts";
 import { collectGarbage, expireReservations, storage } from "../modules/media/index.ts";
 import { maintain, provider } from "../modules/billing/index.ts";

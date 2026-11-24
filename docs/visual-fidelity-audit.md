@@ -6,7 +6,7 @@ Reference: `Design/` (read-only). Comparisons used a local Vite harness that ren
 
 | Screen | Design source | Production | Status | Remaining discrepancies |
 | --- | --- | --- | --- | --- |
-| Marketing homepage | routes/index.jsx | app/page.tsx | Unchanged; pixel diff vs baseline = 0 (desktop and mobile) after `style.css` changes | — |
+| Marketing homepage | routes/index.jsx | app/page.tsx | Unchanged; pixel diff vs baseline = 0 (desktop and mobile) after `style.css` changes | - |
 | Visual editor | components/editor/* | components/studio/editor/* | Implemented, visually + functionally verified (edit, autosave, undo/redo, add section, publish) | Canvas shows the real template scaled (reference drew a mock); Design-only blocks (commissions, comics, characters, spacer) omitted |
 | Gallery template | portfolio.gallery.index, works.$workId | components/templates/Gallery.tsx | Implemented, visually verified | No year/medium fields in schema, so captions use gallery names |
 | Creative template | portfolio.creative.index | templates/Creative.tsx | Implemented, visually verified | Character/shop/commission subpages not in schema |
@@ -21,8 +21,8 @@ Reference: `Design/` (read-only). Comparisons used a local Vite harness that ren
 | Onboarding | onboarding/* | studio/Onboarding.tsx | Implemented, visual + functional (repo e2e passes) | Name and address share step one; sample-artwork picker omitted |
 | Sign in / register / forgot / reset / verify | login, register, forgot-password, reset-password, auth-art/* | components/Auth.tsx | Implemented, visually verified; e2e passes | Google sign-in and "keep me signed in" omitted |
 | Demo templates | portfolio.* | app/demo/[template]/[[...path]] | Implemented, visually verified | Demo block text is English in both languages |
-| Templates, Features, Pricing, Explore pages | templates.jsx, features.jsx, pricing.jsx, explore.jsx | — | Not started (no production routes exist) | Next step if these pages are wanted |
-| Commissions, analytics, domains, subscription, comics, characters, projects, shop | dashboard.* | — | Intentionally not exposed (Phase 2/3, see CHECKPOINT) | — |
+| Templates, Features, Pricing, Explore pages | templates.jsx, features.jsx, pricing.jsx, explore.jsx | - | Not started (no production routes exist) | Next step if these pages are wanted |
+| Commissions, analytics, domains, subscription, comics, characters, projects, shop | dashboard.* | - | Intentionally not exposed (Phase 2/3, see CHECKPOINT) | - |
 | Not-found, error, report pages | NotFound.jsx, DefaultCatchBoundary.jsx (unstyled starter screens) | components/ui/Status.tsx, components/Report.tsx | Implemented, visually verified | Restyled with the platform shell, since the references are unbranded template defaults |
 
 ## Notes

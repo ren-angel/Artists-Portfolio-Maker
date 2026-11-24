@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { tenantFromHost } from "@studio/shared";
+import { tenantFromHost } from "@doodallery/shared";
 import { apiOrigin, internalHeaders } from "./shared/lib/internal-api";
 // Cache misses briefly. Successful lookups must reflect the current tenant,
 // subscription and certificate, including immediately after disconnection.

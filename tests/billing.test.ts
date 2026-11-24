@@ -7,7 +7,7 @@ import type { HTTPMethods } from "fastify";
 import { createApp } from "../apps/api/src/app.ts";
 import { config } from "../apps/api/src/platform/config.ts";
 import { mock } from "../apps/api/src/modules/billing/infrastructure/mock.ts";
-import { connect, sql, first } from "@studio/db";
+import { connect, sql, first } from "@doodallery/db";
 
 /* Billing lifecycle against PostgreSQL with the mock provider. No money moves
    and no provider is contacted. */
@@ -22,7 +22,7 @@ async function harness(overrides: Record<string, string> = {}) {
     APP_ORIGIN: origin,
     PLATFORM_DOMAIN: "localhost",
     DATABASE_URL: process.env.TEST_DATABASE_URL,
-    LOCAL_DATA_DIR: await mkdtemp(join(tmpdir(), "studio-billing-")),
+    LOCAL_DATA_DIR: await mkdtemp(join(tmpdir(), "doodallery-billing-")),
     BILLING_WEBHOOK_TOKEN: token,
     MAX_PAGES: "2",
     ...overrides,
@@ -31,7 +31,7 @@ async function harness(overrides: Record<string, string> = {}) {
   const app = await createApp(env, provider);
   const { db, pool } = connect(process.env.TEST_DATABASE_URL);
   const request = (method: HTTPMethods, url: string, body?: object, cookie = "", headers: Record<string, string> = {}) =>
-    app.inject({ method, url, headers: { origin, "x-studio-request": "1", cookie, ...headers }, payload: body });
+    app.inject({ method, url, headers: { origin, "x-doodallery-request": "1", cookie, ...headers }, payload: body });
   async function artist() {
     const email = "bill-" + crypto.randomUUID().slice(0, 8) + "@example.test";
     const r = await request("POST", "/auth/register", { email, password: "a-long-test-password", displayName: "Billing artist", accept: true });

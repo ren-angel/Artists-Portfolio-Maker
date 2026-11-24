@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { newCreative,type Creative } from "@studio/shared";
+import { newCreative,type Creative } from "@doodallery/shared";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp } from "node:fs/promises";
@@ -11,8 +11,8 @@ import { config } from "../apps/api/src/platform/config.ts";
 import { mock } from "../apps/api/src/modules/billing/infrastructure/mock.ts";
 import { normalizeHost, recheckDomains, type Network } from "../apps/api/src/modules/domains/index.ts";
 import { referrerCategory } from "../apps/api/src/modules/analytics/index.ts";
-import { connect, sql } from "@studio/db";
-import { newBlock, type Draft } from "@studio/shared";
+import { connect, sql } from "@doodallery/db";
+import { newBlock, type Draft } from "@doodallery/shared";
 
 const origin = "http://localhost:3000";
 const token = "test-webhook-token-0123456789abcdef0123";
@@ -37,18 +37,18 @@ async function harness() {
   const env = config({
     NODE_ENV: "test",
     APP_ORIGIN: origin,
-    PLATFORM_DOMAIN: "studio.test",
+    PLATFORM_DOMAIN: "doodallery.test",
     DATABASE_URL: process.env.TEST_DATABASE_URL,
-    LOCAL_DATA_DIR: await mkdtemp(join(tmpdir(), "studio-platform-")),
+    LOCAL_DATA_DIR: await mkdtemp(join(tmpdir(), "doodallery-platform-")),
     BILLING_WEBHOOK_TOKEN: token,
     INTERNAL_TOKEN: internal,
-    DOMAIN_TARGET: "sites.studio.test",
+    DOMAIN_TARGET: "sites.doodallery.test",
   });
   const network = fakeNetwork();
   const app = await createApp(env, mock({ origin, webhookToken: token }), network.net);
   const { db, pool } = connect(process.env.TEST_DATABASE_URL);
   const request = (method: HTTPMethods, url: string, body?: object, cookie = "", headers: Record<string, string> = {}) =>
-    app.inject({ method, url, headers: { origin, "x-studio-request": "1", cookie, ...headers }, payload: body });
+    app.inject({ method, url, headers: { origin, "x-doodallery-request": "1", cookie, ...headers }, payload: body });
   async function artist(paid?: "artist" | "studio") {
     const email = "plat-" + crypto.randomUUID().slice(0, 8) + "@example.test";
     const r = await request("POST", "/auth/register", { email, password: "a-long-test-password", displayName: "Platform artist", accept: true });
@@ -80,11 +80,11 @@ async function harness() {
 }
 
 test("domain normalization blocks platform, internal and malformed hostnames", async () => {
-  const env = config({ APP_ORIGIN: origin, PLATFORM_DOMAIN: "studio.test", DATABASE_URL: "postgres://x@localhost/x" });
+  const env = config({ APP_ORIGIN: origin, PLATFORM_DOMAIN: "doodallery.test", DATABASE_URL: "postgres://x@localhost/x" });
   assert.equal(normalizeHost("HTTPS://Art.Lunamori.COM/path", env), "art.lunamori.com");
   assert.equal(normalizeHost("portfolio.lunamori.art.", env), "portfolio.lunamori.art");
   assert.equal(normalizeHost("münchen-art.de", env), "xn--mnchen-art-9db.de");
-  for (const bad of ["studio.test", "x.studio.test", "localhost", "printer.local", "10.0.0.1", "nodot", "a..b.com", "-bad.com", "api.internal"])
+  for (const bad of ["doodallery.test", "x.doodallery.test", "localhost", "printer.local", "10.0.0.1", "nodot", "a..b.com", "-bad.com", "api.internal"])
     assert.throws(() => normalizeHost(bad, env), /invalid_domain/, bad);
 });
 
@@ -101,7 +101,7 @@ test("custom domains require the plan, DNS proof and stay unique; only verified,
     assert.equal(added.statusCode, 200, added.body);
     const d = added.json();
     assert.equal(d.hostname, host);
-    assert.equal(d.instructions.txt.name, "_studio-verify." + host);
+    assert.equal(d.instructions.txt.name, "_doodallery-verify." + host);
 
     // Another account cannot claim the same hostname.
     const b = await h.artist("studio");
@@ -118,7 +118,7 @@ test("custom domains require the plan, DNS proof and stay unique; only verified,
     let v = (await h.request("POST", `/sites/${a.site}/domains/${d.id}/verify`, {}, a.cookie)).json();
     assert.equal(v.status, "failed");
     assert.equal(v.error, "txt_missing");
-    h.network.txt.set("_studio-verify." + host, [d.instructions.txt.value]);
+    h.network.txt.set("_doodallery-verify." + host, [d.instructions.txt.value]);
     v = (await h.request("POST", `/sites/${a.site}/domains/${d.id}/verify`, {}, a.cookie)).json();
     assert.equal(v.status, "verified");
     assert.equal(v.primary, false);
@@ -126,7 +126,7 @@ test("custom domains require the plan, DNS proof and stay unique; only verified,
     assert.equal((await h.request("GET", "/domains/tls-ask?domain=" + host)).statusCode, 404);
     assert.equal(v.error, "dns_not_pointing");
     assert.equal(v.tlsOk, false);
-    h.network.cname.set(host, ["sites.studio.test."]);
+    h.network.cname.set(host, ["sites.doodallery.test."]);
     await h.request("POST", `/sites/${a.site}/domains/${d.id}/verify`, {}, a.cookie);
     assert.equal((await h.request("GET", "/domains/tls-ask?domain=" + host)).statusCode, 200);
     assert.equal((await resolve(host)).statusCode, 404);
@@ -145,13 +145,13 @@ test("custom domains require the plan, DNS proof and stay unique; only verified,
     assert.equal(pub.branding, false);
 
     // If the TXT proof disappears, daily re-verification stops routing.
-    h.network.txt.delete("_studio-verify." + host);
+    h.network.txt.delete("_doodallery-verify." + host);
     await h.db.execute(sql`update domains set checked_at=now()-interval '2 days' where id=${d.id}`);
     await recheckDomains(h.db, h.env, h.network.net);
     assert.equal((await resolve(host)).statusCode, 404);
 
     // A lapsed plan detaches routing without deleting the record.
-    h.network.txt.set("_studio-verify." + host, [d.instructions.txt.value]);
+    h.network.txt.set("_doodallery-verify." + host, [d.instructions.txt.value]);
     await h.request("POST", `/sites/${a.site}/domains/${d.id}/verify`, {}, a.cookie);
     await h.db.execute(sql`update subscriptions set status='expired' where user_id=${a.id}`);
     assert.equal((await resolve(host)).statusCode, 404);

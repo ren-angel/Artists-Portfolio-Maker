@@ -1,4 +1,4 @@
-import { sql, first, rows, type Database } from "@studio/db";
+import { sql, first, rows, type Database } from "@doodallery/db";
 import type { Config } from "../../../platform/config.ts";
 import { assert } from "../../../platform/errors.ts";
 import { evaluateDns, UNVERIFIED_RETENTION_DAYS, verifyName } from "../domain/hostname.ts";

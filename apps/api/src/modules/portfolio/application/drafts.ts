@@ -1,5 +1,5 @@
-import { sql, first, rows, type Database } from "@studio/db";
-import { initialDraft, type Draft, type templateNames } from "@studio/shared";
+import { sql, first, rows, type Database } from "@doodallery/db";
+import { initialDraft, type Draft, type templateNames } from "@doodallery/shared";
 import type { Config } from "../../../platform/config.ts";
 import { assert } from "../../../platform/errors.ts";
 import { owned } from "../../tenancy/index.ts";

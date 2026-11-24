@@ -1,6 +1,6 @@
 "use client";
 import { Lock } from "lucide-react";
-import type { Draft, Features } from "@studio/shared";
+import type { Draft, Features } from "@doodallery/shared";
 import type { Lang } from "../../shared/lib/copy";
 import { cn } from "../../shared/lib/cn";
 

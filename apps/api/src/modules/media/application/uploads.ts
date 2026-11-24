@@ -1,4 +1,4 @@
-import { sql, first, type Database } from "@studio/db";
+import { sql, first, type Database } from "@doodallery/db";
 import type { Config } from "../../../platform/config.ts";
 import { assert, Fault } from "../../../platform/errors.ts";
 import { owned } from "../../tenancy/index.ts";

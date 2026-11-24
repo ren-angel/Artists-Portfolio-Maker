@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import type { Art, Chapter, Creative, Draft } from "@studio/shared";
+import type { Art, Chapter, Creative, Draft } from "@doodallery/shared";
 import type { Update } from "../studio/use-draft";
 import { reorder } from "../../shared/lib/reorder";
 import { input, ghostPill } from "../../shared/ui/studio-kit";

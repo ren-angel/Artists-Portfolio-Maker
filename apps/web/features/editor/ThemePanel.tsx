@@ -1,5 +1,5 @@
 "use client";
-import { templateNames, type Draft, type Features } from "@studio/shared";
+import { templateNames, type Draft, type Features } from "@doodallery/shared";
 import { t, type Lang } from "../../shared/lib/copy";
 import { placeholderArt } from "../../shared/lib/placeholder";
 import { templateAccent } from "../../entities/portfolio/templates/kit";

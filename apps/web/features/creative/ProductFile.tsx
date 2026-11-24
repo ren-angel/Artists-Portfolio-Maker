@@ -71,7 +71,7 @@ export function ProductFile({
               const response = await fetch("/api" + path, {
                 method: "PUT",
                 headers: {
-                  "x-studio-request": "1",
+                  "x-doodallery-request": "1",
                   "content-type": "application/octet-stream",
                 },
                 body: source,

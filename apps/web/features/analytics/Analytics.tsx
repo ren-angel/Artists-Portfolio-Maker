@@ -193,11 +193,11 @@ export function Analytics({ l, site, onUpgrade }: { l: Lang; site: string; onUpg
           </div>
           {r.advanced ? (
             <div className="grid gap-4 md:grid-cols-3">
-              <List title={tr("Most visited pages", "Páginas mais visitadas")} rows={r.pages.map(p => [p.path, p.views])} empty="—" />
+              <List title={tr("Most visited pages", "Páginas mais visitadas")} rows={r.pages.map(p => [p.path, p.views])} empty="-" />
               <List
                 title={tr("Countries", "Países")}
                 rows={(r.countries ?? []).map((x) => [x.key ? new Intl.DisplayNames([l], { type: "region" }).of(x.key) ?? x.key : tr("Unknown", "Desconhecido"), x.views])}
-                empty="—"
+                empty="-"
               />
               <List title={tr("Contact link clicks", "Cliques em contatos")} rows={(r.clicks ?? []).map((x) => [x.target.replace(/^contact:/, ""), x.clicks])} empty={tr("No clicks yet.", "Nenhum clique ainda.")} />
             </div>

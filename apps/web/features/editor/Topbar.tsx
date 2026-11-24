@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Check, ChevronDown, Eye, Monitor, Redo2, Rocket, Smartphone, Tablet, Undo2 } from "lucide-react";
-import type { Draft } from "@studio/shared";
+import type { Draft } from "@doodallery/shared";
 import { t, message } from "../../shared/lib/copy";
 import { Sparkle } from "../../shared/ui/bits";
 import { cn } from "../../shared/lib/cn";

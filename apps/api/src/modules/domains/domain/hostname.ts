@@ -37,8 +37,8 @@ export function normalizeHost(input: string, platform: { PLATFORM_DOMAIN: string
   return host;
 }
 
-export const verifyName = (host: string) => "_studio-verify." + host;
-export const verifyValue = (token: string) => "studio-verify=" + token;
+export const verifyName = (host: string) => "_doodallery-verify." + host;
+export const verifyValue = (token: string) => "doodallery-verify=" + token;
 
 const bare = (name: string) => name.toLowerCase().replace(/\.$/, "");
 

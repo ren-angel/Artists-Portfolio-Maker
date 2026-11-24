@@ -12,7 +12,7 @@ import {
   PenLine,
   Sparkles,
 } from "lucide-react";
-import type { Draft } from "@studio/shared";
+import type { Draft } from "@doodallery/shared";
 import { t, type Lang } from "../../shared/lib/copy";
 import { useEffect, useState } from "react";
 import type { Artist, Entitlement, Limits, SiteData } from "./use-draft";
@@ -77,7 +77,7 @@ export function Overview({ d, l, data, user, limits, ent, brand, address, public
   const progress = Math.round((tasks.filter((x) => x.done).length / tasks.length) * 100);
   const idea = !d.artworks.length
     ? {
-        text: tr("“An empty wall is a lovely place to start. Upload a few pieces you are proud of — you can arrange them later.”", "“Uma parede vazia é um ótimo começo. Envie algumas peças de que você se orgulha — dá para organizar depois.”"),
+        text: tr("“An empty wall is a lovely place to start. Upload a few pieces you are proud of, you can arrange them later.”", "“Uma parede vazia é um ótimo começo. Envie algumas peças de que você se orgulha, dá para organizar depois.”"),
         cta: tr("Open the artwork library", "Abrir a biblioteca de obras"),
         tab: "library" as Tab,
       }
@@ -89,7 +89,7 @@ export function Overview({ d, l, data, user, limits, ent, brand, address, public
         }
       : !d.galleries.length
         ? {
-            text: tr("“Group your work into galleries — visitors love wandering through a series.”", "“Agrupe suas obras em galerias — visitantes adoram percorrer uma série.”"),
+            text: tr("“Group your work into galleries, visitors love wandering through a series.”", "“Agrupe suas obras em galerias, visitantes adoram percorrer uma série.”"),
             cta: tr("Create a gallery", "Criar uma galeria"),
             tab: "galleries" as Tab,
           }
@@ -104,7 +104,7 @@ export function Overview({ d, l, data, user, limits, ent, brand, address, public
     { label: t(l, "pages"), value: d.pages.length, note: tr(`${d.pages.filter((p) => p.inNav).length} in navigation`, `${d.pages.filter((p) => p.inNav).length} na navegação`), icon: FileText, tab: "pages" as Tab, tone: "bg-mint/25" },
     {
       label: tr("Storage", "Armazenamento"),
-      value: data.storageUsed !== undefined ? (data.storageUsed / 1024 ** 2).toFixed(1) + " MB" : "—",
+      value: data.storageUsed !== undefined ? (data.storageUsed / 1024 ** 2).toFixed(1) + " MB" : "-",
       note: tr(`of ${Math.round(limits.storage / 1024 ** 2)} MB`, `de ${Math.round(limits.storage / 1024 ** 2)} MB`),
       icon: HardDrive,
       tab: "library" as Tab,
@@ -248,7 +248,7 @@ export function Overview({ d, l, data, user, limits, ent, brand, address, public
               ? current.status === "canceling"
                 ? tr("Ends on ", "Termina em ") + new Date(current.periodEnd!).toLocaleDateString(l)
                 : current.status === "past_due"
-                  ? tr("Payment overdue — grace until ", "Pagamento atrasado — carência até ") + new Date(current.graceUntil!).toLocaleDateString(l)
+                  ? tr("Payment overdue, grace until ", "Pagamento atrasado, carência até ") + new Date(current.graceUntil!).toLocaleDateString(l)
                   : tr("Renews ", "Renova em ") + new Date(current.periodEnd!).toLocaleDateString(l)
               : tr("Free forever. Upgrade for a custom domain and more room.", "Grátis para sempre. Faça upgrade para domínio próprio e mais espaço.")}
           </p>
@@ -265,7 +265,7 @@ export function Overview({ d, l, data, user, limits, ent, brand, address, public
               {tr("Details", "Detalhes")} →
             </button>
           </div>
-          <p className="mt-2 font-display text-[30px] font-semibold leading-none tracking-[-0.03em] tabular-nums">{report ? report.total.toLocaleString(l) : "—"}</p>
+          <p className="mt-2 font-display text-[30px] font-semibold leading-none tracking-[-0.03em] tabular-nums">{report ? report.total.toLocaleString(l) : "-"}</p>
           <div className="mt-4">{report && report.total > 0 ? <Chart series={report.series} l={l} height={70} /> : <p className="text-[11.5px] text-ink/45">{tr("Views of your published site appear here.", "As visualizações do site publicado aparecem aqui.")}</p>}</div>
         </section>
         <section className={cn(card, "p-5")}>

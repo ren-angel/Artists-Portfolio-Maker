@@ -1,5 +1,5 @@
 import { after, NextResponse } from "next/server";
-import { contactHref } from "@studio/shared";
+import { contactHref } from "@doodallery/shared";
 import { published, recordHit, visit } from "../../../../../../shared/lib/server";
 
 /* Counts a click on a commission contact button, then redirects. The target

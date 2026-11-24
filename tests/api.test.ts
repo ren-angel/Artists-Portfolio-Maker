@@ -6,14 +6,14 @@ import { join } from "node:path";
 import sharp from "sharp";
 import { createApp } from "../apps/api/src/app.ts";
 import { config } from "../apps/api/src/platform/config.ts";
-import type { Draft } from "@studio/shared";
+import type { Draft } from "@doodallery/shared";
 import type { HTTPMethods } from "fastify";
 test("real API stores an isolated draft, verifies an upload, atomically publishes, resets sessions and deletes data", async () => {
   assert(
     process.env.TEST_DATABASE_URL,
     "Provide a disposable migrated PostgreSQL TEST_DATABASE_URL for integration tests",
   );
-  const folder = await mkdtemp(join(tmpdir(), "studio-test-"));
+  const folder = await mkdtemp(join(tmpdir(), "doodallery-test-"));
   const origin = "http://localhost:3000";
   const env = config({
     NODE_ENV: "test",
@@ -42,7 +42,7 @@ test("real API stores an isolated draft, verifies an upload, atomically publishe
       url,
       headers: {
         origin,
-        "x-studio-request": "1",
+        "x-doodallery-request": "1",
         cookie,
         ...(binary ? { "content-type": "application/octet-stream" } : {}),
       },

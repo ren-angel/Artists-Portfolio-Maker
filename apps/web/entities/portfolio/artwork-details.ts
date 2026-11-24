@@ -1,4 +1,4 @@
-import type { artworkDetailKeys } from "@studio/shared";
+import type { artworkDetailKeys } from "@doodallery/shared";
 import type { Lang } from "../../shared/lib/copy";
 
 const labels = {

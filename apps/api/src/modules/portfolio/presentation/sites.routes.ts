@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { sql, first, type Database } from "@studio/db";
-import { templateNames, draftSchema, handle } from "@studio/shared";
+import { sql, first, type Database } from "@doodallery/db";
+import { templateNames, draftSchema, handle } from "@doodallery/shared";
 import type { Config } from "../../../platform/config.ts";
 import { assert } from "../../../platform/errors.ts";
 import { siteId } from "../../../platform/http.ts";

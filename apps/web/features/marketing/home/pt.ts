@@ -68,10 +68,10 @@ export const portuguese: Readonly<Record<string, string>> = {
   "Organise pieces into galleries, Fanart, Original Art, Sketchbook, whatever you call them. Then choose what greets visitors on your homepage.":
     "Organize suas obras em galerias de fanart, arte autoral, esboços ou o que preferir. Depois escolha o que recebe quem chega à sua página.",
   "Mark as featured": "Marcar como destaque",
-  "— one tap, front of the site.":
-    "— um toque e sua obra ganha a página inicial.",
+  ", one tap, front of the site.":
+    ", um toque e sua obra ganha a página inicial.",
   "Custom galleries": "Galerias personalizadas",
-  "— choose where each work belongs.": "— escolha onde cada obra aparece.",
+  ", choose where each work belongs.": ", escolha onde cada obra aparece.",
   "See it in real portfolios": "Ver nos portfólios",
   "featured ✦": "destaque ✦",
   "every grid, arranged by you, never squeezed":
@@ -325,7 +325,7 @@ export const portuguese: Readonly<Record<string, string>> = {
   "Planned · character sheets and relationships.": "Planejado · fichas e relações entre personagens.",
   "See visits to your published pages and galleries.": "Veja as visitas às suas páginas e galerias publicadas.",
   "A restrained frame that lets one image at a time breathe. Wide margins, a slow typeface and a grid that behaves like a gallery wall.": "Uma moldura discreta dá espaço a cada imagem. Margens amplas, tipografia tranquila e uma grade que lembra uma parede de exposição.",
-  "Sticker labels, rounded frames and pastel blocks that arrange themselves like a sketchbook page — built for illustrators who want their site to feel like them.": "Adesivos, molduras arredondadas e blocos em tons pastel compõem uma página de caderno de desenho com a cara de quem ilustra.",
+  "Sticker labels, rounded frames and pastel blocks that arrange themselves like a sketchbook page, built for illustrators who want their site to feel like them.": "Adesivos, molduras arredondadas e blocos em tons pastel compõem uma página de caderno de desenho com a cara de quem ilustra.",
   "Full-bleed frames, heavy type and project pages that read like a case study. Made for concept art, worldbuilding and production portfolios.": "Imagens de ponta a ponta, títulos marcantes e projetos em formato editorial para arte conceitual, criação de mundos e produção visual.",
   "Parchment surfaces, chapter navigation and a serif that reads like a printed book. Home for comics, characters and long-form storytelling.": "Textura de pergaminho, galerias organizadas em capítulos e letras que lembram um livro impresso. Um espaço para narrativas ilustradas.",
   "Draws cheerful characters with too many accessories. Fanart by night, original worlds by day.": "Desenha personagens alegres cheios de acessórios. À noite faz fanart e de dia cria mundos originais.",

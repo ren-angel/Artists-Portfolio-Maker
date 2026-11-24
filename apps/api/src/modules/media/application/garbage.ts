@@ -1,4 +1,4 @@
-import { sql, rows, type Database } from "@studio/db";
+import { sql, rows, type Database } from "@doodallery/db";
 import type { Storage } from "../infrastructure/object-storage.ts";
 
 /** Removes queued objects older than the one-hour grace period, in batches. */

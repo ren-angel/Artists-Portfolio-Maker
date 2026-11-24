@@ -1,5 +1,5 @@
-import { sql, rows, type Database } from "@studio/db";
-import type { DirectoryArtist, DiscoveryWork } from "@studio/shared";
+import { sql, rows, type Database } from "@doodallery/db";
+import type { DirectoryArtist, DiscoveryWork } from "@doodallery/shared";
 
 /** Results per page. Queries read one extra row to report `more`. */
 export const DISCOVERY_PAGE = 24;

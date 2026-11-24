@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
 
 test("studio creative sections are navigable, create their own page kind and save", async ({ page }) => {
   const origin = process.env.APP_ORIGIN || "http://localhost:3000";
-  const headers = { origin, "x-studio-request": "1" };
+  const headers = { origin, "x-doodallery-request": "1" };
   const handle = "sections-" + crypto.randomUUID().slice(0, 8);
   const http = page.request;
   expect(

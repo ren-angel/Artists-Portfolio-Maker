@@ -6,7 +6,7 @@ import {
   draftSchema,
   type Block,
   type Draft,
-} from "@studio/shared";
+} from "@doodallery/shared";
 import { api } from "../../shared/lib/client";
 import { message } from "../../shared/lib/copy";
 import type { EditorProps } from "./Editor";

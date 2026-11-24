@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Eye, Undo2, Redo2, PanelLeft, Rocket, SlidersHorizontal } from "lucide-react";
-import { containerChoices, cleanPageReferences, newBlock, type Block, type Draft, type Features } from "@studio/shared";
+import { containerChoices, cleanPageReferences, newBlock, type Block, type Draft, type Features } from "@doodallery/shared";
 import type { Limits, Update } from "../studio/use-draft";
 import { t, type Lang } from "../../shared/lib/copy";
 import { reorder } from "../../shared/lib/reorder";

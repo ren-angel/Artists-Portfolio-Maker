@@ -1,4 +1,4 @@
-import { sql, first, rows, type Database } from "@studio/db";
+import { sql, first, rows, type Database } from "@doodallery/db";
 import type { Config } from "../../../platform/config.ts";
 
 /** Increments one daily aggregate for a published site. */

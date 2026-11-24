@@ -1,4 +1,4 @@
-import type { Cycle, Method, PaymentStatus } from "@studio/shared";
+import type { Cycle, Method, PaymentStatus } from "@doodallery/shared";
 
 /* Payment provider boundary. The rest of the API only depends on this shape,
    so another Brazilian or international provider can be added as a driver. */

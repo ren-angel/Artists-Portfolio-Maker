@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { first, sql, type Database, type Tx } from "@studio/db";
+import { first, sql, type Database, type Tx } from "@doodallery/db";
 import { account } from "../../identity/index.ts";
 import type { Config } from "../../../platform/config.ts";
 import { assert } from "../../../platform/errors.ts";

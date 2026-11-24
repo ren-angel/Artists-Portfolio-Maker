@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { timingSafeEqual } from "node:crypto";
-import { addCycle, type Cycle } from "@studio/shared";
+import { addCycle, type Cycle } from "@doodallery/shared";
 import type { BillingProvider, NewSubscription, ProviderPayment } from "./provider.ts";
 
 /* Test-mode provider. It never moves money: payments only change when the

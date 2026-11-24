@@ -1,12 +1,12 @@
 import { cookies, headers } from "next/headers";
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { draftSchema } from "@studio/shared";
+import { draftSchema } from "@doodallery/shared";
 import type { Lang } from "./copy";
 import { apiOrigin, internalHeaders } from "./internal-api";
 export const brand = () => process.env.PLATFORM_NAME || "Doodallery";
 export async function language(): Promise<Lang> {
-  const saved = (await cookies()).get("studio_lang")?.value;
+  const saved = (await cookies()).get("doodallery_lang")?.value;
   if (saved === "en" || saved === "pt-BR") return saved;
   return (await headers())
     .get("accept-language")

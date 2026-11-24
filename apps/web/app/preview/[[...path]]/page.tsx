@@ -1,7 +1,7 @@
 import { readerPageNumber } from "../../../entities/portfolio/templates/kit";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import { draftSchema } from "@studio/shared";
+import { draftSchema } from "@doodallery/shared";
 import { Portfolio, matchPage } from "../../../entities/portfolio/Portfolio";
 import { ArrowLeft } from "lucide-react";
 import { t } from "../../../shared/lib/copy";

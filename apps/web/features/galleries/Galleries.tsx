@@ -16,7 +16,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { removeGallery, type Draft } from "@studio/shared";
+import { removeGallery, type Draft } from "@doodallery/shared";
 import { t, type Lang } from "../../shared/lib/copy";
 import type { Update } from "../studio/use-draft";
 import { reorder } from "../../shared/lib/reorder";
@@ -80,8 +80,8 @@ export function Galleries({
           eyebrow={tr("Your work", "Suas obras")}
           title={t(l, "galleries")}
           subtitle={tr(
-            "Group artworks into rooms of your portfolio. Each gallery gets its own page, cover and order — and can be shown or hidden at any time.",
-            "Agrupe obras em salas do seu portfólio. Cada galeria tem página, capa e ordem próprias — e pode ser exibida ou ocultada quando quiser.",
+            "Group artworks into rooms of your portfolio. Each gallery gets its own page, cover and order, and can be shown or hidden at any time.",
+            "Agrupe obras em salas do seu portfólio. Cada galeria tem página, capa e ordem próprias, e pode ser exibida ou ocultada quando quiser.",
           )}
         />
       )}
@@ -181,7 +181,7 @@ export function Galleries({
           </span>
           <span className="text-[13px] font-medium">{tr("Create a gallery", "Criar uma galeria")}</span>
           <span className="max-w-[240px] text-[11.5px] leading-relaxed text-ink/45">
-            {tr("Fanart, sketchbook, a single project — call it whatever it is to you.", "Fanart, caderno de esboços, um projeto — chame do que fizer sentido para você.")}
+            {tr("Fanart, sketchbook, a single project, call it whatever it is to you.", "Fanart, caderno de esboços, um projeto, chame do que fizer sentido para você.")}
           </span>
           <label className="mt-2 w-full max-w-[260px]">
             <span className="sr-only">{t(l, "custom")}</span>

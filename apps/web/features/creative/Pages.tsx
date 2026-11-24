@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Eye, EyeOff, GripVertical, Home, MoreHorizontal, Pencil, Plus, Rocket, Trash2 } from "lucide-react";
-import { pageStarters, newBlock, newCreative, cleanPageReferences, type Creative, type Draft } from "@studio/shared";
+import { pageStarters, newBlock, newCreative, cleanPageReferences, type Creative, type Draft } from "@doodallery/shared";
 import { ProductFile } from "./ProductFile";
 import { CreativeFields } from "./CreativeFields";
 import { t, type Lang } from "../../shared/lib/copy";
@@ -295,7 +295,7 @@ export function Pages({
           <Plus className="h-3.5 w-3.5" />
           {full
             ? t(l, "page_limit")
-            : tr(`Add a page — ${limits.pages + 1 - d.pages.length} left`, `Adicionar página — restam ${limits.pages + 1 - d.pages.length}`)}
+            : tr(`Add a page, ${limits.pages + 1 - d.pages.length} left`, `Adicionar página, restam ${limits.pages + 1 - d.pages.length}`)}
         </button>
       </div>
       )}

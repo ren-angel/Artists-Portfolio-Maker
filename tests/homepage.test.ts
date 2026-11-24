@@ -1,4 +1,4 @@
-import { defaultPrices, planIds, plans as sharedPlans } from "@studio/shared";
+import { defaultPrices, planIds, plans as sharedPlans } from "@doodallery/shared";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";

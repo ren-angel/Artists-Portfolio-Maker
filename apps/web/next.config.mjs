@@ -4,7 +4,7 @@ export default {
   experimental: {
     proxyClientMaxBodySize: Number(process.env.MAX_UPLOAD_BYTES || 12582912),
   },
-  transpilePackages: ["@studio/shared"],
+  transpilePackages: ["@doodallery/shared"],
   async rewrites() {
     return [{ source: "/api/:path*", destination: api + "/:path*" }];
   },

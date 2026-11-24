@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import type { DiscoveryWork } from "@studio/shared";
+import type { DiscoveryWork } from "@doodallery/shared";
 import { api } from "../../shared/lib/client";
 import type { Lang } from "../../shared/lib/copy";
 

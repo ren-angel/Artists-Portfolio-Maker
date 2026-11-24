@@ -1,9 +1,9 @@
 "use client";
-import { cleanPageReferences } from "@studio/shared";
+import { cleanPageReferences } from "@doodallery/shared";
 import { useMemo, useState, type ChangeEvent, type DragEvent } from "react";
 import { ArrowLeft, ArrowRight, Check, ImageUp, Search, Star, Trash2, Upload, X } from "lucide-react";
 import { detailLabel } from "../../entities/portfolio/artwork-details";
-import { artworkDetailKeys, type Draft } from "@studio/shared";
+import { artworkDetailKeys, type Draft } from "@doodallery/shared";
 import { t, type Lang } from "../../shared/lib/copy";
 import type { Limits, Update } from "../studio/use-draft";
 import { reorder } from "../../shared/lib/reorder";

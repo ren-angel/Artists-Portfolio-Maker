@@ -1,4 +1,4 @@
-import { youtubeVideoId, type Block, type Chapter } from "@studio/shared";
+import { youtubeVideoId, type Block, type Chapter } from "@doodallery/shared";
 import { ArtworkComparison } from "./ArtworkComparison";
 import { VideoEmbed } from "./VideoEmbed";
 import { ComicReader } from "./ComicReader";

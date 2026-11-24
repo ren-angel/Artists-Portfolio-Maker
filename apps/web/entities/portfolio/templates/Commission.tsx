@@ -1,7 +1,7 @@
 import { commissionPrice } from "../commission-price";
 import type { ReactNode } from "react";
 import { ArrowUpRight, Check, Clock, X } from "lucide-react";
-import type { Art, Block } from "@studio/shared";
+import type { Art, Block } from "@doodallery/shared";
 import { Img, Inline, Rich, plain, type Ctx } from "./kit";
 import { cn } from "../../../shared/lib/cn";
 

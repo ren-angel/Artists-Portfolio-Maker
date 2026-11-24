@@ -1,5 +1,5 @@
-import { sql, first, type Database, type Tx } from "@studio/db";
-import { limitsFor, plans, type PlanId } from "@studio/shared";
+import { sql, first, type Database, type Tx } from "@doodallery/db";
+import { limitsFor, plans, type PlanId } from "@doodallery/shared";
 import type { Config } from "../../../platform/config.ts";
 
 /* The effective plan is derived from stored subscription rows and their

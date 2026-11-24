@@ -1,7 +1,7 @@
 import { readerPageNumber } from "../../../../entities/portfolio/templates/kit";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { templateNames } from "@studio/shared";
+import { templateNames } from "@doodallery/shared";
 import { demo, demoImages } from "../../../../entities/portfolio/demo";
 import { language, brand } from "../../../../shared/lib/server";
 import { t } from "../../../../shared/lib/copy";

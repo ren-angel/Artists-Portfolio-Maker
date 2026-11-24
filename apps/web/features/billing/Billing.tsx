@@ -2,7 +2,7 @@
 import { studioIntent } from "../../shared/lib/studio-intent";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { AlertTriangle, Check, CreditCard, ExternalLink, FlaskConical, QrCode, RefreshCw, X } from "lucide-react";
-import { formatMoney, plans, type Cycle, type Features, type Limits, type Method, type PlanId } from "@studio/shared";
+import { formatMoney, plans, type Cycle, type Features, type Limits, type Method, type PlanId } from "@doodallery/shared";
 import { api } from "../../shared/lib/client";
 import { message, type Lang } from "../../shared/lib/copy";
 import { cn } from "../../shared/lib/cn";
@@ -130,7 +130,7 @@ export function Billing({ l, onChange }: { l: Lang; onChange: () => Promise<void
   const current = open.find((s) => s.status !== "pending");
   const pending = open.filter((s) => s.status === "pending");
   const due = (id: string) => b.payments.find((p) => p.subscriptionId === id && ["pending", "overdue"].includes(p.status) && p.invoiceUrl);
-  const date = (d: string | null) => (d ? new Date(d).toLocaleDateString(l, { day: "numeric", month: "long", year: "numeric" }) : "—");
+  const date = (d: string | null) => (d ? new Date(d).toLocaleDateString(l, { day: "numeric", month: "long", year: "numeric" }) : "-");
   const target = choice ? plans[choice.plan] : null;
   const exceeds =
     target &&

@@ -1,9 +1,9 @@
 import { createApp } from "../apps/api/src/app.ts";
 import { config } from "../apps/api/src/platform/config.ts";
-import { connect, sql, first } from "@studio/db";
+import { connect, sql, first } from "@doodallery/db";
 import { readFile } from "node:fs/promises";
 import sharp from "sharp";
-import { templateNames, type Draft } from "@studio/shared";
+import { templateNames, type Draft } from "@doodallery/shared";
 const env = config();
 if (env.NODE_ENV === "production") throw Error("Seed is development-only");
 const app = await createApp(env);
@@ -16,7 +16,7 @@ try {
     const email = handle + "@example.invalid";
     const headers: Record<string, string> = {
       origin: env.APP_ORIGIN,
-      "x-studio-request": "1",
+      "x-doodallery-request": "1",
     };
     const register = await app.inject({
       method: "POST",

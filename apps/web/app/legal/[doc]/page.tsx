@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { legalDocuments } from "@studio/shared";
+import { legalDocuments } from "@doodallery/shared";
 import { brand, language } from "../../../shared/lib/server";
 import { legal } from "../../../features/legal/legal";
 import { TakedownForm } from "../../../features/legal/TakedownForm";

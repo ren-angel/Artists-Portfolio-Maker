@@ -8,7 +8,7 @@ export async function api<T = Record<string, unknown>>(
     cache: "no-store",
     credentials: "same-origin",
     headers: {
-      "x-studio-request": "1",
+      "x-doodallery-request": "1",
       ...(body === undefined ? {} : { "content-type": "application/json" }),
     },
     body: body === undefined ? undefined : JSON.stringify(body),

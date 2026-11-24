@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ArrowLeft, ArrowRight, BookOpen, Rows, Square } from "lucide-react";
-import type { Art, Block } from "@studio/shared";
+import type { Art, Block } from "@doodallery/shared";
 import {
   Img,
   Inline,
@@ -323,7 +323,7 @@ function block(b: Block, ctx: Ctx): ReactNode {
                 <div className="mt-4 max-w-[460px] space-y-3">
                   <Rich text={b.text} className="text-[12.5px] leading-[1.95] text-pf-ink/70" />
                 </div>
-                <p className="mt-6 font-pf-display text-[22px] italic text-pf-ink/60">— {ctx.d.title.split(" ")[0]}</p>
+                <p className="mt-6 font-pf-display text-[22px] italic text-pf-ink/60">- {ctx.d.title.split(" ")[0]}</p>
               </div>
               {a && (
                 <div className={cn(panel, "self-start", flip && "csm:order-1")}>

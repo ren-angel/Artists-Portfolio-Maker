@@ -8,8 +8,8 @@ The code is organized by product capability (bounded context), not by file type.
 | --- | --- | --- | --- |
 | Identity & Access | `identity` | `features/identity` | Registration, sign-in, sessions, email verification, password reset, profile, account deletion |
 | Compliance & Support | `compliance` | `features/legal`, `features/account` (support, export) | Consents, LGPD data export, support requests, copyright notices |
-| Tenancy (shared kernel) | `tenancy` | — | The site ↔ owner boundary and the site row lock |
-| Entitlements | `entitlements` | — (plan data in `@studio/shared`) | The effective plan from stored subscription periods; limits and features |
+| Tenancy (shared kernel) | `tenancy` | - | The site ↔ owner boundary and the site row lock |
+| Entitlements | `entitlements` | - (plan data in `@doodallery/shared`) | The effective plan from stored subscription periods; limits and features |
 | Portfolio, Editor & Publishing | `portfolio` | `features/studio`, `features/editor`, `features/creative`, `features/galleries`, `features/theme`, `features/commissions`, `features/onboarding`, `entities/portfolio` | Sites, normalized drafts, pages, galleries, creative pages (comics, characters, projects, products), page history, saved sections, publication snapshots, public reads, reports |
 | Media & Assets | `media` | `features/library` | Upload reservations, image processing, object storage, delivery authorization, storage accounting, garbage collection |
 | Digital Products | `products` | `features/creative/ProductFile.tsx` | Private product files and expiring download grants (checkout stays with the artist's store) |
@@ -58,7 +58,7 @@ app.ts                  composition root: adapters + route registration
 jobs/maintenance.ts     hourly job (`pnpm cleanup`)
 platform/               config.ts, errors.ts (Fault/assert), crypto.ts, http.ts
 modules/<context>/
-  index.ts              the context's public API — the only file other modules import
+  index.ts              the context's public API - the only file other modules import
   domain/               pure rules and invariants (no Fastify, SQL, storage, network)
   application/          use cases; orchestrate transactions, locks and domain rules
   infrastructure/       SQL repositories, object storage, image processing, providers, DNS/TLS
@@ -73,12 +73,12 @@ Examples of rules that moved out of route handlers into `domain/`:
 - `analytics/domain/traffic.ts`: automated-traffic filter, path normalization, referrer categories, report windows.
 - `identity/domain/credentials.ts`: credential formats, lifetimes, session cookie policy.
 
-Plan definitions, the subscription state machine, the draft contract, block allowlist and the publication filter live in `@studio/shared` because both apps use them.
+Plan definitions, the subscription state machine, the draft contract, block allowlist and the publication filter live in `@doodallery/shared` because both apps use them.
 
 ## Frontend layout (`apps/web`)
 
 ```
-app/                    Next.js routes, layouts, metadata — composition only
+app/                    Next.js routes, layouts, metadata - composition only
 proxy.ts                host routing, tenant rewrite, CSP nonce
 features/<context>/     a capability's components plus its hooks/model/api files
 entities/portfolio/     Portfolio renderer + four templates, shared by editor, preview and public pages
@@ -92,7 +92,7 @@ Rules:
 
 - `shared/` never imports `features/` or `entities/`.
 - Public routes (`app/site`, `app/demo`) never import studio, editor, billing or admin code.
-- No web file imports `@studio/db`, `fastify`, `pg` or the API package. The backend remains authoritative for authorization, quotas and entitlements; the web mirrors limits only for messaging.
+- No web file imports `@doodallery/db`, `fastify`, `pg` or the API package. The backend remains authoritative for authorization, quotas and entitlements; the web mirrors limits only for messaging.
 - Feature folders stay flat while small. Add `hooks.ts`, `model.ts` or `api.ts` inside the feature when it grows.
 
 ### Tailwind sources
@@ -104,14 +104,14 @@ Rules:
 - Errors: throw `Fault(status, code)` or `assert(cond, status, code)`; the HTTP policy maps everything else to `invalid_input`, `already_exists`, `rate_limit`, `upload_size` or `request_failed`. Codes are translated in `shared/lib/copy.ts`.
 - Tenant access: every site-scoped use case starts with `owned(tx, site, user)` inside a transaction. It returns 404 for other tenants and locks the site row.
 - Optimistic concurrency: draft saves and publication require the current `version`; stale versions fail with `409 conflict`.
-- SQL: parameterized `sql` templates from `@studio/db`; raw SQL lives in `infrastructure/` or `application/` (transactional use cases), never in `domain/`.
+- SQL: parameterized `sql` templates from `@doodallery/db`; raw SQL lives in `infrastructure/` or `application/` (transactional use cases), never in `domain/`.
 - Both PT-BR and English labels for every user-facing string.
 
 ## How to add…
 
 **A feature (end to end).** Decide which context owns the data. If it changes the draft, extend the Zod contract in `packages/shared`, add a versioned migration, then the repository, then a use case, then the route. Put pure rules in `domain/` with a unit test in `tests/domain.test.ts`. Add the UI under `features/<context>/`, wire it into `features/studio/Studio.tsx` (tab) and `DashLayout.tsx` (navigation), and add its folder to the `@source` list.
 
-**An API endpoint.** Add the route to `modules/<context>/presentation/*.routes.ts`: parse params/body with Zod, call `account(db, req, env)` for authenticated routes, delegate to an application function, return JSON. Mutations automatically require the app Origin and `x-studio-request: 1`; server-to-server routes go under `/internal/` and call `requireInternal`. If another module needs the behavior, export it from that module's `index.ts`.
+**An API endpoint.** Add the route to `modules/<context>/presentation/*.routes.ts`: parse params/body with Zod, call `account(db, req, env)` for authenticated routes, delegate to an application function, return JSON. Mutations automatically require the app Origin and `x-doodallery-request: 1`; server-to-server routes go under `/internal/` and call `requireInternal`. If another module needs the behavior, export it from that module's `index.ts`.
 
 **A database entity.** Add `packages/db/migrations/00NN_name.sql` (never edit applied migrations), include `site_id` and composite foreign keys for tenant-owned rows, add indexes for the access paths, mirror the table in `packages/db/src/schema.ts`, write the repository in the owning module's `infrastructure/`, and extend `tests/database.sql` for constraints. Run `pnpm migrate` and `pnpm db:test:migrate`.
 

@@ -1,5 +1,5 @@
 import type { CSSProperties, MouseEvent } from "react";
-import type { Block, Draft, Template } from "@studio/shared";
+import type { Block, Draft, Template } from "@doodallery/shared";
 import {
   context,
   matchRoute,

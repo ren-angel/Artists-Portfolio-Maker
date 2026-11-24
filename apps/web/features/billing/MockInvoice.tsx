@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { CheckCircle2, FlaskConical, XCircle } from "lucide-react";
-import { formatMoney } from "@studio/shared";
+import { formatMoney } from "@doodallery/shared";
 import { api } from "../../shared/lib/client";
 import { message, type Lang } from "../../shared/lib/copy";
 import { buttonClasses } from "../../shared/ui/Field";

@@ -1,5 +1,5 @@
-import { sql, first, rows, type Tx } from "@studio/db";
-import { draftSchema, type Draft } from "@studio/shared";
+import { sql, first, rows, type Tx } from "@doodallery/db";
+import { draftSchema, type Draft } from "@doodallery/shared";
 import type { Site } from "../../tenancy/index.ts";
 import { readCreative, writeCreative } from "./creative-repository.ts";
 

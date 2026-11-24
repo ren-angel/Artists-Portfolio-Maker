@@ -17,7 +17,7 @@ export function Language({
       aria-label={next === "en" ? "EN · Switch to English" : "PT · Mudar para português"}
       onClick={() => {
         document.cookie =
-          "studio_lang=" + next + "; Path=/; SameSite=Lax; Max-Age=31536000";
+          "doodallery_lang=" + next + "; Path=/; SameSite=Lax; Max-Age=31536000";
         location.reload();
       }}
     >

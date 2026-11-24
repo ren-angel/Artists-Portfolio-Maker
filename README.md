@@ -52,7 +52,7 @@ For MinIO, set a development-only `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD`, t
 
 ## Verification
 
-Create a disposable database and set `TEST_DATABASE_URL` in `.env`. For Compose, one way to create it is `docker compose exec postgres createdb -U studio studio_test`. SQL checks require the PostgreSQL command-line client. Browser tests need a running development web/API pair with file mail enabled, a shared absolute `LOCAL_DATA_DIR` and a disposable application database. The browser test intentionally creates a published test portfolio.
+Create a disposable database and set `TEST_DATABASE_URL` in `.env`. For Compose, one way to create it is `docker compose exec postgres createdb -U doodallery doodallery_test`. SQL checks require the PostgreSQL command-line client. Browser tests need a running development web/API pair with file mail enabled, a shared absolute `LOCAL_DATA_DIR` and a disposable application database. The browser test intentionally creates a published test portfolio.
 
 ```sh
 pnpm db:test:migrate
@@ -73,9 +73,9 @@ Free, Artist and Studio plans are defined in `packages/shared/src/plans.ts`. Loc
 
 ## Project documentation
 
-- [Production deployment TODO](docs/PRODUCTION-DEPLOYMENT-TODO.md) — prioritized launch checklist
+- [Production deployment TODO](docs/PRODUCTION-DEPLOYMENT-TODO.md), prioritized launch checklist
 - [Feature status](docs/FEATURE-STATUS.md) and [latest test report](docs/TEST-REPORT.md)
-- [Domain-driven architecture](docs/DDD-ARCHITECTURE.md) — bounded contexts, layers and how to add features
+- [Domain-driven architecture](docs/DDD-ARCHITECTURE.md), bounded contexts, layers and how to add features
 - [Architecture and tenant boundaries](docs/ARCHITECTURE.md)
 - [Visual implementation guide](docs/VISUAL-GUIDE.md)
 - [Deployment and maintenance](docs/DEPLOYMENT.md)

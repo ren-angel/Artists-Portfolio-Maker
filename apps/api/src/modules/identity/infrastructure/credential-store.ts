@@ -1,5 +1,5 @@
-import { sql, first, type Database, type Tx } from "@studio/db";
-import { legalDocuments, requiredConsents } from "@studio/shared";
+import { sql, first, type Database, type Tx } from "@doodallery/db";
+import { legalDocuments, requiredConsents } from "@doodallery/shared";
 import { digest, token } from "../../../platform/crypto.ts";
 import {
   EMAIL_TOKEN_MINUTES,

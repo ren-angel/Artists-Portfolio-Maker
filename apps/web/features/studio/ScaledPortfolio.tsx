@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import type { Draft } from "@studio/shared";
+import type { Draft } from "@doodallery/shared";
 import { Portfolio } from "../../entities/portfolio/Portfolio";
 
 /** Renders the real template at a device width, scaled to its container. */

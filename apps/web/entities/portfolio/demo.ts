@@ -1,4 +1,4 @@
-import { commissionSchema, initialDraft, newBlock, type Block, type Draft, type Template } from "@studio/shared";
+import { commissionSchema, initialDraft, newBlock, type Block, type Draft, type Template } from "@doodallery/shared";
 import { templateAccent } from "./templates/kit";
 import type { Lang } from "../../shared/lib/copy";
 import { placeholderArt } from "../../shared/lib/placeholder";
@@ -39,7 +39,7 @@ const specs: Record<Template, Spec> = {
       { title: L("Architecture", "Arquitetura"), description: L("Buildings at the hour they stop looking like buildings.", "Prédios na hora em que deixam de parecer prédios."), works: [1] },
     ],
     blocks: (art) => [
-      { type: "hero", heading: "Nina Flores", text: "“I photograph the space between objects — the light that stays after everyone has left the room.”", artId: art(0) },
+      { type: "hero", heading: "Nina Flores", text: "“I photograph the space between objects, the light that stays after everyone has left the room.”", artId: art(0) },
       { type: "image", artId: art(1), text: "Archival pigment print · 80 × 100 cm" },
       { type: "featured", heading: "Selected work" },
       { type: "richText", layout: "center", heading: "Studio note, spring 2026", text: "“A photograph is not a record of what was there. It is a record of what I noticed.”" },
@@ -82,12 +82,12 @@ const specs: Record<Template, Spec> = {
   },
   showcase: {
     title: "Theo Vale",
-    description: L("Selected work 2019 — 2026", "Trabalhos selecionados 2019 — 2026"),
+    description: L("Selected work 2019, 2026", "Trabalhos selecionados 2019, 2026"),
     home: L("Work", "Trabalhos"),
     works: [
       { title: L("The Gate at Dawn", "O portão ao amanhecer"), featured: true, description: L("A pilgrimage site at the edge of a valley that floods with fog every morning.", "Um santuário na borda de um vale que se enche de neblina toda manhã.") },
       { title: L("Islands Above the Cloud Sea", "Ilhas sobre o mar de nuvens"), featured: true, description: L("Six floating settlements, one failing engine, and the rope bridges between them.", "Seis vilarejos flutuantes, um motor falhando e as pontes de corda entre eles.") },
-      { title: L("Snowfall Tower", "Torre da nevasca"), featured: true, description: L("The opening shot for a game that never shipped — and the piece that started everything.", "A cena de abertura de um jogo que nunca saiu — e a peça que começou tudo.") },
+      { title: L("Snowfall Tower", "Torre da nevasca"), featured: true, description: L("The opening shot for a game that never shipped, and the piece that started everything.", "A cena de abertura de um jogo que nunca saiu, e a peça que começou tudo.") },
       { title: L("The Wanderer", "O andarilho") },
     ],
     galleries: [
@@ -98,7 +98,7 @@ const specs: Record<Template, Spec> = {
     blocks: (art) => [
       { type: "hero", heading: "Worlds that feel\n*older than the story*", text: "Concept artist and worldbuilder for games and film. Environments, key art and the uncomfortable amount of lore behind them.", artId: art(0) },
       { type: "featured", heading: "Selected projects" },
-      { type: "about", heading: "Ten years of painting places\nnobody has been to.", text: "I work with production teams from first thumbnail to final key art — building the visual logic of a world so the rest of the team can move inside it. Trained as an architect, which explains the stairs.", artId: art(3), url: "https://artstation.com" },
+      { type: "about", heading: "Ten years of painting places\nnobody has been to.", text: "I work with production teams from first thumbnail to final key art, building the visual logic of a world so the rest of the team can move inside it. Trained as an architect, which explains the stairs.", artId: art(3), url: "https://artstation.com" },
     ],
     about: [
       { type: "about", heading: "Ten years of painting places nobody has been to.", text: "Concept artist and worldbuilder for games and film." },

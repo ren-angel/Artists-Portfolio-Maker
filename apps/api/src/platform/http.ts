@@ -21,7 +21,7 @@ export function registerHttpPolicy(app: FastifyInstance, env: Config) {
     if (
       !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
       (req.headers.origin !== env.APP_ORIGIN ||
-        req.headers["x-studio-request"] !== "1")
+        req.headers["x-doodallery-request"] !== "1")
     )
       throw new Fault(403, "invalid_origin");
   });

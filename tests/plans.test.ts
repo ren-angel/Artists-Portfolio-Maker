@@ -12,7 +12,7 @@ import {
   publishable,
   validTaxId,
   type PaymentRecord,
-} from "@studio/shared";
+} from "@doodallery/shared";
 
 const day = 86_400_000;
 const now = new Date("2026-11-13T12:00:00Z");

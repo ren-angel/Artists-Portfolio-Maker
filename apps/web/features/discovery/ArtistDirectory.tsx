@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { artCategories, type DirectoryArtist } from "@studio/shared";
+import { artCategories, type DirectoryArtist } from "@doodallery/shared";
 import { api } from "../../shared/lib/client";
 import type { Lang } from "../../shared/lib/copy";
 export function ArtistDirectory({

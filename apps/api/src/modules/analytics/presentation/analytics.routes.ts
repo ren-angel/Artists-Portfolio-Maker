@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import type { Database } from "@studio/db";
-import { handle } from "@studio/shared";
+import type { Database } from "@doodallery/db";
+import { handle } from "@doodallery/shared";
 import type { Config } from "../../../platform/config.ts";
 import { requireInternal, siteId } from "../../../platform/http.ts";
 import { account } from "../../identity/index.ts";

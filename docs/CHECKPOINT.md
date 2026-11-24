@@ -4,7 +4,7 @@
 
 Branch `refactor/ddd-production-readiness`. The API is organized into bounded-context modules and the web app into `shared/`, `entities/portfolio/` and `features/` ([architecture](DDD-ARCHITECTURE.md)). Comics, Characters, Projects and Shop are now studio sections instead of "Coming soon". Rate limits work per client behind the web proxy (`TRUST_PROXY`), sharp is upgraded, and new domain, architecture, security, studio-section and screenshot tests were added. Routes, payloads and the database schema are unchanged; no migration was added.
 
-All local checks pass (55 integration/unit tests, 26 browser tests, lint, typecheck, build) — see the [test report](TEST-REPORT.md). Production is **not** ready: providers, edge/TLS, backups, scheduling and legal review are outstanding. Next steps are in [PRODUCTION-DEPLOYMENT-TODO.md](PRODUCTION-DEPLOYMENT-TODO.md); feature coverage is in [FEATURE-STATUS.md](FEATURE-STATUS.md).
+All local checks pass (55 integration/unit tests, 26 browser tests, lint, typecheck, build) - see the [test report](TEST-REPORT.md). Production is **not** ready: providers, edge/TLS, backups, scheduling and legal review are outstanding. Next steps are in [PRODUCTION-DEPLOYMENT-TODO.md](PRODUCTION-DEPLOYMENT-TODO.md); feature coverage is in [FEATURE-STATUS.md](FEATURE-STATUS.md).
 
 ## Phase 3 · 15 November 2026 (earlier)
 

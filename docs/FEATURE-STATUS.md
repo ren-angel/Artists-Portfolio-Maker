@@ -10,7 +10,7 @@
 | Partial | Usable, with a documented gap |
 | Missing | Not implemented |
 
-## Phase 1 — portfolio builder
+## Phase 1 - portfolio builder
 
 | Feature | Status | Notes | Tests |
 | --- | --- | --- | --- |
@@ -25,7 +25,7 @@
 | Draft, preview, publish, unpublish | Working | Immutable snapshot, image pins, withdrawal | `api.test.ts`, `artist.spec.ts` |
 | Public subdomains (`handle.PLATFORM_DOMAIN`) | Working, externally unverified | Host routing tested; wildcard DNS/TLS needs the production edge | `artist.spec.ts` (host routing) |
 
-## Phase 2 — commercial
+## Phase 2 - commercial
 
 | Feature | Status | Notes | Tests |
 | --- | --- | --- | --- |
@@ -38,7 +38,7 @@
 | Administration console and audit log | Working | Grant with `pnpm admin grant email` | `platform.test.ts` |
 | Legal pages, consents, data export, support, takedown form | Partial | Texts are drafts marked for legal review; `LEGAL_ENTITY_NAME`/`SUPPORT_EMAIL` placeholders | `platform.test.ts` |
 
-## Phase 3 — creative tools
+## Phase 3 - creative tools
 
 | Feature | Status | Notes | Tests |
 | --- | --- | --- | --- |
@@ -49,7 +49,7 @@
 | Artist integrations: YouTube privacy-enhanced embed, profile links | Working | No OAuth, no import/sync | `render.test.ts` |
 | Digital products: listings with artist-hosted checkout | Working; disabled by flag in production | Payment happens on the artist's store; no purchase records | `platform.test.ts` |
 | Digital products: private wallpaper delivery with 5-minute grants | Working, externally unverified | Paid plans; grants issued manually by the artist | `platform.test.ts` |
-| Integrated marketplace payments | Missing (by design) | No seller onboarding, settlement or refunds; needs provider and legal work | — |
+| Integrated marketplace payments | Missing (by design) | No seller onboarding, settlement or refunds; needs provider and legal work | - |
 | Public artist directory and artwork discovery | Working | Opt-in; excludes unpublished, opted-out and restricted accounts; 24 per page | `platform.test.ts`, `marketing.spec.ts` |
 | Additional blocks (comparison, carousel, process, timeline, cards) | Working | Columns, character cards and video are tested; comparison, carousel, process and timeline rendering is not individually tested | `render.test.ts`, `platform.test.ts` |
 

@@ -1,4 +1,4 @@
-import { creativeLabels } from "@studio/shared";
+import { creativeLabels } from "@doodallery/shared";
 export type Lang = "en" | "pt-BR";
 const phrases = {
   ...creativeLabels,

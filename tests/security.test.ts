@@ -23,20 +23,20 @@ test("mutations, webhooks and internal routes reject callers without the right p
     APP_ORIGIN: origin,
     PLATFORM_DOMAIN: "localhost",
     DATABASE_URL: process.env.TEST_DATABASE_URL,
-    LOCAL_DATA_DIR: await mkdtemp(join(tmpdir(), "studio-security-")),
+    LOCAL_DATA_DIR: await mkdtemp(join(tmpdir(), "doodallery-security-")),
     BILLING_WEBHOOK_TOKEN: webhookToken,
     INTERNAL_TOKEN: internalToken,
   });
   const app = await createApp(env, mock({ origin, webhookToken }));
   const send = (method: HTTPMethods, url: string, headers: Record<string, string> = {}, payload?: object) =>
     app.inject({ method, url, headers, payload });
-  const browser = { origin, "x-studio-request": "1" };
+  const browser = { origin, "x-doodallery-request": "1" };
   try {
     const email = "sec-" + crypto.randomUUID().slice(0, 8) + "@example.test";
     const account = { email, password: "a-long-security-password", displayName: "Sec", accept: true };
 
     // Cross-site form posts and scripted requests without the custom header are refused.
-    const refused: Record<string, string>[] = [{}, { origin: "https://evil.example" }, { origin }, { "x-studio-request": "1" }];
+    const refused: Record<string, string>[] = [{}, { origin: "https://evil.example" }, { origin }, { "x-doodallery-request": "1" }];
     for (const headers of refused) {
       const r = await send("POST", "/auth/register", headers, account);
       assert.equal(r.statusCode, 403, JSON.stringify(headers));
@@ -102,7 +102,7 @@ test("behind a trusted proxy, rate limits apply per client and server calls are 
     APP_ORIGIN: origin,
     PLATFORM_DOMAIN: "localhost",
     DATABASE_URL: process.env.TEST_DATABASE_URL,
-    LOCAL_DATA_DIR: await mkdtemp(join(tmpdir(), "studio-proxy-")),
+    LOCAL_DATA_DIR: await mkdtemp(join(tmpdir(), "doodallery-proxy-")),
     INTERNAL_TOKEN: internalToken,
     TRUST_PROXY: "127.0.0.1, ::1",
   });
@@ -112,7 +112,7 @@ test("behind a trusted proxy, rate limits apply per client and server calls are 
       method: "POST",
       url: "/auth/login",
       remoteAddress: "127.0.0.1",
-      headers: { origin, "x-studio-request": "1", "x-forwarded-for": client },
+      headers: { origin, "x-doodallery-request": "1", "x-forwarded-for": client },
       payload: { email: "nobody-" + client + "@example.test", password: "wrong-password-123" },
     });
   try {

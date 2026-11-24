@@ -6,7 +6,7 @@
 
 | Plan | Pages | Artworks | Storage | Custom domain | No branding | Commission sections | Appearance | Analytics |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Free | 5 | 50 | 200 MB | — | — | — | basic | basic, 30 days |
+| Free | 5 | 50 | 200 MB | - | - | - | basic | basic, 30 days |
 | Artist | 15 | 350 | 2 GB | ✓ | ✓ | ✓ | more | basic, 30 days |
 | Studio | 30 | 1,500 | 10 GB | ✓ | ✓ | ✓ | advanced | advanced, 365 days |
 
@@ -54,7 +54,7 @@ A browser returning from the invoice page calls `POST /billing/sync`. That also 
 
 | From | Event | To |
 | --- | --- | --- |
-| — | checkout started | `pending` |
+| - | checkout started | `pending` |
 | `pending` | payment confirmed | `active` (period end = due date + one cycle) |
 | `pending` | 7 days after the first due date, unpaid | `expired` |
 | `active` | period ended, renewal unconfirmed | `past_due` (7-day grace, plan still granted) |

@@ -1,4 +1,4 @@
-import { sql, first, rows, type Database, type Tx } from "@studio/db";
+import { sql, first, rows, type Database, type Tx } from "@doodallery/db";
 import {
   addCycle,
   derive,
@@ -8,7 +8,7 @@ import {
   type PaymentStatus,
   type PlanId,
   type SubscriptionStatus,
-} from "@studio/shared";
+} from "@doodallery/shared";
 import type { Config } from "../../../platform/config.ts";
 import { assert } from "../../../platform/errors.ts";
 import type { BillingProvider, ProviderEvent } from "../infrastructure/provider.ts";

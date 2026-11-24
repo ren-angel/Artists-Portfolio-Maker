@@ -20,7 +20,7 @@ export const TEMPLATES = [
     artistHandle: "lunamori",
     tagline: "Playful, colourful, full of personality.",
     description:
-      "Sticker labels, rounded frames and pastel blocks that arrange themselves like a sketchbook page — built for illustrators who want their site to feel like them.",
+      "Sticker labels, rounded frames and pastel blocks that arrange themselves like a sketchbook page, built for illustrators who want their site to feel like them.",
     bestFor: ["Illustration", "Fanart", "Character design"],
     palette: ["#FFF4EF", "#FF7868", "#B6A0F6"],
     mood: "Playful · expressive",

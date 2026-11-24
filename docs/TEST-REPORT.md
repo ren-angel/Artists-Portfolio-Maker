@@ -15,13 +15,13 @@ The developer database and the developer's running servers (:3000/:4000) were no
 
 | Command | Result |
 | --- | --- |
-| `pnpm db:test:migrate` | Pass — no pending migrations (0009/0010 had been applied at the start of this pass) |
-| `pnpm test:sql` | Pass — constraint checks in a rolled-back transaction |
+| `pnpm db:test:migrate` | Pass - no pending migrations (0009/0010 had been applied at the start of this pass) |
+| `pnpm test:sql` | Pass - constraint checks in a rolled-back transaction |
 | `pnpm test:unit` | **37/37 pass** (model, image, password, renderer, plans, Asaas, homepage, domain rules, architecture) |
 | `pnpm test` | **55/55 pass**, 0 skipped (all unit tests + real Fastify/PostgreSQL integration: API, billing, platform, security) |
 | `pnpm lint` | Pass, no warnings |
 | `pnpm typecheck` | Pass (root + web) |
-| `pnpm build` | Pass — API bundle 146 kB; Next.js production build |
+| `pnpm build` | Pass - API bundle 146 kB; Next.js production build |
 | `pnpm e2e` (isolated pair) | **26/26 pass**: 8 journeys + 18 screenshot comparisons |
 | `pnpm cleanup` (maintenance job) | Pass against `studio_e2e` |
 | `pnpm seed` | Pass against `studio_e2e`; `/site/demo-creative` → 200 |
@@ -47,17 +47,17 @@ Baseline at the start of the pass: lint, typecheck, SQL checks and 37/37 integra
 
 ## Accessibility scan (axe-core 4, WCAG 2.0/2.1 A + AA, 18 pages)
 
-Run once, not part of the suite (axe was installed outside the project). Results: no violations for labels, alt text, landmarks, ARIA or keyboard traps. **615 color-contrast nodes** across all pages (design's light secondary text; left unchanged pending a design decision, see deployment TODO H-3). **27 label-in-name mismatches** (language toggle, Explore cards) — fixed.
+Run once, not part of the suite (axe was installed outside the project). Results: no violations for labels, alt text, landmarks, ARIA or keyboard traps. **615 color-contrast nodes** across all pages (design's light secondary text; left unchanged pending a design decision, see deployment TODO H-3). **27 label-in-name mismatches** (language toggle, Explore cards) - fixed.
 
 ## Bugs and issues found and fixed
 
-1. Comics, Characters, Projects and Shop were shown as "Coming soon" although implemented — activated as studio sections.
-2. All visitors shared one rate-limit address behind the web proxy (platform-wide login lockout; public SSR reads competing in one global bucket) — `TRUST_PROXY` and internal-token exemption.
-3. `sharp` 0.34 with three high-severity decoder advisories processing untrusted uploads — upgraded to 0.35.5 and loaders restricted.
-4. Web silently fell back to the development internal token in production — now reported.
-5. Deprecated Fastify `disableRequestLogging` option (warning on every start) — replaced with `LogController`.
+1. Comics, Characters, Projects and Shop were shown as "Coming soon" although implemented - activated as studio sections.
+2. All visitors shared one rate-limit address behind the web proxy (platform-wide login lockout; public SSR reads competing in one global bucket) - `TRUST_PROXY` and internal-token exemption.
+3. `sharp` 0.34 with three high-severity decoder advisories processing untrusted uploads - upgraded to 0.35.5 and loaders restricted.
+4. Web silently fell back to the development internal token in production - now reported.
+5. Deprecated Fastify `disableRequestLogging` option (warning on every start) - replaced with `LogController`.
 6. Accessible-name mismatches on the language toggle and Explore cards.
-7. `/discover` accepted an unbounded offset — now capped like the artist directory.
+7. `/discover` accepted an unbounded offset - now capped like the artist directory.
 
 ## Remaining limitations
 

@@ -21,7 +21,7 @@ export async function upload(
       const r = new XMLHttpRequest();
       r.open("PUT", uploadUrl || "/api" + path + "/" + id);
       r.setRequestHeader("content-type", "application/octet-stream");
-      if (!uploadUrl) r.setRequestHeader("x-studio-request", "1");
+      if (!uploadUrl) r.setRequestHeader("x-doodallery-request", "1");
       r.upload.onprogress = (e) => {
         if (e.lengthComputable) progress(Math.round((e.loaded / e.total) * 95));
       };

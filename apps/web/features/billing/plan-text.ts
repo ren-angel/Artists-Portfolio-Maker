@@ -1,4 +1,4 @@
-import type { Cycle, Features, Limits, PlanId, Price } from "@studio/shared";
+import type { Cycle, Features, Limits, PlanId, Price } from "@doodallery/shared";
 import type { Lang } from "../../shared/lib/copy";
 
 /* Plan wording shared by server and client components. */

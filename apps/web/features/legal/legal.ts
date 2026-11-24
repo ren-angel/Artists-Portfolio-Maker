@@ -1,4 +1,4 @@
-import { legalDocuments, type LegalDocument } from "@studio/shared";
+import { legalDocuments, type LegalDocument } from "@doodallery/shared";
 
 /* DRAFT legal texts. They describe how the software actually behaves, but
    they are NOT legal advice and must be reviewed by a qualified lawyer in

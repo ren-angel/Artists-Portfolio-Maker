@@ -7,9 +7,9 @@
     "node": ">=22.16"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter @studio/web --filter @studio/api dev",
-    "build": "pnpm --filter @studio/api build && pnpm --filter @studio/web build",
-    "typecheck": "tsc --noEmit && pnpm --filter @studio/web typecheck",
+    "dev": "pnpm --parallel --filter @doodallery/web --filter @doodallery/api dev",
+    "build": "pnpm --filter @doodallery/api build && pnpm --filter @doodallery/web build",
+    "typecheck": "tsc --noEmit && pnpm --filter @doodallery/web typecheck",
     "lint": "eslint apps packages tests",
     "test": "node --env-file-if-exists=.env --import ./tests/register.mjs --test tests/*.test.ts",
     "e2e": "node --env-file-if-exists=.env node_modules/@playwright/test/cli.js test",
@@ -23,8 +23,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
-    "@studio/db": "workspace:*",
-    "@studio/shared": "workspace:*",
+    "@doodallery/db": "workspace:*",
+    "@doodallery/shared": "workspace:*",
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",

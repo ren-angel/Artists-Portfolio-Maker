@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
-import type { PaymentStatus } from "@studio/shared";
+import type { PaymentStatus } from "@doodallery/shared";
 import { ProviderError, type BillingProvider, type ProviderPayment } from "./provider.ts";
 
 /* Asaas REST v3 client (docs.asaas.com, reviewed November 2026).
@@ -59,7 +59,7 @@ export function asaas(opts: { apiKey: string; env: "sandbox" | "production"; web
         headers: {
           access_token: opts.apiKey,
           "content-type": "application/json",
-          "user-agent": "artist-studio-billing",
+          "user-agent": "doodallery-billing",
         },
         body: body ? JSON.stringify(body) : undefined,
       });

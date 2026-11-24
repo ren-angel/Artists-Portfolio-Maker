@@ -9,7 +9,7 @@ import {
   primaryKey,
   bigint,
 } from "drizzle-orm/pg-core";
-import type { Draft } from "@studio/shared";
+import type { Draft } from "@doodallery/shared";
 const time = (name: string) =>
   timestamp(name, { withTimezone: true, mode: "date" });
 export const users = pgTable("users", {

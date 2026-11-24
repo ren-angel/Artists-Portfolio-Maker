@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Check, Minus, Sparkles } from "lucide-react";
-import { formatMoney, type Cycle, type PlanId } from "@studio/shared";
+import { formatMoney, type Cycle, type PlanId } from "@doodallery/shared";
 import { featureRows, planName, TAGS, type Catalog, type CatalogPlan } from "./plan-text";
 export { featureRows, planName, size, type Catalog, type CatalogPlan } from "./plan-text";
 import type { Lang } from "../../shared/lib/copy";
@@ -125,8 +125,8 @@ export function PlanCards({
       </div>
       <p className="mt-5 text-center text-[11.5px] leading-relaxed text-ink/45">
         {tr(
-          "Card payments renew automatically. Pix creates an invoice each cycle that you pay yourself; it never renews on its own. Cancel any time — paid access lasts until the end of the period you paid for.",
-          "Cartão renova automaticamente. Pix gera uma fatura a cada ciclo que você mesmo paga; não renova sozinho. Cancele quando quiser — o acesso pago vale até o fim do período pago.",
+          "Card payments renew automatically. Pix creates an invoice each cycle that you pay yourself; it never renews on its own. Cancel any time, paid access lasts until the end of the period you paid for.",
+          "Cartão renova automaticamente. Pix gera uma fatura a cada ciclo que você mesmo paga; não renova sozinho. Cancele quando quiser, o acesso pago vale até o fim do período pago.",
         )}
       </p>
     </div>

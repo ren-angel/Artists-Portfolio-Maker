@@ -16,7 +16,7 @@ import {
   Plus,
   Type,
 } from "lucide-react";
-import { containerChoices, creativeBlockTypes, type Block, type Draft } from "@studio/shared";
+import { containerChoices, creativeBlockTypes, type Block, type Draft } from "@doodallery/shared";
 import { t } from "../../shared/lib/copy";
 import { blockName, library, takesArt, takesGallery } from "./blocks";
 import { Lock } from "lucide-react";

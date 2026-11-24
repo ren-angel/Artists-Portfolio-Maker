@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
 import { z } from "zod";
-import type { Database } from "@studio/db";
+import type { Database } from "@doodallery/db";
 import type { Config } from "../../../platform/config.ts";
 import { Fault } from "../../../platform/errors.ts";
 import {

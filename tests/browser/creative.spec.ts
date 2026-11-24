@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
-import type { Draft } from "@studio/shared";
+import type { Draft } from "@doodallery/shared";
 
 test("artist publishes a comic from Pages and a mobile reader resumes the right-to-left chapter", async ({
   page,
@@ -9,7 +9,7 @@ test("artist publishes a comic from Pages and a mobile reader resumes the right-
 }) => {
   const http = page.request,
     origin = process.env.APP_ORIGIN || "http://localhost:3000";
-  const headers = { origin, "x-studio-request": "1" };
+  const headers = { origin, "x-doodallery-request": "1" };
   const handle = "reader-" + crypto.randomUUID().slice(0, 8),
     email = handle + "@example.test";
   expect(
@@ -145,7 +145,7 @@ test("editor undoes and redoes a change, saves a reusable section and restores a
     handle = "editor-" + crypto.randomUUID().slice(0, 8);
   const headers = {
     origin: process.env.APP_ORIGIN || "http://localhost:3000",
-    "x-studio-request": "1",
+    "x-doodallery-request": "1",
   };
   await http.post("/api/auth/register", {
     headers,

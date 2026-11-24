@@ -22,7 +22,7 @@ const LABEL: Record<Tab, [string, string]> = {
   support: ["Support", "Suporte"],
   audit: ["Audit log", "Auditoria"],
 };
-const when = (v: unknown, l: Lang) => (v ? new Date(String(v)).toLocaleString(l) : "—");
+const when = (v: unknown, l: Lang) => (v ? new Date(String(v)).toLocaleString(l) : "-");
 const mb = (v: unknown) => (Number(v ?? 0) / 1024 ** 2).toFixed(1) + " MB";
 
 function Table({ rows, cols, l }: { rows: Row[]; cols: [string, string, ((r: Row) => React.ReactNode)?][]; l: Lang }) {
@@ -36,7 +36,7 @@ function Table({ rows, cols, l }: { rows: Row[]; cols: [string, string, ((r: Row
         <tbody>
           {rows.map((r, i) => (
             <tr key={String(r.id ?? i)} className="border-t border-ink/[0.07] align-top">
-              {cols.map(([k, h, f]) => <td key={h} className="max-w-[320px] px-4 py-2.5">{f ? f(r) : String(r[k] ?? "—")}</td>)}
+              {cols.map(([k, h, f]) => <td key={h} className="max-w-[320px] px-4 py-2.5">{f ? f(r) : String(r[k] ?? "-")}</td>)}
             </tr>
           ))}
         </tbody>
@@ -136,7 +136,7 @@ export function Admin({ l, name }: { l: Lang; name: string }) {
                 ["plan", tr("Plan", "Plano")],
                 ["subscription", tr("Subscription", "Assinatura")],
                 ["storageBytes", tr("Storage", "Armazenamento"), (r) => mb(r.storageBytes)],
-                ["verified", tr("Verified", "Verificado"), (r) => (r.verified ? "✓" : "—")],
+                ["verified", tr("Verified", "Verificado"), (r) => (r.verified ? "✓" : "-")],
                 ["restrictedAt", tr("Restriction", "Restrição"), (r) => (
                   <button type="button" onClick={() => {
                     const restricted = !r.restrictedAt;
@@ -163,7 +163,7 @@ export function Admin({ l, name }: { l: Lang; name: string }) {
             </>
           )}
           {tab === "domains" && data !== null && <Table l={l} rows={rows} cols={[["hostname", tr("Domain", "Domínio")], ["handle", tr("Portfolio", "Portfólio")], ["status", "Status"], ["dnsOk", "DNS", (r) => (r.dnsOk ? "✓" : "✗")], ["tlsOk", "HTTPS", (r) => (r.tlsOk ? "✓" : "✗")], ["error", tr("Problem", "Problema")], ["checkedAt", tr("Checked", "Verificado"), (r) => when(r.checkedAt, l)]]} />}
-          {tab === "reports" && data !== null && <Table l={l} rows={rows} cols={[["handle", tr("Portfolio", "Portfólio"), (r) => r.handle ? <a className="underline" href={"/site/" + r.handle} target="_blank" rel="noreferrer">{String(r.handle)}</a> : "—"], ["reason", tr("Reason", "Motivo")], ["createdAt", tr("Received", "Recebida"), (r) => when(r.createdAt, l)], ["status", "Status", (r) => status(`/admin/reports/${r.id}`, String(r.status), ["open", "reviewed", "actioned", "dismissed"])]]} />}
+          {tab === "reports" && data !== null && <Table l={l} rows={rows} cols={[["handle", tr("Portfolio", "Portfólio"), (r) => r.handle ? <a className="underline" href={"/site/" + r.handle} target="_blank" rel="noreferrer">{String(r.handle)}</a> : "-"], ["reason", tr("Reason", "Motivo")], ["createdAt", tr("Received", "Recebida"), (r) => when(r.createdAt, l)], ["status", "Status", (r) => status(`/admin/reports/${r.id}`, String(r.status), ["open", "reviewed", "actioned", "dismissed"])]]} />}
           {tab === "support" && data !== null && <Table l={l} rows={rows} cols={[["email", tr("From", "De")], ["topic", tr("Topic", "Assunto")], ["message", tr("Message", "Mensagem"), (r) => <span className="whitespace-pre-wrap">{String(r.message)}</span>], ["createdAt", tr("Received", "Recebido"), (r) => when(r.createdAt, l)], ["status", "Status", (r) => status(`/admin/support/${r.id}`, String(r.status), ["open", "answered", "closed"])]]} />}
           {tab === "audit" && data !== null && <Table l={l} rows={rows} cols={[["createdAt", tr("When", "Quando"), (r) => when(r.createdAt, l)], ["admin", tr("Admin", "Admin")], ["action", tr("Action", "Ação")], ["target", tr("Target", "Alvo")], ["detail", tr("Detail", "Detalhe"), (r) => JSON.stringify(r.detail)]]} />}
         </section>

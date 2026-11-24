@@ -1,11 +1,11 @@
-import { newCreative, cloneSection, blockSchema } from "@studio/shared";
+import { newCreative, cloneSection, blockSchema } from "@doodallery/shared";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Portfolio, matchPage } from "../apps/web/entities/portfolio/Portfolio.tsx";
 import { demo, demoImages } from "../apps/web/entities/portfolio/demo.ts";
-import { initialDraft, newBlock, templateNames, draftSchema, publishable, removeGallery } from "@studio/shared";
+import { initialDraft, newBlock, templateNames, draftSchema, publishable, removeGallery } from "@doodallery/shared";
 test("all four public portfolios server-render a semantic page, gallery links and accessible artwork without client code", () => {
   for (const template of templateNames) {
     const d = initialDraft("My studio", "en");

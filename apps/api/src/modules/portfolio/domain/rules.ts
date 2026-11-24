@@ -1,10 +1,10 @@
-import { creativeBlockTypes, type Draft } from "@studio/shared";
+import { creativeBlockTypes, type Draft } from "@doodallery/shared";
 import { assert } from "../../../platform/errors.ts";
 
 /* Portfolio invariants enforced on every save and publication. Pure
    functions: callers pass the stored draft, the proposed draft and limits.
    The draft schema, block allowlist and publication filter are shared with
-   the web app in @studio/shared. */
+   the web app in @doodallery/shared. */
 
 /** A downgrade never locks editing: an over-limit site may keep or reduce
     its pages, but cannot add more until it is within the plan. The home

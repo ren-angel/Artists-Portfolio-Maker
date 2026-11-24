@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { sql, first, rows, type Database } from "@studio/db";
-import { legalDocuments, requiredConsents, type LegalDocument } from "@studio/shared";
+import { sql, first, rows, type Database } from "@doodallery/db";
+import { legalDocuments, requiredConsents, type LegalDocument } from "@doodallery/shared";
 import type { Config } from "../../../platform/config.ts";
 import { account } from "../../identity/index.ts";
 import { assert } from "../../../platform/errors.ts";

@@ -1,5 +1,5 @@
-import { first, rows, sql, type Tx } from "@studio/db";
-import type { Draft, Creative } from "@studio/shared";
+import { first, rows, sql, type Tx } from "@doodallery/db";
+import type { Draft, Creative } from "@doodallery/shared";
 import { changedPages, PAGE_HISTORY_LIMIT } from "../domain/rules.ts";
 
 export async function readCreative(tx: Tx, site: string) {

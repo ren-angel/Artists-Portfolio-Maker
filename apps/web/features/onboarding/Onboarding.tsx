@@ -1,7 +1,7 @@
 "use client";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { ArrowLeft, ArrowRight, Check, ExternalLink, Plus, Rocket, Sparkles } from "lucide-react";
-import { removeGallery, templateNames, type Draft } from "@studio/shared";
+import { removeGallery, templateNames, type Draft } from "@doodallery/shared";
 import { t, message, type Lang } from "../../shared/lib/copy";
 import type { Artist, Limits, SiteData, Update } from "../studio/use-draft";
 import { placeholderArt } from "../../shared/lib/placeholder";
@@ -309,7 +309,7 @@ export function Setup({
       {step === 2 && (
         <div>
           <h1 className={h1}>{tr("Pick a starting point", "Escolha um ponto de partida")}</h1>
-          <p className={lead}>{tr("You can swap this any time — your work stays exactly where it is.", "Dá para trocar quando quiser — suas obras ficam onde estão.")}</p>
+          <p className={lead}>{tr("You can swap this any time, your work stays exactly where it is.", "Dá para trocar quando quiser, suas obras ficam onde estão.")}</p>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {templateNames.map((v) => (
               <button
@@ -407,7 +407,7 @@ export function Setup({
       {step === 4 && (
         <div>
           <h1 className={h1}>{tr("Add a first piece", "Adicione uma primeira obra")}</h1>
-          <p className={lead}>{tr("It doesn't have to be your best work — just something to fill the walls.", "Não precisa ser sua melhor obra — só algo para preencher as paredes.")}</p>
+          <p className={lead}>{tr("It doesn't have to be your best work, just something to fill the walls.", "Não precisa ser sua melhor obra, só algo para preencher as paredes.")}</p>
           <div className="mt-6">
             <Library d={d} update={update} l={l} site={data.id} limits={limits} storageUsed={data.storageUsed} progress={progress} onFiles={onFiles} onSave={onSave} embedded />
           </div>
@@ -520,7 +520,7 @@ export function Setup({
               </a>
             )}
           </div>
-          <p className="mt-3 text-[11.5px] text-ink/40">{tr("You can publish whenever you're ready — nothing goes live until you do.", "Publique quando estiver pronto — nada vai ao ar antes disso.")}</p>
+          <p className="mt-3 text-[11.5px] text-ink/40">{tr("You can publish whenever you're ready, nothing goes live until you do.", "Publique quando estiver pronto, nada vai ao ar antes disso.")}</p>
         </div>
       )}
 

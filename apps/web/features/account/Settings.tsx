@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, type ReactNode } from "react";
 import { AlertTriangle, Check, Download, Globe, LifeBuoy, Lock, Shield, User } from "lucide-react";
-import { artCategories, type DirectoryProfile, type Draft, type Visibility } from "@studio/shared";
+import { artCategories, type DirectoryProfile, type Draft, type Visibility } from "@doodallery/shared";
 import { t, message, type Lang } from "../../shared/lib/copy";
 import { api } from "../../shared/lib/client";
 import type { Artist, Update } from "../studio/use-draft";
@@ -98,7 +98,7 @@ export function Settings({
       <PageHeader
         eyebrow={tr("Your account", "Sua conta")}
         title={t(l, "settingsNav")}
-        subtitle={tr("The practical bits — your details, your language and your account.", "O lado prático — seus dados, seu idioma e sua conta.")}
+        subtitle={tr("The practical bits, your details, your language and your account.", "O lado prático, seus dados, seu idioma e sua conta.")}
       />
 
       <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
@@ -167,7 +167,7 @@ export function Settings({
                         setProfile({ ...profile, category: e.target.value as DirectoryProfile["category"] })
                       }
                     >
-                      <option value="">—</option>
+                      <option value="">-</option>
                       {Object.entries(artCategories).map(([k, v]) => (
                         <option key={k} value={k}>
                           {v[l === "en" ? 0 : 1]}
@@ -343,7 +343,7 @@ export function Settings({
                   <select
                     value={l}
                     onChange={(e) => {
-                      document.cookie = "studio_lang=" + e.target.value + "; Path=/; SameSite=Lax; Max-Age=31536000";
+                      document.cookie = "doodallery_lang=" + e.target.value + "; Path=/; SameSite=Lax; Max-Age=31536000";
                       location.reload();
                     }}
                     className={cn(inputCls, "w-[170px]")}

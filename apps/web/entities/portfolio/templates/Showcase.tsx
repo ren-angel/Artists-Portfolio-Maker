@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ArrowDown, ArrowLeft, ArrowUpRight } from "lucide-react";
-import type { Art, Block } from "@studio/shared";
+import type { Art, Block } from "@doodallery/shared";
 import {
   Img,
   Inline,

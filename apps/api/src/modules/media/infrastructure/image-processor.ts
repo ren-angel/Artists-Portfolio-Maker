@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { defaults } from "@studio/shared";
+import { defaults } from "@doodallery/shared";
 import { Fault, assert } from "../../../platform/errors.ts";
 
 // Defense in depth for untrusted uploads: libvips may only run the decoders

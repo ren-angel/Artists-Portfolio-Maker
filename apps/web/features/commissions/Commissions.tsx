@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpRight, Eye, EyeOff, ImageIcon, Lock, Plus, Sparkles, Trash2, X } from "lucide-react";
-import { newBlock, type Commissions as Settings, type Contact, type Draft } from "@studio/shared";
+import { newBlock, type Commissions as Settings, type Contact, type Draft } from "@doodallery/shared";
 import type { Lang } from "../../shared/lib/copy";
 import type { Limits, Update } from "../studio/use-draft";
 import { commissionPrice } from "../../entities/portfolio/commission-price";

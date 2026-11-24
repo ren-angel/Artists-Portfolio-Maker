@@ -1,4 +1,4 @@
-import { connect, sql, first } from "@studio/db";
+import { connect, sql, first } from "@doodallery/db";
 
 /* Grants or revokes platform administration: pnpm admin grant person@example.com */
 const [action, email] = process.argv.slice(2);

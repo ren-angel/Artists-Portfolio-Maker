@@ -1,6 +1,6 @@
 "use client";
 import { Check, LayoutTemplate, Palette, Type } from "lucide-react";
-import { templateNames, type Draft, type Features } from "@studio/shared";
+import { templateNames, type Draft, type Features } from "@doodallery/shared";
 import { t, type Lang } from "../../shared/lib/copy";
 import type { Update } from "../studio/use-draft";
 import { placeholderArt } from "../../shared/lib/placeholder";

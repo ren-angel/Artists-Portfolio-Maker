@@ -1,5 +1,5 @@
 import { checkCreativeChanges } from "../apps/api/src/modules/portfolio/domain/rules.ts";
-import { newCreative } from "@studio/shared";
+import { newCreative } from "@doodallery/shared";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -11,7 +11,7 @@ import {
   handle,
   safeLink,
   templateNames,
-} from "@studio/shared";
+} from "@doodallery/shared";
 import {
   hashPassword,
   verifyPassword,

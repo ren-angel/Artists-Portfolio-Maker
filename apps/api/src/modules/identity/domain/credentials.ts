@@ -34,7 +34,7 @@ export const EMAIL_TOKEN_MINUTES = 30;
 /** Production uses a host-only __Host- cookie; it requires Secure and path=/. */
 export function sessionCookie(production: boolean) {
   return {
-    name: production ? "__Host-session" : "studio_session",
+    name: production ? "__Host-session" : "doodallery_session",
     options: {
       httpOnly: true,
       secure: production,

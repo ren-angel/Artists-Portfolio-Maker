@@ -1,5 +1,5 @@
 import type { FastifyRequest } from "fastify";
-import type { Database } from "@studio/db";
+import type { Database } from "@doodallery/db";
 import type { Config } from "../../../platform/config.ts";
 import { assert } from "../../../platform/errors.ts";
 import { sessionCookie } from "../domain/credentials.ts";

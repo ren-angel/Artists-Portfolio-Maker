@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { initialDraft, newCreative, type Draft } from "@studio/shared";
+import { initialDraft, newCreative, type Draft } from "@doodallery/shared";
 import { Fault } from "../apps/api/src/platform/errors.ts";
 import { classify } from "../apps/api/src/platform/http.ts";
 import {
@@ -87,7 +87,7 @@ test("upload reservations respect size, restriction, artwork and storage limits"
 test("domain DNS evaluation needs the TXT proof and a matching CNAME or A record", () => {
   const claim = { token: "abc" };
   const target = { cname: "sites.example.com.", ip: "203.0.113.7" };
-  const proof = ["studio-verify=abc"];
+  const proof = ["doodallery-verify=abc"];
   assert.deepEqual(evaluateDns({ txt: [], cname: ["sites.example.com"], a: [] }, claim, target), { owned: false, dnsOk: true, error: "txt_missing" });
   assert.deepEqual(evaluateDns({ txt: proof, cname: ["other.example.net"], a: [] }, claim, target), { owned: true, dnsOk: false, error: "dns_not_pointing" });
   assert.equal(evaluateDns({ txt: proof, cname: ["SITES.example.com."], a: [] }, claim, target).dnsOk, true);

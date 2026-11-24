@@ -1,4 +1,4 @@
-import { creativeBlockTypes, type Block } from "@studio/shared";
+import { creativeBlockTypes, type Block } from "@doodallery/shared";
 import { t, type Key, type Lang } from "../../shared/lib/copy";
 
 const key = (type: Block["type"]): Key => (type === "hero" ? "heroBlock" : type);

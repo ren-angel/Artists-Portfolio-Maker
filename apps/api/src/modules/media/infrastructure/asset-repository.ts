@@ -1,4 +1,4 @@
-import { sql, first, type Tx } from "@studio/db";
+import { sql, first, type Tx } from "@doodallery/db";
 
 /** Deletes asset rows no longer referenced by the draft, the active
     publication or an avatar. Database triggers queue their objects for removal. */

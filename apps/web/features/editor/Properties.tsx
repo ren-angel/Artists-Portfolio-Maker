@@ -15,7 +15,7 @@ import {
   Type,
   X,
 } from "lucide-react";
-import { containerChoices, type Block, type Draft } from "@studio/shared";
+import { containerChoices, type Block, type Draft } from "@doodallery/shared";
 import { t } from "../../shared/lib/copy";
 import { paletteOf } from "../../entities/portfolio/Portfolio";
 import { Sparkle } from "../../shared/ui/bits";

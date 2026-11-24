@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defaults, priceBook } from "@studio/shared";
+import { defaults, priceBook } from "@doodallery/shared";
 export function config(source = process.env) {
   const n = (fallback: number) =>
     z.coerce.number().int().positive().default(fallback);

@@ -6,7 +6,7 @@ import {
   type Block,
   type Draft,
   type Template,
-} from "@studio/shared";
+} from "@doodallery/shared";
 import { t, type Lang } from "../../../shared/lib/copy";
 
 export type Gallery = Draft["galleries"][number];

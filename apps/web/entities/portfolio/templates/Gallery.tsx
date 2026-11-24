@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { detailLabel } from "../artwork-details";
-import { artworkDetailKeys, type Art, type Block } from "@studio/shared";
+import { artworkDetailKeys, type Art, type Block } from "@doodallery/shared";
 import {
   Img,
   Inline,

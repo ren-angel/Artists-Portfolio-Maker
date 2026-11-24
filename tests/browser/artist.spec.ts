@@ -75,7 +75,7 @@ test("independent artist hosts render their own revisions and ignore forwarded t
 }) => {
   const prefix = "routing-" + crypto.randomUUID().slice(0, 8);
   const origin = process.env.APP_ORIGIN || "http://localhost:3000";
-  const headers = { origin, "x-studio-request": "1" };
+  const headers = { origin, "x-doodallery-request": "1" };
   const domain = process.env.PLATFORM_DOMAIN || "localhost";
   for (const suffix of ["one", "two"]) {
     const handle = prefix + "-" + suffix;

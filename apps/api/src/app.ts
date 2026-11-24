@@ -1,7 +1,7 @@
 import Fastify, { LogController } from "fastify";
 import cookie from "@fastify/cookie";
 import rateLimit from "@fastify/rate-limit";
-import { connect, sql } from "@studio/db";
+import { connect, sql } from "@doodallery/db";
 import { config, type Config } from "./platform/config.ts";
 import { hasInternalToken, registerHttpPolicy } from "./platform/http.ts";
 import { authRoutes } from "./modules/identity/index.ts";

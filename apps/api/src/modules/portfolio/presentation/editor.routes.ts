@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { first, rows, sql, type Database } from "@studio/db";
-import { sectionTree, type Block } from "@studio/shared";
+import { first, rows, sql, type Database } from "@doodallery/db";
+import { sectionTree, type Block } from "@doodallery/shared";
 import { account } from "../../identity/index.ts";
 import type { Config } from "../../../platform/config.ts";
 import { owned } from "../../tenancy/index.ts";

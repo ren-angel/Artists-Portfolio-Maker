@@ -1,5 +1,5 @@
-import { sql, first, type Tx } from "@studio/db";
-import type { Draft } from "@studio/shared";
+import { sql, first, type Tx } from "@doodallery/db";
+import type { Draft } from "@doodallery/shared";
 import { assert } from "../../platform/errors.ts";
 
 /* Tenant boundary shared by every module. A site belongs to exactly one

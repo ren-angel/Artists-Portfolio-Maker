@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Draft, Features, PlanId } from "@studio/shared";
+import type { Draft, Features, PlanId } from "@doodallery/shared";
 import { api } from "../../shared/lib/client";
 export type SiteData = {
   creativeEnabled?:boolean; chaptersPerPage?:number;

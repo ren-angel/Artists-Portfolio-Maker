@@ -1,4 +1,4 @@
-import { cycles, templateNames } from "@studio/shared";
+import { cycles, templateNames } from "@doodallery/shared";
 
 /** Forward only choices supported by the studio. URLs cannot supply a redirect destination. */
 export function studioIntent(search: string) {
